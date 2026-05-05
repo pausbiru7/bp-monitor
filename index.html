@@ -264,6 +264,19 @@ tr:hover{background:#f8fafc}
 
 <script>
 // ══════════════════════════════════════════
+// ☁️ GOOGLE SHEET CONFIG
+// ══════════════════════════════════════════
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzu5FfqYDlMbVzqc2FJ2aM_ij2BzDjo6nsvhZYgkmqI4x6jo_mDFu6D9r_innrwANo/exec';
+
+function syncToSheet(payload){
+  return fetch(SCRIPT_URL, {
+    method: 'POST',
+    headers: {'Content-Type': 'text/plain;charset=utf-8'},
+    body: JSON.stringify(payload)
+  }).then(r => r.json());
+}
+
+// ══════════════════════════════════════════
 // 📦 DATA LAYER
 // ══════════════════════════════════════════
 let patients  = JSON.parse(localStorage.getItem('bpm_patients')  || '[]');
@@ -595,8 +608,16 @@ function save(){
 function manualSync(){
   const badge=document.getElementById('syncBadge');const icon=document.getElementById('syncIcon');const text=document.getElementById('syncText');
   badge.className='sync-badge sync-loading';icon.innerHTML='<span class="spin">⟳</span>';text.textContent='Menyimpan...';
-  setTimeout(()=>{save();badge.className='sync-badge sync-ok';icon.textContent='✅';text.textContent='Tersimpan';
-    setTimeout(()=>{badge.className='sync-badge sync-local';icon.textContent='☁️';text.textContent='Lokal'},2000)},500);
+  save();
+  syncToSheet({patients, exams, followups})
+    .then(()=>{
+      badge.className='sync-badge sync-ok';icon.textContent='✅';text.textContent='Tersimpan';
+      setTimeout(()=>{badge.className='sync-badge sync-local';icon.textContent='☁️';text.textContent='Lokal'},2000);
+    })
+    .catch(()=>{
+      badge.className='sync-badge sync-err';icon.textContent='❌';text.textContent='Gagal';
+      setTimeout(()=>{badge.className='sync-badge sync-local';icon.textContent='☁️';text.textContent='Lokal'},3000);
+    });
 }
 function initApp(){
   populateFilterOptions();renderStats();renderDashboard();renderReminders();
