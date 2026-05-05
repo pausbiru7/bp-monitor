@@ -300,10 +300,10 @@ function getStatus(s,d){
 
 // ══ REKOMENDASI OTOMATIS ══════════════════
 function getRekomendasi(s,d,prevS,pex){
-  const st=getStatus(s,d);
-  const trend=prevS!=null?(s<prevS?'turun':s>prevS?'naik':'tetap'):null;
-  const trendNote=trend==='turun'?'Tekanan darah menunjukkan perbaikan. ':trend==='naik'?'Perhatian: tekanan darah meningkat dari pemeriksaan sebelumnya. ':'';
-  const rekom={
+   st=getStatus(s,d);
+   trend=prevS!=null?(s<prevS?'turun':s>prevS?'naik':'tetap'):null;
+   trendNote=trend==='turun'?'Tekanan darah menunjukkan perbaikan. ':trend==='naik'?'Perhatian: tekanan darah meningkat dari pemeriksaan sebelumnya. ':'';
+   rekom={
     opt:{icon:'✅',judul:'Optimal — Pertahankan!',isi:`${trendNote}Tekanan darah dalam kondisi optimal. Pertahankan gaya hidup sehat: olahraga teratur, diet rendah garam, hindari stres. Kontrol ulang 12 bulan.`,jadwal:'Kontrol: 12 bulan'},
     nor:{icon:'✅',judul:'Normal — Jaga Konsistensi',isi:`${trendNote}Tekanan darah normal. Lanjutkan pola hidup sehat. Batasi konsumsi garam <5g/hari, olahraga 30 menit/hari. Kontrol ulang 6–12 bulan.`,jadwal:'Kontrol: 6–12 bulan'},
     pre:{icon:'⚠️',judul:'Normal-Tinggi — Waspadai',isi:`${trendNote}Tekanan darah di batas normal-tinggi. Modifikasi gaya hidup segera: kurangi garam, turunkan berat badan jika overweight, olahraga aerobik rutin, batasi alkohol & rokok. Belum perlu obat, namun perlu monitoring ketat.`,jadwal:'Kontrol: 3–6 bulan'},
@@ -312,27 +312,27 @@ function getRekomendasi(s,d,prevS,pex){
     ht3:{icon:'🚨',judul:'Hipertensi Derajat 3 — DARURAT!',isi:`${trendNote}Tekanan darah sangat tinggi — risiko kerusakan organ akut. SEGERA rujuk ke IGD/RS. Hindari aktivitas berat. Jangan hentikan obat tiba-tiba. Evaluasi tanda-tanda komplikasi (nyeri dada, sesak, gangguan penglihatan).`,jadwal:'SEGERA ke IGD/RS'},
     iso:{icon:'🔵',judul:'HT Sistolik Terisolasi — Perlu Evaluasi',isi:`${trendNote}Tekanan sistolik tinggi namun diastolik normal — sering pada lansia. Evaluasi dokter diperlukan. Perhatikan risiko kardiovaskular. Terapi disesuaikan kondisi pasien.`,jadwal:'Kontrol: 1–2 bulan'},
   };
-  const r=rekom[st.key];
+   r=rekom[st.key];
   return `<div class="rekom-box ${st.key}"><div class="rekom-title">${r.icon} ${r.judul}</div><div>${r.isi}</div><div style="margin-top:6px;font-weight:600;font-size:.78rem">📅 ${r.jadwal}</div></div>`;
 }
 
 // ══ HELPERS ═══════════════════════════════
-function calcAge(dob){if(!dob)return '-';const b=new Date(dob),t=new Date();let a=t.getFullYear()-b.getFullYear();if(t.getMonth()<b.getMonth()||(t.getMonth()===b.getMonth()&&t.getDate()<b.getDate()))a--;return a;}
+function calcAge(dob){if(!dob)return '-'; b=new Date(dob),t=new Date();let a=t.getFullYear()-b.getFullYear();if(t.getMonth()<b.getMonth()||(t.getMonth()===b.getMonth()&&t.getDate()<b.getDate()))a--;return a;}
 function fmt(d){if(!d)return '-';return new Date(d).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});}
 function monthKey(d){return d?d.slice(0,7):null;}
-function monthLabel(k){if(!k)return '';const[y,m]=k.split('-');return new Date(y,m-1).toLocaleDateString('id-ID',{month:'short',year:'numeric'});}
-function trendArrow(c,p){if(p==null)return '<span class="trend-eq">—</span>';const d=c-p;if(d>0)return `<span class="trend-up">▲${d}</span>`;if(d<0)return `<span class="trend-dn">▼${Math.abs(d)}</span>`;return '<span class="trend-eq">=</span>';}
-function pName(pid){const p=patients.find(x=>x.id===pid);return p?p.name:'—';}
+function monthLabel(k){if(!k)return '';[y,m]=k.split('-');return new Date(y,m-1).toLocaleDateString('id-ID',{month:'short',year:'numeric'});}
+function trendArrow(c,p){if(p==null)return '<span class="trend-eq">—</span>'; d=c-p;if(d>0)return `<span class="trend-up">▲${d}</span>`;if(d<0)return `<span class="trend-dn">▼${Math.abs(d)}</span>`;return '<span class="trend-eq">=</span>';}
+function pName(pid){ p=patients.find(x=>x.id===pid);return p?p.name:'—';}
 function pExams(pid){return exams.filter(e=>e.patientId===pid).sort((a,b)=>a.examDate.localeCompare(b.examDate));}
-function lastExam(pid){const ex=pExams(pid);return ex.length?ex[ex.length-1]:null;}
+function lastExam(pid){ ex=pExams(pid);return ex.length?ex[ex.length-1]:null;}
 function vCls(v,hi,md){return v>=hi?'v-hi':v>=md?'v-md':'v-ok';}
-function destroyChart(id){const c=Chart.getChart(id);if(c)c.destroy();}
+function destroyChart(id){ c=Chart.getChart(id);if(c)c.destroy();}
 
 // ══ DATE + NAVIGATION ═════════════════════
 document.getElementById('currentDate').textContent=new Date().toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 document.getElementById('printDate').textContent=new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
-const pages=['dashboard','records','patients','progress','monthly','followup'];
-const titles={dashboard:'Dashboard',records:'Input Pemeriksaan',patients:'Master Data Pasien',progress:'Progress Pasien',monthly:'Laporan Bulanan',followup:'Manajemen Follow-Up'};
+ pages=['dashboard','records','patients','progress','monthly','followup'];
+ titles={dashboard:'Dashboard',records:'Input Pemeriksaan',patients:'Master Data Pasien',progress:'Progress Pasien',monthly:'Laporan Bulanan',followup:'Manajemen Follow-Up'};
 function showPage(p){
   pages.forEach(k=>document.getElementById('page-'+k).style.display=k===p?'block':'none');
   document.querySelectorAll('.nav-item').forEach((n,i)=>n.classList.toggle('active',pages[i]===p));
@@ -354,11 +354,11 @@ function exportPDF(){
 
 // ══ STATS ═════════════════════════════════
 function renderStats(){
-  const allLast=patients.map(p=>lastExam(p.id)).filter(Boolean);
-  const ht=allLast.filter(e=>{const k=getStatus(e.systolic,e.diastolic).key;return['ht1','ht2','ht3','iso'].includes(k);}).length;
-  const pre=allLast.filter(e=>getStatus(e.systolic,e.diastolic).key==='pre').length;
-  const nor=allLast.filter(e=>['opt','nor'].includes(getStatus(e.systolic,e.diastolic).key)).length;
-  const pend=followups.filter(f=>f.status==='pending').length;
+   allLast=patients.map(p=>lastExam(p.id)).filter(Boolean);
+   ht=allLast.filter(e=>{ k=getStatus(e.systolic,e.diastolic).key;return['ht1','ht2','ht3','iso'].includes(k);}).length;
+   pre=allLast.filter(e=>getStatus(e.systolic,e.diastolic).key==='pre').length;
+   nor=allLast.filter(e=>['opt','nor'].includes(getStatus(e.systolic,e.diastolic).key)).length;
+   pend=followups.filter(f=>f.status==='pending').length;
   document.getElementById('statsArea').innerHTML=`
     <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">👥</div><div class="stat-info"><h3>Total Pasien</h3><div class="val">${patients.length}</div><div class="sub">Terdaftar</div></div></div>
     <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🔴</div><div class="stat-info"><h3>Hipertensi</h3><div class="val" style="color:#dc2626">${ht}</div><div class="sub">Perlu penanganan</div></div></div>
@@ -370,16 +370,16 @@ function renderStats(){
 // ══ DASHBOARD ═════════════════════════════
 function renderDashboard(){
   renderStats();
-  const now=new Date(), months=[];
-  for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);}
-  const avgByMonth=months.map(mk=>{const me=exams.filter(e=>monthKey(e.examDate)===mk);return me.length?Math.round(me.reduce((a,e)=>a+e.systolic,0)/me.length):null;});
-  const catCount={opt:0,nor:0,pre:0,ht1:0,ht2:0,ht3:0,iso:0};
+   now=new Date(), months=[];
+  for(let i=5;i>=0;i--){ d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);}
+   avgByMonth=months.map(mk=>{ me=exams.filter(e=>monthKey(e.examDate)===mk);return me.length?Math.round(me.reduce((a,e)=>a+e.systolic,0)/me.length):null;});
+   catCount={opt:0,nor:0,pre:0,ht1:0,ht2:0,ht3:0,iso:0};
   patients.map(p=>lastExam(p.id)).filter(Boolean).forEach(e=>{catCount[getStatus(e.systolic,e.diastolic).key]++;});
-  const recent=[...exams].sort((a,b)=>b.examDate.localeCompare(a.examDate)).slice(0,6);
-  const rows=recent.map(e=>{const st=getStatus(e.systolic,e.diastolic);const pex=pExams(e.patientId);const idx=pex.findIndex(x=>x.id===e.id);const prev=idx>0?pex[idx-1]:null;
+   recent=[...exams].sort((a,b)=>b.examDate.localeCompare(a.examDate)).slice(0,6);
+   rows=recent.map(e=>{ st=getStatus(e.systolic,e.diastolic); pex=pExams(e.patientId); idx=pex.findIndex(x=>x.id===e.id); prev=idx>0?pex[idx-1]:null;
     return `<tr><td><strong>${pName(e.patientId)}</strong></td><td>${fmt(e.examDate)}</td><td class="${vCls(e.systolic,140,120)}">${e.systolic}</td><td class="${vCls(e.diastolic,90,80)}">${e.diastolic}</td><td>${trendArrow(e.systolic,prev?.systolic)}</td><td><span class="badge ${st.cls}">${st.label}</span></td></tr>`;}).join('');
-  const pend=followups.filter(f=>f.status==='pending');
-  const fuHtml=pend.slice(0,3).map(f=>`<div class="fu-card pending"><div><div class="fu-name">${f.patientName}</div><div class="fu-reason">${f.reason}</div><div class="fu-date">📅 ${fmt(f.dueDate)}</div></div><span class="badge b-pending">Menunggu</span></div>`).join('')||'<div class="empty">✅ Tidak ada follow-up pending</div>';
+   pend=followups.filter(f=>f.status==='pending');
+   fuHtml=pend.slice(0,3).map(f=>`<div class="fu-card pending"><div><div class="fu-name">${f.patientName}</div><div class="fu-reason">${f.reason}</div><div class="fu-date">📅 ${fmt(f.dueDate)}</div></div><span class="badge b-pending">Menunggu</span></div>`).join('')||'<div class="empty">✅ Tidak ada follow-up pending</div>';
   document.getElementById('page-dashboard').innerHTML=`
     <div class="grid-2" style="margin-bottom:18px">
       <div class="panel"><div class="panel-head"><h2>📋 Pemeriksaan Terbaru</h2><span style="font-size:.75rem;color:#64748b">${exams.length} total</span></div>
@@ -409,20 +409,20 @@ function renderDashboard(){
     destroyChart('dashTrendChart');
     new Chart(document.getElementById('dashTrendChart'),{type:'line',data:{labels:months.map(m=>monthLabel(m)),datasets:[{label:'Rata-rata Sistolik',data:avgByMonth,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.1)',fill:true,tension:.4,pointRadius:5,pointBackgroundColor:'#2563eb',spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:80,max:200,ticks:{callback:v=>v+' mmHg'}},x:{grid:{display:false}}}}});
     destroyChart('dashPieChart');
-    const catDefs=[{key:'opt',label:'Optimal',color:'#0891b2'},{key:'nor',label:'Normal',color:'#16a34a'},{key:'pre',label:'Normal-Tinggi',color:'#ca8a04'},{key:'ht1',label:'HT Derajat 1',color:'#ea580c'},{key:'ht2',label:'HT Derajat 2',color:'#dc2626'},{key:'ht3',label:'HT Derajat 3',color:'#7c3aed'},{key:'iso',label:'HT Sistolik Terisolasi',color:'#2563eb'}];
-    const active=catDefs.filter(c=>catCount[c.key]>0);
+     catDefs=[{key:'opt',label:'Optimal',color:'#0891b2'},{key:'nor',label:'Normal',color:'#16a34a'},{key:'pre',label:'Normal-Tinggi',color:'#ca8a04'},{key:'ht1',label:'HT Derajat 1',color:'#ea580c'},{key:'ht2',label:'HT Derajat 2',color:'#dc2626'},{key:'ht3',label:'HT Derajat 3',color:'#7c3aed'},{key:'iso',label:'HT Sistolik Terisolasi',color:'#2563eb'}];
+     active=catDefs.filter(c=>catCount[c.key]>0);
     new Chart(document.getElementById('dashPieChart'),{type:'doughnut',data:{labels:active.map(c=>c.label),datasets:[{data:active.map(c=>catCount[c.key]),backgroundColor:active.map(c=>c.color),borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11}}}}}});
   },50);
 }
 
 // ══ INPUT PEMERIKSAAN ═════════════════════
 function renderRecords(){
-  const opts=patients.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
-  const qR=document.getElementById('recSearch')?.value||'';
-  const kR=document.getElementById('recKat')?.value||'';
-  const filteredExams=filterExams(qR,kR).slice(0,30);
-  const rows=filteredExams.map(e=>{
-    const st=getStatus(e.systolic,e.diastolic);const pex=pExams(e.patientId);const idx=pex.findIndex(x=>x.id===e.id);const prev=idx>0?pex[idx-1]:null;
+   opts=patients.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+   qR=document.getElementById('recSearch')?.value||'';
+   kR=document.getElementById('recKat')?.value||'';
+   filteredExams=filterExams(qR,kR).slice(0,30);
+   rows=filteredExams.map(e=>{
+     st=getStatus(e.systolic,e.diastolic); pex=pExams(e.patientId); idx=pex.findIndex(x=>x.id===e.id); prev=idx>0?pex[idx-1]:null;
     return `<tr><td><strong>${pName(e.patientId)}</strong></td><td>${fmt(e.examDate)}</td><td class="${vCls(e.systolic,140,120)}">${e.systolic}</td><td class="${vCls(e.diastolic,90,80)}">${e.diastolic}</td><td>${e.pulse||'-'}</td><td>${trendArrow(e.systolic,prev?.systolic)}</td><td><span class="badge ${st.cls}">${st.label}</span></td><td><button class="btn btn-danger btn-sm" onclick="delExam(${e.id})">🗑</button></td></tr>`;}).join('');
   document.getElementById('page-records').innerHTML=`
     <div class="panel"><div class="panel-head"><h2>➕ Tambah Hasil Pemeriksaan</h2></div><div class="panel-body">
@@ -455,30 +455,30 @@ function renderRecords(){
   fillPatientInfo();
 }
 function fillPatientInfo(){
-  const pid=+document.getElementById('ePid').value;const p=patients.find(x=>x.id===pid);if(!p)return;
+   pid=+document.getElementById('ePid').value; p=patients.find(x=>x.id===pid);if(!p)return;
   document.getElementById('eDob').value=p.dob||'';document.getElementById('eAge').value=calcAge(p.dob)+' tahun';previewCat();
 }
 function previewCat(){
-  const s=+document.getElementById('eSys').value,d=+document.getElementById('eDia').value;if(!s||!d)return;
-  const pid=+document.getElementById('ePid').value;const pex=pExams(pid);const prev=pex.length?pex[pex.length-1]:null;
-  const st=getStatus(s,d);document.getElementById('eCat').value=st.label;
+   s=+document.getElementById('eSys').value,d=+document.getElementById('eDia').value;if(!s||!d)return;
+   pid=+document.getElementById('ePid').value; pex=pExams(pid); prev=pex.length?pex[pex.length-1]:null;
+   st=getStatus(s,d);document.getElementById('eCat').value=st.label;
   document.getElementById('eRekom').innerHTML=getRekomendasi(s,d,prev?.systolic,pex);
 }
 function addExam(){
-  const pid=+document.getElementById('ePid').value,s=+document.getElementById('eSys').value,d=+document.getElementById('eDia').value,dt=document.getElementById('eDate').value,pulse=+document.getElementById('ePulse').value;
+   pid=+document.getElementById('ePid').value,s=+document.getElementById('eSys').value,d=+document.getElementById('eDia').value,dt=document.getElementById('eDate').value,pulse=+document.getElementById('ePulse').value;
   if(!pid||!s||!d||!dt)return alert('Lengkapi data pemeriksaan!');
   exams.push({id:nextEid++,patientId:pid,systolic:s,diastolic:d,pulse,examDate:dt});save();renderRecords();
-  document.getElementById('eSaveMsg').textContent='✅ Tersimpan!';setTimeout(()=>{const el=document.getElementById('eSaveMsg');if(el)el.textContent='';},2500);
+  document.getElementById('eSaveMsg').textContent='✅ Tersimpan!';setTimeout(()=>{ el=document.getElementById('eSaveMsg');if(el)el.textContent='';},2500);
 }
 function delExam(id){if(!confirm('Hapus pemeriksaan ini?'))return;exams=exams.filter(e=>e.id!==id);save();renderRecords();}
 
 // ══ MASTER PASIEN ═════════════════════════
 function renderPatients(){
-  const qP=document.getElementById('patSearch')?.value||'';
-  const kP=document.getElementById('patKat')?.value||'';
-  const filtered=filterPatients(qP,kP);
-  const rows=filtered.map(p=>{const le=lastExam(p.id);const st=le?getStatus(le.systolic,le.diastolic):null;
-    const waBtn=p.phone?`<a href="https://wa.me/${p.phone}" target="_blank" class="btn btn-success btn-sm" title="Buka WA ${p.name}">💬</a>`:'<span style="color:#cbd5e1;font-size:.75rem">—</span>';
+   qP=document.getElementById('patSearch')?.value||'';
+   kP=document.getElementById('patKat')?.value||'';
+   filtered=filterPatients(qP,kP);
+   rows=filtered.map(p=>{ le=lastExam(p.id); st=le?getStatus(le.systolic,le.diastolic):null;
+     waBtn=p.phone?`<a href="https://wa.me/${p.phone}" target="_blank" class="btn btn-success btn-sm" title="Buka WA ${p.name}">💬</a>`:'<span style="color:#cbd5e1;font-size:.75rem">—</span>';
     return `<tr><td><strong>${p.name}</strong></td><td>${p.dob||'-'}</td><td>${calcAge(p.dob)} th</td><td>${p.gender==='L'?'L':'P'}</td><td>${p.phone?`<span style="font-size:.78rem">${p.phone}</span>`:'<span style="color:#cbd5e1">—</span>'}</td><td>${pExams(p.id).length} kali</td><td>${le?`${le.systolic}/${le.diastolic}`:'-'}</td><td>${st?`<span class="badge ${st.cls}">${st.label}</span>`:'-'}</td><td style="display:flex;gap:5px">${waBtn}<button class="btn btn-danger btn-sm" onclick="delPatient(${p.id})">🗑</button></td></tr>`;}).join('');
   document.getElementById('page-patients').innerHTML=`
     <div class="panel"><div class="panel-head"><h2>➕ Daftarkan Pasien Baru</h2></div><div class="panel-body">
@@ -503,7 +503,7 @@ function renderPatients(){
       <div style="overflow-x:auto"><table><thead><tr><th>Nama</th><th>Tgl Lahir</th><th>Usia</th><th>JK</th><th>No. HP</th><th>Jml Periksa</th><th>Terakhir S/D</th><th>Kategori</th><th>Aksi</th></tr></thead>
       <tbody>${rows||'<tr><td colspan="9" class="empty">Tidak ada data yang sesuai</td></tr>'}</tbody></table></div></div>`;
 }
-function autoAge(){const dob=document.getElementById('pDob').value;if(dob)document.getElementById('pAge').value=calcAge(dob)+' tahun';}
+function autoAge(){ dob=document.getElementById('pDob').value;if(dob)document.getElementById('pAge').value=calcAge(dob)+' tahun';}
 function formatPhone(){
   let v=document.getElementById('pPhone').value.replace(/\D/g,'');
   if(v.startsWith('0')) v='62'+v.slice(1);
@@ -512,7 +512,7 @@ function formatPhone(){
   document.getElementById('pPhonePreview').value=v?'wa.me/'+v:'';
 }
 function addPatient(){
-  const name=document.getElementById('pName').value.trim(),dob=document.getElementById('pDob').value,gender=document.getElementById('pGender').value;
+   name=document.getElementById('pName').value.trim(),dob=document.getElementById('pDob').value,gender=document.getElementById('pGender').value;
   let phone=document.getElementById('pPhone').value.replace(/\D/g,'');
   if(phone.startsWith('0')) phone='62'+phone.slice(1);
   else if(phone.startsWith('8')) phone='62'+phone;
@@ -524,8 +524,8 @@ function delPatient(id){if(!confirm('Hapus pasien dan semua pemeriksaannya?'))re
 // ══ PROGRESS ══════════════════════════════
 function renderProgress(){
   if(!patients.length){document.getElementById('page-progress').innerHTML='<div class="empty">Belum ada pasien terdaftar</div>';return;}
-  const firstId=patients[0].id;
-  const opts=patients.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+   firstId=patients[0].id;
+   opts=patients.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
   document.getElementById('page-progress').innerHTML=`
     <div class="panel" style="margin-bottom:18px">
       <div class="panel-head"><h2>📈 Progress & Rekomendasi Pasien</h2></div>
@@ -542,22 +542,22 @@ function renderProgress(){
 }
 
 function renderProgressDetail(pid){
-  const p=patients.find(x=>x.id===pid);
+   p=patients.find(x=>x.id===pid);
   if(!p) return;
   // sync dropdown
-  const sel=document.getElementById('progressPid');
+   sel=document.getElementById('progressPid');
   if(sel) sel.value=pid;
 
-  const pex=pExams(pid);
-  const container=document.getElementById('progressDetail');
+   pex=pExams(pid);
+   container=document.getElementById('progressDetail');
 
   // Summary badges
-  const badge=document.getElementById('progSummaryBadge');
+   badge=document.getElementById('progSummaryBadge');
   if(badge && pex.length){
-    const last=pex[pex.length-1];
-    const st=getStatus(last.systolic,last.diastolic);
-    const first=pex[0]; const diff=last.systolic-first.systolic;
-    const diffHtml=diff===0?'<span class="trend-eq">Tetap</span>':diff<0?`<span class="trend-dn">▼ Turun ${Math.abs(diff)} mmHg dari awal</span>`:`<span class="trend-up">▲ Naik ${diff} mmHg dari awal</span>`;
+     last=pex[pex.length-1];
+     st=getStatus(last.systolic,last.diastolic);
+     first=pex[0];  diff=last.systolic-first.systolic;
+     diffHtml=diff===0?'<span class="trend-eq">Tetap</span>':diff<0?`<span class="trend-dn">▼ Turun ${Math.abs(diff)} mmHg dari awal</span>`:`<span class="trend-up">▲ Naik ${diff} mmHg dari awal</span>`;
     badge.innerHTML=`<span class="badge ${st.cls}">${st.label}</span>${diffHtml}<span style="font-size:.78rem;color:#64748b">${pex.length} pemeriksaan</span>`;
   } else if(badge){ badge.innerHTML=''; }
 
@@ -566,15 +566,15 @@ function renderProgressDetail(pid){
     return;
   }
 
-  const last=pex[pex.length-1];
-  const stLast=getStatus(last.systolic,last.diastolic);
-  const prevS=pex.length>1?pex[pex.length-2].systolic:null;
-  const prevD=pex.length>1?pex[pex.length-2].diastolic:null;
+   last=pex[pex.length-1];
+   stLast=getStatus(last.systolic,last.diastolic);
+   prevS=pex.length>1?pex[pex.length-2].systolic:null;
+   prevD=pex.length>1?pex[pex.length-2].diastolic:null;
 
   // All exam chips
-  const chips=pex.map((e,i,arr)=>{
-    const isLatest=i===arr.length-1;
-    const st=getStatus(e.systolic,e.diastolic);
+   chips=pex.map((e,i,arr)=>{
+     isLatest=i===arr.length-1;
+     st=getStatus(e.systolic,e.diastolic);
     return `<div class="exam-chip ${isLatest?'latest':''}" style="min-width:90px">
       <div class="ec-date">${fmt(e.examDate)}</div>
       <div class="ec-val" style="color:${st.color}">${e.systolic}/${e.diastolic}</div>
@@ -582,9 +582,9 @@ function renderProgressDetail(pid){
     </div>`;}).join('');
 
   // Exam history table (all)
-  const rows=pex.slice().reverse().map((e,i,arr)=>{
-    const prev2=arr[i+1]||null;
-    const st=getStatus(e.systolic,e.diastolic);
+   rows=pex.slice().reverse().map((e,i,arr)=>{
+     prev2=arr[i+1]||null;
+     st=getStatus(e.systolic,e.diastolic);
     return `<tr>
       <td>${fmt(e.examDate)}</td>
       <td class="${vCls(e.systolic,140,120)}">${e.systolic}</td>
@@ -664,22 +664,22 @@ function delExamProgress(eid,pid){
 
 // ══ LAPORAN BULANAN ═══════════════════════
 function renderMonthly(){
-  const allMonths=[...new Set(exams.map(e=>monthKey(e.examDate)))].sort();
-  const selMonth=allMonths[allMonths.length-1]||monthKey(new Date().toISOString());
+   allMonths=[...new Set(exams.map(e=>monthKey(e.examDate)))].sort();
+   selMonth=allMonths[allMonths.length-1]||monthKey(new Date().toISOString());
   renderMonthlyData(selMonth,allMonths);
 }
 function renderMonthlyData(mk,allMonths){
   if(!allMonths)allMonths=[...new Set(exams.map(e=>monthKey(e.examDate)))].sort();
-  const opts=allMonths.map(m=>`<option value="${m}" ${m===mk?'selected':''}>${monthLabel(m)}</option>`).join('');
-  const me=exams.filter(e=>monthKey(e.examDate)===mk);
-  const avgS=me.length?Math.round(me.reduce((a,e)=>a+e.systolic,0)/me.length):0;
-  const avgD=me.length?Math.round(me.reduce((a,e)=>a+e.diastolic,0)/me.length):0;
-  const last6=allMonths.slice(-6);
-  const l6Avgs=last6.map(m=>{const me2=exams.filter(e=>monthKey(e.examDate)===m);return me2.length?Math.round(me2.reduce((a,e)=>a+e.systolic,0)/me2.length):null;});
-  const catCount={opt:0,nor:0,pre:0,ht1:0,ht2:0,ht3:0,iso:0};
+   opts=allMonths.map(m=>`<option value="${m}" ${m===mk?'selected':''}>${monthLabel(m)}</option>`).join('');
+   me=exams.filter(e=>monthKey(e.examDate)===mk);
+   avgS=me.length?Math.round(me.reduce((a,e)=>a+e.systolic,0)/me.length):0;
+   avgD=me.length?Math.round(me.reduce((a,e)=>a+e.diastolic,0)/me.length):0;
+   last6=allMonths.slice(-6);
+   l6Avgs=last6.map(m=>{ me2=exams.filter(e=>monthKey(e.examDate)===m);return me2.length?Math.round(me2.reduce((a,e)=>a+e.systolic,0)/me2.length):null;});
+   catCount={opt:0,nor:0,pre:0,ht1:0,ht2:0,ht3:0,iso:0};
   me.forEach(e=>catCount[getStatus(e.systolic,e.diastolic).key]++);
-  const catDefs=[{key:'opt',label:'Optimal',color:'#0891b2'},{key:'nor',label:'Normal',color:'#16a34a'},{key:'pre',label:'Normal-Tinggi',color:'#ca8a04'},{key:'ht1',label:'HT Derajat 1',color:'#ea580c'},{key:'ht2',label:'HT Derajat 2',color:'#dc2626'},{key:'ht3',label:'HT Derajat 3',color:'#7c3aed'},{key:'iso',label:'HT Sistolik Terisolasi',color:'#2563eb'}];
-  const rows=me.map(e=>{const pex=pExams(e.patientId);const idx=pex.findIndex(x=>x.id===e.id);const prev=idx>0?pex[idx-1]:null;const st=getStatus(e.systolic,e.diastolic);
+   catDefs=[{key:'opt',label:'Optimal',color:'#0891b2'},{key:'nor',label:'Normal',color:'#16a34a'},{key:'pre',label:'Normal-Tinggi',color:'#ca8a04'},{key:'ht1',label:'HT Derajat 1',color:'#ea580c'},{key:'ht2',label:'HT Derajat 2',color:'#dc2626'},{key:'ht3',label:'HT Derajat 3',color:'#7c3aed'},{key:'iso',label:'HT Sistolik Terisolasi',color:'#2563eb'}];
+   rows=me.map(e=>{ pex=pExams(e.patientId); idx=pex.findIndex(x=>x.id===e.id); prev=idx>0?pex[idx-1]:null; st=getStatus(e.systolic,e.diastolic);
     return `<tr><td><strong>${pName(e.patientId)}</strong></td><td>${fmt(e.examDate)}</td><td class="${vCls(e.systolic,140,120)}">${e.systolic}</td><td class="${vCls(e.diastolic,90,80)}">${e.diastolic}</td><td>${trendArrow(e.systolic,prev?.systolic)}</td><td><span class="badge ${st.cls}">${st.label}</span></td></tr>`;}).join('');
   document.getElementById('page-monthly').innerHTML=`
     <div class="month-select"><label style="font-size:.83rem;font-weight:600;color:#475569">Pilih Bulan:</label>
@@ -703,15 +703,15 @@ function renderMonthlyData(mk,allMonths){
     destroyChart('mTrendChart');
     new Chart(document.getElementById('mTrendChart'),{type:'bar',data:{labels:last6.map(m=>monthLabel(m)),datasets:[{label:'Rata-rata Sistolik',data:l6Avgs,backgroundColor:l6Avgs.map(v=>v>=140?'rgba(220,38,38,.7)':v>=130?'rgba(202,138,4,.7)':'rgba(22,163,74,.7)'),borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:80,max:200,ticks:{callback:v=>v+' mmHg'}},x:{grid:{display:false}}}}});
     destroyChart('mCatChart');
-    const active=catDefs.filter(c=>catCount[c.key]>0);
+     active=catDefs.filter(c=>catCount[c.key]>0);
     new Chart(document.getElementById('mCatChart'),{type:'pie',data:{labels:active.map(c=>c.label),datasets:[{data:active.map(c=>catCount[c.key]),backgroundColor:active.map(c=>c.color),borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10}}}}}});
   },50);
 }
 
 // ══ FOLLOW-UP ═════════════════════════════
 function renderFollowups(){
-  const opts=patients.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
-  const list=followups.map(f=>`<div class="fu-card ${f.status}"><div><div class="fu-name">${f.patientName}</div><div class="fu-reason">${f.reason}</div><div class="fu-date">📅 Jadwal: ${fmt(f.dueDate)}</div></div>
+   opts=patients.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+   list=followups.map(f=>`<div class="fu-card ${f.status}"><div><div class="fu-name">${f.patientName}</div><div class="fu-reason">${f.reason}</div><div class="fu-date">📅 Jadwal: ${fmt(f.dueDate)}</div></div>
     <div class="fu-actions"><span class="badge ${f.status==='done'?'b-done':'b-pending'}">${f.status==='done'?'Selesai':'Menunggu'}</span>
     ${f.status==='pending'?`<button class="btn btn-success btn-sm" onclick="doneFollowup(${f.id})">✅</button>`:''}
     <button class="btn btn-danger btn-sm" onclick="delFollowup(${f.id})">🗑</button></div></div>`).join('');
@@ -728,39 +728,39 @@ function renderFollowups(){
       <div class="panel-body">${followups.length?list:'<div class="empty">🎉 Tidak ada follow-up</div>'}</div></div>`;
 }
 function addFollowup(){
-  const pid=+document.getElementById('fPid').value,r=document.getElementById('fReason').value.trim(),d=document.getElementById('fDate').value;
+   pid=+document.getElementById('fPid').value,r=document.getElementById('fReason').value.trim(),d=document.getElementById('fDate').value;
   if(!pid||!r||!d)return alert('Lengkapi semua data!');
-  const p=patients.find(x=>x.id===pid);
+   p=patients.find(x=>x.id===pid);
   followups.push({id:nextFid++,patientId:pid,patientName:p?p.name:'?',reason:r,dueDate:d,status:'pending'});
   save();renderFollowups();renderStats();
 }
-function doneFollowup(id){const f=followups.find(x=>x.id===id);if(f)f.status='done';save();renderFollowups();}
+function doneFollowup(id){ f=followups.find(x=>x.id===id);if(f)f.status='done';save();renderFollowups();}
 function delFollowup(id){followups=followups.filter(f=>f.id!==id);save();renderFollowups();renderStats();}
 
 // ══ KIRIM WA ══════════════════════════════
 function kirimWA(pid){
-  const p=patients.find(x=>x.id===pid);
+   p=patients.find(x=>x.id===pid);
   if(!p) return;
   if(!p.phone){
     alert('Pasien ini belum memiliki nomor HP/WhatsApp.\nSilakan update nomor di halaman Data Pasien terlebih dahulu.');
     return;
   }
-  const pex=pExams(pid);
+   pex=pExams(pid);
   if(!pex.length){ alert('Belum ada data pemeriksaan untuk pasien ini.'); return; }
-  const last=pex[pex.length-1];
-  const st=getStatus(last.systolic,last.diastolic);
-  const prev=pex.length>1?pex[pex.length-2]:null;
-  const diff=prev?(last.systolic-prev.systolic):null;
-  const trendNote=diff===null?'':(diff<0?`Turun ${Math.abs(diff)} mmHg dari pemeriksaan sebelumnya. `:diff>0?`Naik ${diff} mmHg dari pemeriksaan sebelumnya. `:'Tekanan darah stabil dibanding pemeriksaan sebelumnya. ');
+   last=pex[pex.length-1];
+   st=getStatus(last.systolic,last.diastolic);
+   prev=pex.length>1?pex[pex.length-2]:null;
+   diff=prev?(last.systolic-prev.systolic):null;
+   trendNote=diff===null?'':(diff<0?`Turun ${Math.abs(diff)} mmHg dari pemeriksaan sebelumnya. `:diff>0?`Naik ${diff} mmHg dari pemeriksaan sebelumnya. `:'Tekanan darah stabil dibanding pemeriksaan sebelumnya. ');
 
   // Riwayat 5 terakhir
-  const riwayat=pex.slice(-5).map(e=>`  • ${e.examDate}: ${e.systolic}/${e.diastolic} mmHg (${getStatus(e.systolic,e.diastolic).label})`).join('\n');
+   riwayat=pex.slice(-5).map(e=>`  • ${e.examDate}: ${e.systolic}/${e.diastolic} mmHg (${getStatus(e.systolic,e.diastolic).label})`).join('\n');
 
   // Rekomendasi jadwal kontrol
-  const jadwalMap={opt:'12 bulan',nor:'6–12 bulan',pre:'3–6 bulan',ht1:'1–3 bulan',ht2:'2–4 minggu',ht3:'SEGERA ke IGD/RS',iso:'1–2 bulan'};
-  const jadwal=jadwalMap[st.key]||'-';
+   jadwalMap={opt:'12 bulan',nor:'6–12 bulan',pre:'3–6 bulan',ht1:'1–3 bulan',ht2:'2–4 minggu',ht3:'SEGERA ke IGD/RS',iso:'1–2 bulan'};
+   jadwal=jadwalMap[st.key]||'-';
 
-  const pesan=
+   pesan=
 `🩺 *Laporan Tekanan Darah*
 ━━━━━━━━━━━━━━━━━━━━
 👤 *Pasien:* ${p.name}
@@ -785,14 +785,14 @@ ${getRekomTeks(last.systolic,last.diastolic,prev?.systolic)}
 _Berdasarkan KEPMENKES RI No. HK.01.07/MENKES/4634/2021_
 _Dikirim via BP Monitor_`;
 
-  const url=`https://wa.me/${p.phone}?text=${encodeURIComponent(pesan)}`;
+   url=`https://wa.me/${p.phone}?text=${encodeURIComponent(pesan)}`;
   window.open(url,'_blank');
 }
 
 function getRekomTeks(s,d,prevS){
-  const st=getStatus(s,d);
-  const trend=prevS!=null?(s<prevS?'Tekanan darah menunjukkan perbaikan. ':s>prevS?'Perhatian: tekanan darah meningkat. ':''):'';
-  const map={
+   st=getStatus(s,d);
+   trend=prevS!=null?(s<prevS?'Tekanan darah menunjukkan perbaikan. ':s>prevS?'Perhatian: tekanan darah meningkat. ':''):'';
+   map={
     opt:`${trend}Tekanan darah optimal. Pertahankan gaya hidup sehat, olahraga teratur, diet rendah garam.`,
     nor:`${trend}Tekanan darah normal. Lanjutkan pola hidup sehat, batasi garam <5g/hari.`,
     pre:`${trend}Tekanan darah di batas normal-tinggi. Segera modifikasi gaya hidup: kurangi garam, olahraga rutin, turunkan berat badan jika perlu.`,
@@ -947,7 +947,7 @@ const katOpts = `<option value="">Semua Kategori</option>
 // ⚙️ KONFIGURASI — GANTI URL DI BAWAH INI
 // Setelah deploy Apps Script, paste URL-nya di sini
 // ══════════════════════════════════════════
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_we0w-Gpyr43hOt3TqHJuaN9ec7wcpiOJ4AvIhfbJlsm1WpsktuKaw8yFNzXhkXml/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwEgEuZFusctV7hmG0yNobQzJ2JlUR2lSy5XYmkpfro4VvT1nwt8ChqR8_2f9ckAEOl/exec';
 
 // ── Sync status UI ────────────────────────
 function setSyncStatus(state, msg){
