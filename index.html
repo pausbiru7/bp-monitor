@@ -98,7 +98,8 @@ tr:hover td{background:#fafbff;}
 .fu-name{font-weight:700;font-size:.87rem;}.fu-reason{font-size:.75rem;color:#64748b;margin-top:2px;}
 .fu-date{font-size:.72rem;color:#94a3b8;margin-top:3px;}.fu-actions{display:flex;gap:7px;flex-shrink:0;}
 .empty{text-align:center;padding:36px;color:#94a3b8;font-size:.85rem;}
-  /* ── LOGIN ── */
+
+/* ── LOGIN ── */
 #loginOverlay{position:fixed;inset:0;background:linear-gradient(135deg,#1e3a5f,#2563eb);display:flex;align-items:center;justify-content:center;z-index:9999;}
 .login-box{background:#fff;border-radius:20px;padding:40px 36px;width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);}
 .login-logo{font-size:2.5rem;margin-bottom:8px;}
@@ -185,6 +186,7 @@ tr:hover td{background:#fafbff;}
     <div class="login-hint">PIN default: <strong>123456</strong></div>
   </div>
 </div>
+
 <!-- CHANGE PIN MODAL -->
 <div class="modal-overlay" id="changePinModal" style="display:none">
   <div class="modal-box">
@@ -208,6 +210,7 @@ tr:hover td{background:#fafbff;}
     </div>
   </div>
 </div>
+
 <div class="sidebar">
   <div class="sidebar-logo"><h2>🩺 BP Monitor</h2><span>KEPMENKES 4634/2021</span></div>
   <div class="sidebar-nav">
@@ -282,6 +285,7 @@ let nextEid=exams.length?Math.max(...exams.map(e=>e.id))+1:201;
 let nextFid=followups.length?Math.max(...followups.map(f=>f.id))+1:1;
 let nextPid=patients.length?Math.max(...patients.map(p=>p.id))+1:10;
 function save(){localStorage.setItem('bpm_patients',JSON.stringify(patients));localStorage.setItem('bpm_exams',JSON.stringify(exams));localStorage.setItem('bpm_followups',JSON.stringify(followups));}
+
 // ══ KEPMENKES 4634/2021 CLASSIFICATION ════
 function getStatus(s,d){
   s=+s;d=+d;
@@ -293,6 +297,7 @@ function getStatus(s,d){
   if(s>=120||d>=80)  return {key:'nor',label:'Normal',cls:'b-nor',color:'#16a34a'};
   return                    {key:'opt',label:'Optimal',cls:'b-opt',color:'#0891b2'};
 }
+
 // ══ REKOMENDASI OTOMATIS ══════════════════
 function getRekomendasi(s,d,prevS,pex){
   const st=getStatus(s,d);
@@ -310,7 +315,8 @@ function getRekomendasi(s,d,prevS,pex){
   const r=rekom[st.key];
   return `<div class="rekom-box ${st.key}"><div class="rekom-title">${r.icon} ${r.judul}</div><div>${r.isi}</div><div style="margin-top:6px;font-weight:600;font-size:.78rem">📅 ${r.jadwal}</div></div>`;
 }
-  // ══ HELPERS ═══════════════════════════════
+
+// ══ HELPERS ═══════════════════════════════
 function calcAge(dob){if(!dob)return '-';const b=new Date(dob),t=new Date();let a=t.getFullYear()-b.getFullYear();if(t.getMonth()<b.getMonth()||(t.getMonth()===b.getMonth()&&t.getDate()<b.getDate()))a--;return a;}
 function fmt(d){if(!d)return '-';return new Date(d).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});}
 function monthKey(d){return d?d.slice(0,7):null;}
@@ -321,6 +327,7 @@ function pExams(pid){return exams.filter(e=>e.patientId===pid).sort((a,b)=>a.exa
 function lastExam(pid){const ex=pExams(pid);return ex.length?ex[ex.length-1]:null;}
 function vCls(v,hi,md){return v>=hi?'v-hi':v>=md?'v-md':'v-ok';}
 function destroyChart(id){const c=Chart.getChart(id);if(c)c.destroy();}
+
 // ══ DATE + NAVIGATION ═════════════════════
 document.getElementById('currentDate').textContent=new Date().toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 document.getElementById('printDate').textContent=new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
@@ -338,11 +345,13 @@ function showPage(p){
   if(p==='monthly')renderMonthly();
   if(p==='followup')renderFollowups();
 }
+
 // ══ PDF EXPORT ════════════════════════════
 function exportPDF(){
   document.getElementById('printDate').textContent=new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
   window.print();
 }
+
 // ══ STATS ═════════════════════════════════
 function renderStats(){
   const allLast=patients.map(p=>lastExam(p.id)).filter(Boolean);
@@ -357,6 +366,7 @@ function renderStats(){
     <div class="stat-card"><div class="stat-icon" style="background:#dcfce7">🟢</div><div class="stat-info"><h3>Optimal/Normal</h3><div class="val" style="color:#16a34a">${nor}</div><div class="sub">Kondisi baik</div></div></div>
     <div class="stat-card"><div class="stat-icon" style="background:#fef3c7">🔔</div><div class="stat-info"><h3>Follow-Up</h3><div class="val" style="color:#d97706">${pend}</div><div class="sub">Menunggu</div></div></div>`;
 }
+
 // ══ DASHBOARD ═════════════════════════════
 function renderDashboard(){
   renderStats();
@@ -404,7 +414,8 @@ function renderDashboard(){
     new Chart(document.getElementById('dashPieChart'),{type:'doughnut',data:{labels:active.map(c=>c.label),datasets:[{data:active.map(c=>catCount[c.key]),backgroundColor:active.map(c=>c.color),borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11}}}}}});
   },50);
 }
-  // ══ INPUT PEMERIKSAAN ═════════════════════
+
+// ══ INPUT PEMERIKSAAN ═════════════════════
 function renderRecords(){
   const opts=patients.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
   const qR=document.getElementById('recSearch')?.value||'';
@@ -460,6 +471,7 @@ function addExam(){
   document.getElementById('eSaveMsg').textContent='✅ Tersimpan!';setTimeout(()=>{const el=document.getElementById('eSaveMsg');if(el)el.textContent='';},2500);
 }
 function delExam(id){if(!confirm('Hapus pemeriksaan ini?'))return;exams=exams.filter(e=>e.id!==id);save();renderRecords();}
+
 // ══ MASTER PASIEN ═════════════════════════
 function renderPatients(){
   const qP=document.getElementById('patSearch')?.value||'';
@@ -508,6 +520,7 @@ function addPatient(){
   patients.push({id:nextPid++,name,dob,gender,phone});save();renderPatients();
 }
 function delPatient(id){if(!confirm('Hapus pasien dan semua pemeriksaannya?'))return;patients=patients.filter(p=>p.id!==id);exams=exams.filter(e=>e.patientId!==id);save();renderPatients();}
+
 // ══ PROGRESS ══════════════════════════════
 function renderProgress(){
   if(!patients.length){document.getElementById('page-progress').innerHTML='<div class="empty">Belum ada pasien terdaftar</div>';return;}
@@ -527,14 +540,17 @@ function renderProgress(){
     <div id="progressDetail"></div>`;
   renderProgressDetail(firstId);
 }
+
 function renderProgressDetail(pid){
   const p=patients.find(x=>x.id===pid);
   if(!p) return;
   // sync dropdown
   const sel=document.getElementById('progressPid');
   if(sel) sel.value=pid;
+
   const pex=pExams(pid);
   const container=document.getElementById('progressDetail');
+
   // Summary badges
   const badge=document.getElementById('progSummaryBadge');
   if(badge && pex.length){
@@ -544,14 +560,17 @@ function renderProgressDetail(pid){
     const diffHtml=diff===0?'<span class="trend-eq">Tetap</span>':diff<0?`<span class="trend-dn">▼ Turun ${Math.abs(diff)} mmHg dari awal</span>`:`<span class="trend-up">▲ Naik ${diff} mmHg dari awal</span>`;
     badge.innerHTML=`<span class="badge ${st.cls}">${st.label}</span>${diffHtml}<span style="font-size:.78rem;color:#64748b">${pex.length} pemeriksaan</span>`;
   } else if(badge){ badge.innerHTML=''; }
+
   if(!pex.length){
     container.innerHTML=`<div class="panel"><div class="panel-body"><div class="empty">📋 ${p.name} belum memiliki data pemeriksaan</div></div></div>`;
     return;
   }
+
   const last=pex[pex.length-1];
   const stLast=getStatus(last.systolic,last.diastolic);
   const prevS=pex.length>1?pex[pex.length-2].systolic:null;
   const prevD=pex.length>1?pex[pex.length-2].diastolic:null;
+
   // All exam chips
   const chips=pex.map((e,i,arr)=>{
     const isLatest=i===arr.length-1;
@@ -561,6 +580,7 @@ function renderProgressDetail(pid){
       <div class="ec-val" style="color:${st.color}">${e.systolic}/${e.diastolic}</div>
       <span class="badge ${st.cls}" style="font-size:.6rem;padding:2px 7px">${st.label}</span>
     </div>`;}).join('');
+
   // Exam history table (all)
   const rows=pex.slice().reverse().map((e,i,arr)=>{
     const prev2=arr[i+1]||null;
@@ -575,6 +595,7 @@ function renderProgressDetail(pid){
       <td><span class="badge ${st.cls}">${st.label}</span></td>
       <td><button class="btn btn-danger btn-sm" onclick="delExamProgress(${e.id},${pid})">🗑</button></td>
     </tr>`;}).join('');
+
   container.innerHTML=`
     <!-- INFO PASIEN -->
     <div class="grid-3" style="margin-bottom:18px">
@@ -582,16 +603,19 @@ function renderProgressDetail(pid){
       <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🩺</div><div class="stat-info"><h3>Terakhir (S/D)</h3><div class="val ${vCls(last.systolic,140,120)}" style="font-size:1.3rem">${last.systolic}/${last.diastolic}</div><div class="sub">${fmt(last.examDate)}</div></div></div>
       <div class="stat-card"><div class="stat-icon" style="background:${stLast.color}22">📊</div><div class="stat-info"><h3>Kategori Saat Ini</h3><div class="val" style="font-size:.95rem;color:${stLast.color}">${stLast.label}</div><div class="sub">${pex.length} total pemeriksaan</div></div></div>
     </div>
+
     <!-- RIWAYAT CHIPS -->
     <div class="panel" style="margin-bottom:18px">
       <div class="panel-head"><h2>📅 Semua Riwayat Pemeriksaan</h2><span style="font-size:.75rem;color:#64748b">${pex.length} data · terbaru di kanan</span></div>
       <div class="panel-body"><div class="pc-exams" style="gap:8px">${chips}</div></div>
     </div>
+
     <!-- CHART -->
     <div class="panel" style="margin-bottom:18px">
       <div class="panel-head"><h2>📈 Grafik Tren Tekanan Darah</h2></div>
       <div class="panel-body"><div class="chart-box" style="height:280px"><canvas id="progDetailChart"></canvas></div></div>
     </div>
+
     <!-- TABEL DETAIL -->
     <div class="panel" style="margin-bottom:18px">
       <div class="panel-head"><h2>📋 Tabel Riwayat Lengkap</h2>
@@ -603,11 +627,13 @@ function renderProgressDetail(pid){
       <div style="overflow-x:auto"><table><thead><tr><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Nadi</th><th>Trend S</th><th>Trend D</th><th>Kategori</th><th>Aksi</th></tr></thead>
       <tbody>${rows}</tbody></table></div>
     </div>
+
     <!-- REKOMENDASI -->
     <div class="panel">
       <div class="panel-head"><h2>💡 Rekomendasi Klinis (Pemeriksaan Terakhir)</h2></div>
       <div class="panel-body">${getRekomendasi(last.systolic,last.diastolic,prevS,pex)}</div>
     </div>`;
+
   setTimeout(()=>{
     destroyChart('progDetailChart');
     if(pex.length<1) return;
@@ -635,6 +661,7 @@ function delExamProgress(eid,pid){
   if(!confirm('Hapus data pemeriksaan ini?'))return;
   exams=exams.filter(e=>e.id!==eid);save();renderProgressDetail(pid);
 }
+
 // ══ LAPORAN BULANAN ═══════════════════════
 function renderMonthly(){
   const allMonths=[...new Set(exams.map(e=>monthKey(e.examDate)))].sort();
@@ -680,6 +707,7 @@ function renderMonthlyData(mk,allMonths){
     new Chart(document.getElementById('mCatChart'),{type:'pie',data:{labels:active.map(c=>c.label),datasets:[{data:active.map(c=>catCount[c.key]),backgroundColor:active.map(c=>c.color),borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10}}}}}});
   },50);
 }
+
 // ══ FOLLOW-UP ═════════════════════════════
 function renderFollowups(){
   const opts=patients.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
@@ -708,6 +736,7 @@ function addFollowup(){
 }
 function doneFollowup(id){const f=followups.find(x=>x.id===id);if(f)f.status='done';save();renderFollowups();}
 function delFollowup(id){followups=followups.filter(f=>f.id!==id);save();renderFollowups();renderStats();}
+
 // ══ KIRIM WA ══════════════════════════════
 function kirimWA(pid){
   const p=patients.find(x=>x.id===pid);
@@ -723,34 +752,43 @@ function kirimWA(pid){
   const prev=pex.length>1?pex[pex.length-2]:null;
   const diff=prev?(last.systolic-prev.systolic):null;
   const trendNote=diff===null?'':(diff<0?`Turun ${Math.abs(diff)} mmHg dari pemeriksaan sebelumnya. `:diff>0?`Naik ${diff} mmHg dari pemeriksaan sebelumnya. `:'Tekanan darah stabil dibanding pemeriksaan sebelumnya. ');
+
   // Riwayat 5 terakhir
   const riwayat=pex.slice(-5).map(e=>`  • ${e.examDate}: ${e.systolic}/${e.diastolic} mmHg (${getStatus(e.systolic,e.diastolic).label})`).join('\n');
+
   // Rekomendasi jadwal kontrol
   const jadwalMap={opt:'12 bulan',nor:'6–12 bulan',pre:'3–6 bulan',ht1:'1–3 bulan',ht2:'2–4 minggu',ht3:'SEGERA ke IGD/RS',iso:'1–2 bulan'};
   const jadwal=jadwalMap[st.key]||'-';
+
   const pesan=
 `🩺 *Laporan Tekanan Darah*
 ━━━━━━━━━━━━━━━━━━━━
 👤 *Pasien:* ${p.name}
 🎂 *Usia:* ${calcAge(p.dob)} tahun
 📅 *Tgl Periksa:* ${fmt(last.examDate)}
+
 *Hasil Pemeriksaan Terakhir:*
 • Sistolik  : *${last.systolic} mmHg*
 • Diastolik : *${last.diastolic} mmHg*
 • Nadi      : ${last.pulse||'-'} bpm
 • Kategori  : *${st.label}*
+
 ${trendNote}
 *Riwayat 5 Pemeriksaan Terakhir:*
 ${riwayat}
+
 *Rekomendasi:*
 ${getRekomTeks(last.systolic,last.diastolic,prev?.systolic)}
+
 📅 *Jadwal Kontrol Berikutnya:* ${jadwal}
 ━━━━━━━━━━━━━━━━━━━━
 _Berdasarkan KEPMENKES RI No. HK.01.07/MENKES/4634/2021_
 _Dikirim via BP Monitor_`;
+
   const url=`https://wa.me/${p.phone}?text=${encodeURIComponent(pesan)}`;
   window.open(url,'_blank');
 }
+
 function getRekomTeks(s,d,prevS){
   const st=getStatus(s,d);
   const trend=prevS!=null?(s<prevS?'Tekanan darah menunjukkan perbaikan. ':s>prevS?'Perhatian: tekanan darah meningkat. ':''):'';
@@ -765,12 +803,15 @@ function getRekomTeks(s,d,prevS){
   };
   return map[st.key]||'-';
 }
+
 // ══════════════════════════════════════════
 // 🔐 LOGIN PIN
 // ══════════════════════════════════════════
 const DEFAULT_PIN = '123456';
 let pinInput = '';
+
 function getPin(){ return localStorage.getItem('bpm_pin') || DEFAULT_PIN; }
+
 function pinPress(digit){
   if(pinInput.length >= 6) return;
   pinInput += digit;
@@ -818,6 +859,7 @@ function doChangePin(){
   document.getElementById('changePinModal').style.display='none';
   alert('✅ PIN berhasil diubah!');
 }
+
 // ══════════════════════════════════════════
 // 🔔 REMINDER BANNER (H-7)
 // ══════════════════════════════════════════
@@ -838,9 +880,11 @@ async function loadAndShowReminders(){
       return {...f, daysLeft:diff, phone:p.phone||''};
     })
     .sort((a,b)=>a.daysLeft-b.daysLeft);
+
   const container = document.getElementById('reminderBanner');
   if(!container) return;
   if(!reminders.length){ container.innerHTML=''; return; }
+
   const items = reminders.map(r=>{
     const daysCls = r.daysLeft===0?'days-today':r.daysLeft<=3?'days-soon':'days-ok';
     const daysText = r.daysLeft===0?'Hari ini!':r.daysLeft===1?'Besok!':'H-'+r.daysLeft;
@@ -858,6 +902,7 @@ async function loadAndShowReminders(){
       </div>
     </div>`;
   }).join('');
+
   container.innerHTML=`
     <div class="reminder-banner">
       <div class="reminder-banner-head">
@@ -867,6 +912,7 @@ async function loadAndShowReminders(){
       ${items}
     </div>`;
 }
+
 // ══════════════════════════════════════════
 // 🔍 SEARCH & FILTER HELPERS
 // ══════════════════════════════════════════
@@ -896,12 +942,14 @@ const katOpts = `<option value="">Semua Kategori</option>
   <option value="ht2">Hipertensi Derajat 2</option>
   <option value="ht3">Hipertensi Derajat 3</option>
   <option value="iso">HT Sistolik Terisolasi</option>`;
+
 // ══════════════════════════════════════════
 // ⚙️ KONFIGURASI — GANTI URL DI BAWAH INI
 // Setelah deploy Apps Script, paste URL-nya di sini
 // ══════════════════════════════════════════
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzu5FfqYDlMbVzqc2FJ2aM_ij2BzDjo6nsvhZYgkmqI4x6jo_mDFu6D9r_innrwANo/exec';
-  // ── Sync status UI ────────────────────────
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_we0w-Gpyr43hOt3TqHJuaN9ec7wcpiOJ4AvIhfbJlsm1WpsktuKaw8yFNzXhkXml/exec';
+
+// ── Sync status UI ────────────────────────
 function setSyncStatus(state, msg){
   const badge=document.getElementById('syncBadge');
   const icon =document.getElementById('syncIcon');
@@ -913,20 +961,24 @@ function setSyncStatus(state, msg){
   if(state==='err')    { badge.classList.add('sync-err');     icon.textContent='❌'; text.textContent=msg||'Gagal sync'; }
   if(state==='local')  { badge.classList.add('sync-local');   icon.textContent='☁️'; text.textContent=msg||'Lokal'; }
 }
+
 // ── Cek apakah URL sudah dikonfigurasi ────
 function isConfigured(){ return SCRIPT_URL && SCRIPT_URL !== 'PASTE_WEB_APP_URL_DISINI'; }
+
 // ── Simpan ke localStorage (selalu) ───────
 function saveLocal(){
   localStorage.setItem('bpm_patients',  JSON.stringify(patients));
   localStorage.setItem('bpm_exams',     JSON.stringify(exams));
   localStorage.setItem('bpm_followups', JSON.stringify(followups));
 }
+
 // ── Override fungsi save() ─────────────────
 function save(){
   saveLocal();
   if(isConfigured()) syncToSheets();
   else setSyncStatus('local','Lokal saja');
 }
+
 // ── Kirim data ke Google Sheets ───────────
 function syncToSheets(){
   if(!isConfigured()) return;
@@ -952,6 +1004,7 @@ function syncToSheets(){
     setSyncStatus('err','Gagal — cek URL');
   });
 }
+
 // ── Ambil data dari Google Sheets saat load ─
 async function loadFromSheets(){
   if(!isConfigured()){
@@ -983,27 +1036,14 @@ async function loadFromSheets(){
   }
 }
 
-})();
-  <!-- ✅ TARUH MODAL DI SINI -->
-<div class="modal-overlay" id="editPatientModal" style="display:none">
-  <div class="modal-box" style="width:400px;text-align:left">
-    ...seluruh isi modal kamu...
-  </div>
-</div>
-
-<script>
-// ... semua JavaScript kamu ...
-
-// ── Fungsi Edit Modal ──────────────────
-function openEditModal(id){ ... }
-function saveEdit(){ ... }
-function deletePatient(){ ... }
-function closeEditModal(){
-  document.getElementById('editPatientModal').style.display='none';
-}
-
 // ── Manual sync tombol 🔄 ──────────────────
-function manualSync(){ ... }
+function manualSync(){
+  if(!isConfigured()){
+    alert('⚙️ URL Apps Script belum dikonfigurasi.\n\nBuka file index.html, cari:\n  const SCRIPT_URL = \'PASTE_WEB_APP_URL_DISINI\'\n\nGanti dengan URL Web App dari Google Apps Script.');
+    return;
+  }
+  syncToSheets();
+}
 
 // ══ INIT ══════════════════════════════════
 (async ()=>{
