@@ -251,39 +251,12 @@ tr:hover td{background:#fafbff;}
 </div>
 <script>
 // ══ DATA ══════════════════════════════════
-let patients = JSON.parse(localStorage.getItem('bpm_patients')||'null') || [
-  {id:1,name:"Ahmad Fauzi",dob:"1974-03-12",gender:"L",phone:"6281234567001"},
-  {id:2,name:"Siti Aminah",dob:"1981-07-05",gender:"P",phone:"6281234567002"},
-  {id:3,name:"Budi Santoso",dob:"1966-11-20",gender:"L",phone:"6281234567003"},
-  {id:4,name:"Rina Wati",dob:"1988-02-28",gender:"P",phone:"6281234567004"},
-  {id:5,name:"Dedi Kurnia",dob:"1971-09-15",gender:"L",phone:"6281234567005"},
-];
-let exams = JSON.parse(localStorage.getItem('bpm_exams')||'null') || [
-  {id:101,patientId:1,systolic:160,diastolic:100,pulse:88,examDate:"2026-01-10"},
-  {id:102,patientId:1,systolic:152,diastolic:96,pulse:84,examDate:"2026-02-08"},
-  {id:103,patientId:1,systolic:145,diastolic:92,pulse:80,examDate:"2026-03-06"},
-  {id:104,patientId:1,systolic:140,diastolic:90,pulse:78,examDate:"2026-04-03"},
-  {id:105,patientId:1,systolic:138,diastolic:88,pulse:76,examDate:"2026-05-01"},
-  {id:106,patientId:2,systolic:128,diastolic:84,pulse:72,examDate:"2026-01-11"},
-  {id:107,patientId:2,systolic:125,diastolic:82,pulse:70,examDate:"2026-03-11"},
-  {id:108,patientId:2,systolic:122,diastolic:80,pulse:68,examDate:"2026-05-02"},
-  {id:109,patientId:3,systolic:172,diastolic:108,pulse:92,examDate:"2026-01-12"},
-  {id:110,patientId:3,systolic:165,diastolic:104,pulse:90,examDate:"2026-02-12"},
-  {id:111,patientId:3,systolic:160,diastolic:100,pulse:88,examDate:"2026-03-12"},
-  {id:112,patientId:3,systolic:155,diastolic:98,pulse:86,examDate:"2026-05-02"},
-  {id:113,patientId:4,systolic:118,diastolic:76,pulse:66,examDate:"2026-02-15"},
-  {id:114,patientId:4,systolic:116,diastolic:74,pulse:64,examDate:"2026-05-03"},
-  {id:115,patientId:5,systolic:138,diastolic:88,pulse:78,examDate:"2026-02-20"},
-  {id:116,patientId:5,systolic:135,diastolic:86,pulse:76,examDate:"2026-04-20"},
-  {id:117,patientId:5,systolic:132,diastolic:85,pulse:74,examDate:"2026-05-03"},
-];
-let followups = JSON.parse(localStorage.getItem('bpm_followups')||'null') || [
-  {id:1,patientId:1,patientName:"Ahmad Fauzi",reason:"Evaluasi tekanan darah tinggi",dueDate:"2026-05-15",status:"pending"},
-  {id:2,patientId:3,patientName:"Budi Santoso",reason:"Kontrol obat antihipertensi",dueDate:"2026-05-10",status:"pending"},
-];
-let nextEid=exams.length?Math.max(...exams.map(e=>e.id))+1:201;
+let patients = JSON.parse(localStorage.getItem('bpm_patients')||'null') || [];
+let exams = JSON.parse(localStorage.getItem('bpm_exams')||'null') || [];
+let followups = JSON.parse(localStorage.getItem('bpm_followups')||'null') || [];
+let nextEid=exams.length?Math.max(...exams.map(e=>e.id))+1:1;
 let nextFid=followups.length?Math.max(...followups.map(f=>f.id))+1:1;
-let nextPid=patients.length?Math.max(...patients.map(p=>p.id))+1:10;
+let nextPid=patients.length?Math.max(...patients.map(p=>p.id))+1:1;
 function save(){localStorage.setItem('bpm_patients',JSON.stringify(patients));localStorage.setItem('bpm_exams',JSON.stringify(exams));localStorage.setItem('bpm_followups',JSON.stringify(followups));}
 
 // ══ KEPMENKES 4634/2021 CLASSIFICATION ════
