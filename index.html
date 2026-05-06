@@ -989,12 +989,12 @@ async function loadFromSheets(){
     const res  = await fetch(`${SCRIPT_URL}?action=all`);
     const json = await res.json();
     if(json.success){
-      if(json.patients  && json.patients.length)  patients  = json.patients.map(p=>({...p, id:+p.id}));
+if(json.patients  && json.patients.length) patients = json.patients.map((p, i)=>({...p, id: i + 1}));
       if(json.exams     && json.exams.length)     exams     = json.exams.map(e=>({...e, id:+e.id, patientId:+e.patientId, systolic:+e.systolic, diastolic:+e.diastolic, pulse:+e.pulse}));
       if(json.followups && json.followups.length) followups = json.followups.map(f=>({...f, id:+f.id, patientId:+f.patientId}));
       // Update ID counters
       if(patients.length)  nextPid = Math.max(...patients.map(p=>+p.id)) + 1;
-      if(exams.length)     nextEid = Math.max(...exams.map(e=>+e.id)) + 1;
+      if(patients.length) nextPid = patients.length + 1;
       if(followups.length) nextFid = Math.max(...followups.map(f=>+f.id)) + 1;
       saveLocal();
       setSyncStatus('ok','Google Sheets ✓');
