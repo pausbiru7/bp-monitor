@@ -291,7 +291,7 @@ function getRekomendasi(s,d,prevS,pex){
 
 // ══ HELPERS ═══════════════════════════════
 function calcAge(dob){if(!dob)return '-'; b=new Date(dob),t=new Date();let a=t.getFullYear()-b.getFullYear();if(t.getMonth()<b.getMonth()||(t.getMonth()===b.getMonth()&&t.getDate()<b.getDate()))a--;return a;}
-function fmt(d){if(!d)return '-';return new Date(d).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});}
+function fmt(d){if(!d)return '-';const p=d.split('-');return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});}
 function monthKey(d){return d?d.slice(0,7):null;}
 function monthLabel(k){if(!k)return '';[y,m]=k.split('-');return new Date(y,m-1).toLocaleDateString('id-ID',{month:'short',year:'numeric'});}
 function trendArrow(c,p){if(p==null)return '<span class="trend-eq">—</span>'; d=c-p;if(d>0)return `<span class="trend-up">▲${d}</span>`;if(d<0)return `<span class="trend-dn">▼${Math.abs(d)}</span>`;return '<span class="trend-eq">=</span>';}
