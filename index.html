@@ -252,7 +252,7 @@ tr:hover td{background:#fafbff;}
 <script>
 // ══ DATA ══════════════════════════════════
 let patients = JSON.parse(localStorage.getItem('bpm_patients')||'null') || [];
-let exams = JSON.parse(localStorage.getItem('bpm_exams')||'null') || [];
+let exams = (JSON.parse(localStorage.getItem('bpm_exams')||'null') || []).map(e=>({...e, examDate: e.examDate?.slice(0,10)}));
 let followups = JSON.parse(localStorage.getItem('bpm_followups')||'null') || [];
 let nextEid=exams.length?Math.max(...exams.map(e=>e.id))+1:1;
 let nextFid=followups.length?Math.max(...followups.map(f=>f.id))+1:1;
