@@ -444,6 +444,41 @@ function addExam(){
   document.getElementById('eSaveMsg').textContent='✅ Tersimpan!';setTimeout(()=>{ el=document.getElementById('eSaveMsg');if(el)el.textContent='';},2500);
 }
 function delExam(id){if(!confirm('Hapus pemeriksaan ini?'))return;exams=exams.filter(e=>e.id!==id);save();renderRecords();}
+  function editExam(id){
+  e=exams.find(x=>x.id===id); if(!e)return;
+  p=patients.find(x=>x.id===e.patientId);
+  document.getElementById('page-records').insertAdjacentHTML('afterbegin',`
+    <div id="editModal" style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;display:flex;align-items:center;justify-content:center">
+      <div style="background:#fff;border-radius:12px;padding:24px;width:340px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+        <h3 style="margin:0 0 16px">✏️ Edit Pemeriksaan</h3>
+        <div style="margin-bottom:10px"><label style="font-size:.8rem;font-weight:600">Pasien</label>
+          <input readonly value="${p?p.name:'—'}" style="width:100%;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc"></div>
+        <div style="margin-bottom:10px"><label style="font-size:.8rem;font-weight:600">Tanggal Periksa</label>
+          <input id="edDate" type="date" value="${e.examDate}" style="width:100%;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px"></div>
+        <div style="margin-bottom:10px"><label style="font-size:.8rem;font-weight:600">Sistolik (mmHg)</label>
+          <input id="edSys" type="number" value="${e.systolic}" style="width:100%;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px"></div>
+        <div style="margin-bottom:10px"><label style="font-size:.8rem;font-weight:600">Diastolik (mmHg)</label>
+          <input id="edDia" type="number" value="${e.diastolic}" style="width:100%;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px"></div>
+        <div style="margin-bottom:16px"><label style="font-size:.8rem;font-weight:600">Denyut Nadi (bpm)</label>
+          <input id="edPulse" type="number" value="${e.pulse||''}" style="width:100%;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn btn-outline" onclick="document.getElementById('editModal').remove()">Batal</button>
+          <button class="btn btn-primary" onclick="updateExam(${id})">💾 Simpan</button>
+        </div>
+      </div>
+    </div>`);
+}
+function updateExam(id){
+  e=exams.find(x=>x.id===id); if(!e)return;
+  dt=document.getElementById('edDate').value;
+  s=+document.getElementById('edSys').value;
+  d=+document.getElementById('edDia').value;
+  pulse=+document.getElementById('edPulse').value;
+  if(!dt||!s||!d)return alert('Lengkapi semua data!');
+  e.examDate=dt; e.systolic=s; e.diastolic=d; e.pulse=pulse;
+  save(); document.getElementById('editModal').remove(); renderRecords();
+  alert('✅ Data berhasil diperbarui!');
+}
 
 // ══ MASTER PASIEN ═════════════════════════
 function renderPatients(){
