@@ -396,7 +396,7 @@ function renderRecords(){
    filteredExams=filterExams(qR,kR).slice(0,30);
    rows=filteredExams.map(e=>{
      st=getStatus(e.systolic,e.diastolic); pex=pExams(e.patientId); idx=pex.findIndex(x=>x.id===e.id); prev=idx>0?pex[idx-1]:null;
-    return `<tr><td><strong>${pName(e.patientId)}</strong></td><td>${fmt(e.examDate)}</td><td class="${vCls(e.systolic,140,120)}">${e.systolic}</td><td class="${vCls(e.diastolic,90,80)}">${e.diastolic}</td><td>${e.pulse||'-'}</td><td>${trendArrow(e.systolic,prev?.systolic)}</td><td><span class="badge ${st.cls}">${st.label}</span></td><td><button class="btn btn-danger btn-sm" onclick="delExam(${e.id})">🗑</button></td></tr>`;}).join('');
+   return `<tr><td><strong>${pName(e.patientId)}</strong></td><td>${fmt(e.examDate)}</td><td class="${vCls(e.systolic,140,120)}">${e.systolic}</td><td class="${vCls(e.diastolic,90,80)}">${e.diastolic}</td><td>${e.pulse||'-'}</td><td>${trendArrow(e.systolic,prev?.systolic)}</td><td><span class="badge ${st.cls}">${st.label}</span></td><td style="display:flex;gap:4px"><button class="btn btn-warning btn-sm" onclick="editExam(${e.id})">✏️</button><button class="btn btn-danger btn-sm" onclick="delExam(${e.id})">🗑</button></td></tr>`;}).join('');;
   document.getElementById('page-records').innerHTML=`
     <div class="panel"><div class="panel-head"><h2>➕ Tambah Hasil Pemeriksaan</h2></div><div class="panel-body">
       <div class="form-grid">
