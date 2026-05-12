@@ -216,8 +216,8 @@ tr:hover td{background:#fafbff;}
   <div class="sidebar-nav">
     <div class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">📊</span> Dashboard</div>
     <div class="nav-item" onclick="showPage('records')"><span class="nav-icon">📋</span> Input Pemeriksaan</div>
-    <div class="nav-item" onclick="showPage('patients')"><span class="nav-icon">👤</span> Data Pasien</div>
-    <div class="nav-item" onclick="showPage('progress')"><span class="nav-icon">📈</span> Progress Pasien</div>
+    <div class="nav-item" onclick="showPage('patients')"><span class="nav-icon">👤</span> Data Pekerja</div>
+    <div class="nav-item" onclick="showPage('progress')"><span class="nav-icon">📈</span> Progress Pekerja</div>
     <div class="nav-item" onclick="showPage('monthly')"><span class="nav-icon">🗓️</span> Laporan Bulanan</div>
     <div class="nav-item" onclick="showPage('followup')"><span class="nav-icon">🔔</span> Follow-Up</div>
     <div class="nav-item" onclick="document.getElementById('changePinModal').style.display='flex'"><span class="nav-icon">🔐</span> Ganti PIN</div>
@@ -283,7 +283,7 @@ function getRekomendasi(s,d,prevS,pex){
     ht1:{icon:'🔶',judul:'Hipertensi Derajat 1 — Tindakan Diperlukan',isi:`${trendNote}Diperlukan modifikasi gaya hidup intensif + evaluasi dokter. Pertimbangkan terapi farmakologis jika ada faktor risiko kardiovaskular. Pantau tekanan darah mandiri setiap hari. Batasi garam <5g/hari.`,jadwal:'Kontrol: 1–3 bulan'},
     ht2:{icon:'🔴',judul:'Hipertensi Derajat 2 — Segera Tangani',isi:`${trendNote}Wajib terapi antihipertensi + modifikasi gaya hidup. Rujuk ke dokter spesialis penyakit dalam. Pantau tekanan darah harian. Periksa organ target (jantung, ginjal, mata).`,jadwal:'Kontrol: 2–4 minggu'},
     ht3:{icon:'🚨',judul:'Hipertensi Derajat 3 — DARURAT!',isi:`${trendNote}Tekanan darah sangat tinggi — risiko kerusakan organ akut. SEGERA rujuk ke IGD/RS. Hindari aktivitas berat. Jangan hentikan obat tiba-tiba. Evaluasi tanda-tanda komplikasi (nyeri dada, sesak, gangguan penglihatan).`,jadwal:'SEGERA ke IGD/RS'},
-    iso:{icon:'🔵',judul:'HT Sistolik Terisolasi — Perlu Evaluasi',isi:`${trendNote}Tekanan sistolik tinggi namun diastolik normal — sering pada lansia. Evaluasi dokter diperlukan. Perhatikan risiko kardiovaskular. Terapi disesuaikan kondisi pasien.`,jadwal:'Kontrol: 1–2 bulan'},
+    iso:{icon:'🔵',judul:'HT Sistolik Terisolasi — Perlu Evaluasi',isi:`${trendNote}Tekanan sistolik tinggi namun diastolik normal — sering pada lansia. Evaluasi dokter diperlukan. Perhatikan risiko kardiovaskular. Terapi disesuaikan kondisi pekerja.`,jadwal:'Kontrol: 1–2 bulan'},
   };
    r=rekom[st.key];
   return `<div class="rekom-box ${st.key}"><div class="rekom-title">${r.icon} ${r.judul}</div><div>${r.isi}</div><div style="margin-top:6px;font-weight:600;font-size:.78rem">📅 ${r.jadwal}</div></div>`;
@@ -305,7 +305,7 @@ function destroyChart(id){ c=Chart.getChart(id);if(c)c.destroy();}
 document.getElementById('currentDate').textContent=new Date().toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 document.getElementById('printDate').textContent=new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
  pages=['dashboard','records','patients','progress','monthly','followup'];
- titles={dashboard:'Dashboard',records:'Input Pemeriksaan',patients:'Master Data Pasien',progress:'Progress Pasien',monthly:'Laporan Bulanan',followup:'Manajemen Follow-Up'};
+ titles={dashboard:'Dashboard',records:'Input Pemeriksaan',patients:'Master Data Pekerja',progress:'Progress Pekerja',monthly:'Laporan Bulanan',followup:'Manajemen Follow-Up'};
 function showPage(p){
   pages.forEach(k=>document.getElementById('page-'+k).style.display=k===p?'block':'none');
   document.querySelectorAll('.nav-item').forEach((n,i)=>n.classList.toggle('active',pages[i]===p));
@@ -333,7 +333,7 @@ function renderStats(){
    nor=allLast.filter(e=>['opt','nor'].includes(getStatus(e.systolic,e.diastolic).key)).length;
    pend=followups.filter(f=>f.status==='pending').length;
   document.getElementById('statsArea').innerHTML=`
-    <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">👥</div><div class="stat-info"><h3>Total Pasien</h3><div class="val">${patients.length}</div><div class="sub">Terdaftar</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">👥</div><div class="stat-info"><h3>Total Pekerja</h3><div class="val">${patients.length}</div><div class="sub">Terdaftar</div></div></div>
     <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🔴</div><div class="stat-info"><h3>Hipertensi</h3><div class="val" style="color:#dc2626">${ht}</div><div class="sub">Perlu penanganan</div></div></div>
     <div class="stat-card"><div class="stat-icon" style="background:#fef9c3">🟡</div><div class="stat-info"><h3>Normal-Tinggi</h3><div class="val" style="color:#ca8a04">${pre}</div><div class="sub">Perlu monitoring</div></div></div>
     <div class="stat-card"><div class="stat-icon" style="background:#dcfce7">🟢</div><div class="stat-info"><h3>Optimal/Normal</h3><div class="val" style="color:#16a34a">${nor}</div><div class="sub">Kondisi baik</div></div></div>
@@ -356,7 +356,7 @@ function renderDashboard(){
   document.getElementById('page-dashboard').innerHTML=`
     <div class="grid-2" style="margin-bottom:18px">
       <div class="panel"><div class="panel-head"><h2>📋 Pemeriksaan Terbaru</h2><span style="font-size:.75rem;color:#64748b">${exams.length} total</span></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Pasien</th><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Trend</th><th>Kategori</th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="empty">Belum ada data</td></tr>'}</tbody></table></div></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Trend</th><th>Kategori</th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="empty">Belum ada data</td></tr>'}</tbody></table></div></div>
       <div>
         <div class="panel" style="margin-bottom:18px"><div class="panel-head"><h2>📊 Tren Rata-rata Sistolik (6 Bulan)</h2></div>
           <div class="panel-body"><div class="chart-box"><canvas id="dashTrendChart"></canvas></div></div></div>
@@ -365,7 +365,7 @@ function renderDashboard(){
       </div>
     </div>
     <div class="grid-2">
-      <div class="panel"><div class="panel-head"><h2>🥧 Distribusi Kategori Pasien (Terakhir)</h2></div>
+      <div class="panel"><div class="panel-head"><h2>🥧 Distribusi Kategori Pekerja (Terakhir)</h2></div>
         <div class="panel-body"><div class="chart-box"><canvas id="dashPieChart"></canvas></div></div></div>
       <div class="panel"><div class="panel-head"><h2>📖 Tabel Klasifikasi KEPMENKES 4634/2021</h2></div>
         <div style="overflow-x:auto"><table><thead><tr><th>Kategori</th><th>Sistolik</th><th>Diastolik</th><th>Risiko</th></tr></thead><tbody>
@@ -400,7 +400,7 @@ function renderRecords(){
   document.getElementById('page-records').innerHTML=`
     <div class="panel"><div class="panel-head"><h2>➕ Tambah Hasil Pemeriksaan</h2></div><div class="panel-body">
       <div class="form-grid">
-        <div class="fg"><label>Pasien</label><select id="ePid" onchange="fillPatientInfo()">${opts}</select></div>
+        <div class="fg"><label>Pekerja</label><select id="ePid" onchange="fillPatientInfo()">${opts}</select></div>
         <div class="fg"><label>Tgl Lahir</label><input id="eDob" readonly></div>
         <div class="fg"><label>Usia (otomatis)</label><input id="eAge" readonly></div>
         <div class="fg"><label>Tanggal Periksa</label><input id="eDate" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
@@ -418,12 +418,12 @@ function renderRecords(){
     <div class="panel"><div class="panel-head"><h2>📋 Riwayat Pemeriksaan</h2><span style="font-size:.75rem;color:#64748b">${filteredExams.length} dari ${exams.length} data</span></div>
       <div class="panel-body" style="padding-bottom:0">
         <div class="search-bar">
-          <input id="recSearch" placeholder="🔍 Cari nama pasien..." value="${qR}" oninput="renderRecords()">
+          <input id="recSearch" placeholder="🔍 Cari nama pekerja..." value="${qR}" oninput="renderRecords()">
           <select id="recKat" onchange="renderRecords()">${katOpts.replace(`value="${kR}"`,`value="${kR}" selected`)}</select>
           <button class="btn btn-outline btn-sm" onclick="document.getElementById('recSearch').value='';document.getElementById('recKat').value='';renderRecords()">✕ Reset</button>
         </div>
       </div>
-      <div style="overflow-x:auto"><table><thead><tr><th>Pasien</th><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Nadi</th><th>Trend</th><th>Kategori</th><th>Aksi</th></tr></thead>
+      <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Nadi</th><th>Trend</th><th>Kategori</th><th>Aksi</th></tr></thead>
       <tbody>${rows||'<tr><td colspan="8" class="empty">Tidak ada data yang sesuai</td></tr>'}</tbody></table></div></div>`;
   fillPatientInfo();
 }
@@ -451,7 +451,7 @@ function delExam(id){if(!confirm('Hapus pemeriksaan ini?'))return;exams=exams.fi
     <div id="editModal" style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;display:flex;align-items:center;justify-content:center">
       <div style="background:#fff;border-radius:12px;padding:24px;width:340px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
         <h3 style="margin:0 0 16px">✏️ Edit Pemeriksaan</h3>
-        <div style="margin-bottom:10px"><label style="font-size:.8rem;font-weight:600">Pasien</label>
+        <div style="margin-bottom:10px"><label style="font-size:.8rem;font-weight:600">Pekerja</label>
           <input readonly value="${p?p.name:'—'}" style="width:100%;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc"></div>
         <div style="margin-bottom:10px"><label style="font-size:.8rem;font-weight:600">Tanggal Periksa</label>
           <input id="edDate" type="date" value="${e.examDate}" style="width:100%;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px"></div>
@@ -480,7 +480,7 @@ function updateExam(id){
   alert('✅ Data berhasil diperbarui!');
 }
 
-// ══ MASTER PASIEN ═════════════════════════
+// ══ MASTER PEKERJA ═════════════════════════
 function renderPatients(){
    qP=document.getElementById('patSearch')?.value||'';
    kP=document.getElementById('patKat')?.value||'';
@@ -489,21 +489,21 @@ function renderPatients(){
      waBtn=p.phone?`<a href="https://wa.me/${p.phone}" target="_blank" class="btn btn-success btn-sm" title="Buka WA ${p.name}">💬</a>`:'<span style="color:#cbd5e1;font-size:.75rem">—</span>';
     return `<tr><td><strong>${p.name}</strong></td><td>${p.dob||'-'}</td><td>${calcAge(p.dob)} th</td><td>${p.gender==='L'?'L':'P'}</td><td>${p.phone?`<span style="font-size:.78rem">${p.phone}</span>`:'<span style="color:#cbd5e1">—</span>'}</td><td>${pExams(p.id).length} kali</td><td>${le?`${le.systolic}/${le.diastolic}`:'-'}</td><td>${st?`<span class="badge ${st.cls}">${st.label}</span>`:'-'}</td><td style="display:flex;gap:5px">${waBtn}<button class="btn btn-danger btn-sm" onclick="delPatient(${p.id})">🗑</button></td></tr>`;}).join('');
   document.getElementById('page-patients').innerHTML=`
-    <div class="panel"><div class="panel-head"><h2>➕ Daftarkan Pasien Baru</h2></div><div class="panel-body">
+    <div class="panel"><div class="panel-head"><h2>➕ Daftarkan Pekerja Baru</h2></div><div class="panel-body">
       <div class="form-grid">
-        <div class="fg"><label>Nama Lengkap</label><input id="pName" placeholder="Nama pasien"></div>
+        <div class="fg"><label>Nama Lengkap</label><input id="pName" placeholder="Nama pekerja"></div>
         <div class="fg"><label>Tanggal Lahir</label><input id="pDob" type="date" onchange="autoAge()"></div>
         <div class="fg"><label>Usia (otomatis)</label><input id="pAge" readonly placeholder="Dari tgl lahir"></div>
         <div class="fg"><label>Jenis Kelamin</label><select id="pGender"><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></div>
         <div class="fg"><label>No. HP / WhatsApp</label><input id="pPhone" type="tel" placeholder="628xxxxxxxxxx" oninput="formatPhone()"></div>
         <div class="fg"><label style="color:#94a3b8;font-size:.7rem">Format: 628xxx (awali 62, tanpa +)</label><input id="pPhonePreview" readonly style="font-size:.75rem;color:#64748b"></div>
       </div>
-      <button class="btn btn-primary" onclick="addPatient()">💾 Simpan Pasien</button>
+      <button class="btn btn-primary" onclick="addPatient()">💾 Simpan Pekerja</button>
     </div></div>
-    <div class="panel"><div class="panel-head"><h2>👤 Daftar Pasien</h2><span style="font-size:.75rem;color:#64748b">${filtered.length} dari ${patients.length} pasien</span></div>
+    <div class="panel"><div class="panel-head"><h2>👤 Daftar Pekerja</h2><span style="font-size:.75rem;color:#64748b">${filtered.length} dari ${patients.length} pekerja</span></div>
       <div class="panel-body" style="padding-bottom:0">
         <div class="search-bar">
-          <input id="patSearch" placeholder="🔍 Cari nama pasien..." value="${qP}" oninput="renderPatients()">
+          <input id="patSearch" placeholder="🔍 Cari nama pekerja..." value="${qP}" oninput="renderPatients()">
           <select id="patKat" onchange="renderPatients()">${katOpts.replace(`value="${kP}"`,`value="${kP}" selected`)}</select>
           <button class="btn btn-outline btn-sm" onclick="document.getElementById('patSearch').value='';document.getElementById('patKat').value='';renderPatients()">✕ Reset</button>
         </div>
@@ -527,19 +527,19 @@ function addPatient(){
   if(!name||!dob)return alert('Nama dan tanggal lahir wajib diisi!');
   patients.push({id:nextPid++,name,dob,gender,phone});save();renderPatients();
 }
-function delPatient(id){if(!confirm('Hapus pasien dan semua pemeriksaannya?'))return;patients=patients.filter(p=>p.id!==id);exams=exams.filter(e=>e.patientId!==id);save();renderPatients();}
+function delPatient(id){if(!confirm('Hapus pekerja dan semua pemeriksaannya?'))return;patients=patients.filter(p=>p.id!==id);exams=exams.filter(e=>e.patientId!==id);save();renderPatients();}
 
 // ══ PROGRESS ══════════════════════════════
 function renderProgress(){
-  if(!patients.length){document.getElementById('page-progress').innerHTML='<div class="empty">Belum ada pasien terdaftar</div>';return;}
+  if(!patients.length){document.getElementById('page-progress').innerHTML='<div class="empty">Belum ada pekerja terdaftar</div>';return;}
    firstId=patients[0].id;
    opts=patients.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
   document.getElementById('page-progress').innerHTML=`
     <div class="panel" style="margin-bottom:18px">
-      <div class="panel-head"><h2>📈 Progress & Rekomendasi Pasien</h2></div>
+      <div class="panel-head"><h2>📈 Progress & Rekomendasi Pekerja</h2></div>
       <div class="panel-body" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
         <div class="fg" style="min-width:220px;margin:0">
-          <label>Pilih Pasien</label>
+          <label>Pilih Pekerja</label>
           <select id="progressPid" onchange="renderProgressDetail(+this.value)" style="padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.88rem;outline:none;">${opts}</select>
         </div>
         <div id="progSummaryBadge" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px"></div>
@@ -605,7 +605,7 @@ function renderProgressDetail(pid){
     </tr>`;}).join('');
 
   container.innerHTML=`
-    <!-- INFO PASIEN -->
+    <!-- INFO PEKERJA -->
     <div class="grid-3" style="margin-bottom:18px">
       <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">👤</div><div class="stat-info"><h3>Nama</h3><div class="val" style="font-size:1rem">${p.name}</div><div class="sub">${p.gender==='L'?'Laki-laki':'Perempuan'} · ${calcAge(p.dob)} tahun</div></div></div>
       <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🩺</div><div class="stat-info"><h3>Terakhir (S/D)</h3><div class="val ${vCls(last.systolic,140,120)}" style="font-size:1.3rem">${last.systolic}/${last.diastolic}</div><div class="sub">${fmt(last.examDate)}</div></div></div>
@@ -705,7 +705,7 @@ function renderMonthlyData(mk,allMonths){
         <div class="panel-body"><div class="chart-box"><canvas id="mCatChart"></canvas></div></div></div>
     </div>
     <div class="panel"><div class="panel-head"><h2>📋 Detail Pemeriksaan — ${monthLabel(mk)}</h2><button class="btn btn-pdf btn-sm" onclick="exportPDF()">🖨️ PDF</button></div>
-      <div style="overflow-x:auto"><table><thead><tr><th>Pasien</th><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Trend</th><th>Kategori</th></tr></thead>
+      <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Trend</th><th>Kategori</th></tr></thead>
       <tbody>${rows||'<tr><td colspan="6" class="empty">Tidak ada pemeriksaan bulan ini</td></tr>'}</tbody></table></div></div>`;
   setTimeout(()=>{
     destroyChart('mTrendChart');
@@ -726,7 +726,7 @@ function renderFollowups(){
   document.getElementById('page-followup').innerHTML=`
     <div class="panel"><div class="panel-head"><h2>➕ Tambah Follow-Up</h2></div><div class="panel-body">
       <div class="form-grid">
-        <div class="fg"><label>Pasien</label><select id="fPid">${opts}</select></div>
+        <div class="fg"><label>Pekerja</label><select id="fPid">${opts}</select></div>
         <div class="fg"><label>Alasan Follow-Up</label><input id="fReason" placeholder="Keterangan..."></div>
         <div class="fg"><label>Tanggal Follow-Up</label><input id="fDate" type="date"></div>
       </div>
@@ -750,11 +750,11 @@ function kirimWA(pid){
    p=patients.find(x=>x.id===pid);
   if(!p) return;
   if(!p.phone){
-    alert('Pasien ini belum memiliki nomor HP/WhatsApp.\nSilakan update nomor di halaman Data Pasien terlebih dahulu.');
+    alert('Pekerja ini belum memiliki nomor HP/WhatsApp.\nSilakan update nomor di halaman Data Pekerja terlebih dahulu.');
     return;
   }
    pex=pExams(pid);
-  if(!pex.length){ alert('Belum ada data pemeriksaan untuk pasien ini.'); return; }
+  if(!pex.length){ alert('Belum ada data pemeriksaan untuk pekerja ini.'); return; }
    last=pex[pex.length-1];
    st=getStatus(last.systolic,last.diastolic);
    prev=pex.length>1?pex[pex.length-2]:null;
@@ -771,7 +771,7 @@ function kirimWA(pid){
    pesan=
 `🩺 *Laporan Tekanan Darah*
 ━━━━━━━━━━━━━━━━━━━━
-👤 *Pasien:* ${p.name}
+👤 *Pekerja:* ${p.name}
 🎂 *Usia:* ${calcAge(p.dob)} tahun
 📅 *Tgl Periksa:* ${fmt(last.examDate)}
 
@@ -914,7 +914,7 @@ async function loadAndShowReminders(){
   container.innerHTML=`
     <div class="reminder-banner">
       <div class="reminder-banner-head">
-        <h3>🔔 Reminder Follow-Up — ${reminders.length} pasien dalam 7 hari ke depan</h3>
+        <h3>🔔 Reminder Follow-Up — ${reminders.length} pekerja dalam 7 hari ke depan</h3>
         <button onclick="this.closest('.reminder-banner').style.display='none'" style="background:none;border:none;cursor:pointer;color:#92400e;font-size:1.1rem">✕</button>
       </div>
       ${items}
