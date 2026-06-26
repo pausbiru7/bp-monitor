@@ -1185,7 +1185,21 @@ function formatPhone(){
 
 function editPatient(id){
   editingPatientId = id;
-  renderPatients();
+  renderPatients(); // Mengisi form atas dengan data pekerja
+  
+  // 1. Gulir kontainer '.content' ke paling atas secara halus
+  const contentArea = document.querySelector('.content');
+  if (contentArea) {
+    contentArea.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // 2. Fokuskan kursor ke input Nama agar form siap diketik
+  setTimeout(() => {
+    const pNameInput = document.getElementById('pName');
+    if (pNameInput) {
+      pNameInput.focus();
+    }
+  }, 300);
 }
 
 function cancelEditPatient(){
