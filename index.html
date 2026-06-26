@@ -30,7 +30,7 @@ body{font-family:'Segoe UI',sans-serif;background:#f1f5f9;color:#1e293b;display:
 .sync-local{background:#f1f5f9;color:#64748b;}
 .spin{display:inline-block;animation:spin .8s linear infinite;}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.content{padding:20px 24px;overflow-y:auto;flex:1;}
+.content{padding:20px 24px;overflow-y:auto;flex:1;min-width:0;}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px;}
 .stat-card{background:#fff;border-radius:13px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.06);display:flex;align-items:center;gap:13px;}
 .stat-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
@@ -43,7 +43,7 @@ body{font-family:'Segoe UI',sans-serif;background:#f1f5f9;color:#1e293b;display:
 .panel-body{padding:18px;}
 .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:18px;}
 .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;}
-table{width:100%;border-collapse:collapse;font-size:.83rem;}
+table{width:100%;min-width:850px;border-collapse:collapse;font-size:.83rem;}
 th{padding:9px 13px;text-align:left;color:#64748b;font-weight:600;font-size:.75rem;text-transform:uppercase;background:#f8fafc;letter-spacing:.3px;white-space:nowrap;}
 td{padding:10px 13px;border-bottom:1px solid #f1f5f9;color:#334155;white-space:nowrap;}
 tr:last-child td{border-bottom:none;}
@@ -1023,7 +1023,7 @@ function renderPatients(){
     const st = le ? getStatus(le.systolic, le.diastolic) : null;
     const examsCount = pExams(p.id).length;
     const safeName = escapeHtml(p.name || '');
-    const safeDob = escapeHtml(p.dob || '-');
+    const safeDob = p.dob ? fmt(p.dob) : '-';
     const safePhone = escapeHtml(p.phone || '');
 
     const waBtn = p.phone
