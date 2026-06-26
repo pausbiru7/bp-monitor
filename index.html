@@ -2319,6 +2319,30 @@ function manualSync(){
   renderDashboard();
   loadAndShowReminders();
 })();
+  // ══════════════════════════════════════════
+// ⌨️ KONTROL KEYBOARD UNTUK LOGIN PIN
+// ══════════════════════════════════════════
+document.addEventListener('keydown', function(event) {
+  const loginOverlay = document.getElementById('loginOverlay');
+  
+  // Hanya jalankan jika layar Login sedang terbuka (tidak di-hide)
+  if (loginOverlay && window.getComputedStyle(loginOverlay).display !== 'none') {
+    const key = event.key;
+
+    // Jika tombol yang ditekan adalah angka 0-9
+    if (/^[0-9]$/.test(key)) {
+      pinPress(key);
+    } 
+    // Jika tombol yang ditekan adalah Backspace (Hapus)
+    else if (key === 'Backspace') {
+      pinDelete();
+    }
+    // Jika tombol yang ditekan adalah Escape atau Delete (Hapus Semua)
+    else if (key === 'Escape' || key === 'Delete') {
+      pinClear();
+    }
+  }
+});
 </script>
 </body>
 </html>
