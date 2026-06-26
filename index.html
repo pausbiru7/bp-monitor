@@ -1022,13 +1022,20 @@ function renderPatients(){
     const le = lastExam(p.id);
     const st = le ? getStatus(le.systolic, le.diastolic) : null;
     const examsCount = pExams(p.id).length;
-
     const safeName = escapeHtml(p.name || '');
     const safeDob = escapeHtml(p.dob || '-');
     const safePhone = escapeHtml(p.phone || '');
 
     const waBtn = p.phone
-      ? `<a href="https://wa.me/${safePhone}" target="_blank" class="btn btn-success btn-sm" title="Buka WA ${safeName}">💬</a>`
+      ? `<a
+          href="https://wa.me/${safePhone}"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-success btn-sm"
+          title="Buka WA ${safeName}"
+          aria-label="Buka WhatsApp ${safeName}"
+          style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center"
+        >💬</a>`
       : '<span style="color:#cbd5e1;font-size:.75rem">—</span>';
 
     const phoneHtml = p.phone
@@ -1047,8 +1054,20 @@ function renderPatients(){
         <td>${st ? `<span class="badge ${st.cls}">${st.label}</span>` : '-'}</td>
         <td style="display:flex;gap:5px;flex-wrap:wrap">
           ${waBtn}
-          <button class="btn btn-outline btn-sm" onclick="editPatient(${p.id})">✏ Edit</button>
-          <button class="btn btn-danger btn-sm" onclick="delPatient(${p.id})">🗑</button>
+          <button
+            class="btn btn-outline btn-sm"
+            onclick="editPatient(${p.id})"
+            title="Edit data pekerja"
+            aria-label="Edit data pekerja"
+            style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center"
+          >✏️</button>
+          <button
+            class="btn btn-danger btn-sm"
+            onclick="delPatient(${p.id})"
+            title="Hapus data pekerja"
+            aria-label="Hapus data pekerja"
+            style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center"
+          >🗑️</button>
         </td>
       </tr>
     `;
