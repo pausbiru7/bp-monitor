@@ -995,82 +995,183 @@ function updateExam(id){
   alert('✅ Data berhasil diperbarui!');
 }
 // ══ MASTER PEKERJA ═════════════════════════
+let editingPatientId = null;
+
+function escapeHtml(v){
+  return String(v ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function getEditingPatient(){
+  return editingPatientId == null
+    ? null
+    : patients.find(p => String(p.id) === String(editingPatientId)) || null;
+}
+
 function renderPatients(){
   const qP = document.getElementById('patSearch')?.value || '';
   const kP = document.getElementById('patKat')?.value || '';
   const filtered = filterPatients(qP, kP);
+  const editing = getEditingPatient();
 
   const rows = filtered.map(p => {
     const le = lastExam(p.id);
     const st = le ? getStatus(le.systolic, le.diastolic) : null;
     const examsCount = pExams(p.id).length;
 
+    const safeName = escapeHtml(p.name || '');
+    const safeDob = escapeHtml(p.dob || '-');
+    const safePhone = escapeHtml(p.phone || '');
+
     const waBtn = p.phone
-      ? `<a href="https://wa.me/${p.phone}" target="_blank" class="btn btn-success btn-sm" title="Buka WA ${p.name}">💬</a>`
+      ? `<a href="https://wa.me/${safePhone}" target="_blank" class="btn btn-success btn-sm" title="Buka WA ${safeName}">💬</a>`
       : '<span style="color:#cbd5e1;font-size:.75rem">—</span>';
 
     const phoneHtml = p.phone
-      ? `<span style="font-size:.78rem">${p.phone}</span>`
+      ? `<span style="font-size:.78rem">${safePhone}</span>`
       : '<span style="color:#cbd5e1">—</span>';
 
-    return `<tr><td><strong>${p.name}</strong></td><td>${p.dob || '-'}</td><td>${calcAge(p.dob)} th</td><td>${p.gender === 'L' ? 'L' : 'P'}</td><td>${phoneHtml}</td><td>${examsCount} kali</td><td>${le ? `${le.systolic}/${le.diastolic}` : '-'}</td><td>${st ? `<span class="badge ${st.cls}">${st.label}</span>` : '-'}</td><td style="display:flex;gap:5px">${waBtn}<button class="btn btn-danger btn-sm" onclick="delPatient(${p.id})">🗑</button></td></tr>`;
+    return `
+      <tr>
+        <td><strong>${safeName}</strong></td>
+        <td>${safeDob}</td>
+        <td>${p.dob ? calcAge(p.dob) + ' th' : '-'}</td>
+        <td>${p.gender === 'L' ? 'L' : 'P'}</td>
+        <td>${phoneHtml}</td>
+        <td>${examsCount} kali</td>
+        <td>${le ? `${le.systolic}/${le.diastolic}` : '-'}</td>
+        <td>${st ? `<span class="badge ${st.cls}">${st.label}</span>` : '-'}</td>
+        <td style="display:flex;gap:5px;flex-wrap:wrap">
+          ${waBtn}
+          <button class="btn btn-outline btn-sm" onclick="editPatient(${p.id})">✏ Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="delPatient(${p.id})">🗑</button>
+        </td>
+      </tr>
+    `;
   }).join('');
 
   const pagePatients = document.getElementById('page-patients');
   if(!pagePatients) return;
 
   pagePatients.innerHTML = `
-    <div class="panel"><div class="panel-head"><h2>➕ Daftarkan Pekerja Baru</h2></div><div class="panel-body">
-      <div class="form-grid">
-        <div class="fg"><label>Nama Lengkap</label><input id="pName" placeholder="Nama pekerja"></div>
-        <div class="fg"><label>Tanggal Lahir</label><input id="pDob" type="date" onchange="autoAge()"></div>
-        <div class="fg"><label>Usia (otomatis)</label><input id="pAge" readonly placeholder="Dari tgl lahir"></div>
-        <div class="fg"><label>Jenis Kelamin</label><select id="pGender"><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></div>
-        <div class="fg"><label>No. HP / WhatsApp</label><input id="pPhone" type="tel" placeholder="628xxxxxxxxxx" oninput="formatPhone()"></div>
-        <div class="fg"><label style="color:#94a3b8;font-size:.7rem">Format: 628xxx (awali 62, tanpa +)</label><input id="pPhonePreview" readonly style="font-size:.75rem;color:#64748b"></div>
+    <div class="panel">
+      <div class="panel-head">
+        <h2>${editing ? '✏ Edit Data Pekerja' : '➕ Daftarkan Pekerja Baru'}</h2>
       </div>
-      <button class="btn btn-primary" onclick="addPatient()">💾 Simpan Pekerja</button>
-    </div></div>
-    <div class="panel"><div class="panel-head"><h2>👤 Daftar Pekerja</h2><span style="font-size:.75rem;color:#64748b">${filtered.length} dari ${patients.length} pekerja</span></div>
+      <div class="panel-body">
+        <div class="form-grid">
+          <div class="fg">
+            <label>Nama Lengkap</label>
+            <input id="pName" placeholder="Nama pekerja" value="${escapeHtml(editing?.name || '')}">
+          </div>
+          <div class="fg">
+            <label>Tanggal Lahir</label>
+            <input id="pDob" type="date" onchange="autoAge()" value="${escapeHtml(editing?.dob || '')}">
+          </div>
+          <div class="fg">
+            <label>Usia (otomatis)</label>
+            <input id="pAge" readonly placeholder="Dari tgl lahir">
+          </div>
+          <div class="fg">
+            <label>Jenis Kelamin</label>
+            <select id="pGender">
+              <option value="L" ${(editing?.gender || 'L') === 'L' ? 'selected' : ''}>Laki-laki</option>
+              <option value="P" ${(editing?.gender || 'L') === 'P' ? 'selected' : ''}>Perempuan</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>No. HP / WhatsApp</label>
+            <input id="pPhone" type="tel" placeholder="628xxxxxxxxxx" oninput="formatPhone()" value="${escapeHtml(editing?.phone || '')}">
+          </div>
+          <div class="fg">
+            <label style="color:#94a3b8;font-size:.7rem">Format: 628xxx (awali 62, tanpa +)</label>
+            <input id="pPhonePreview" readonly style="font-size:.75rem;color:#64748b">
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="addPatient()">
+            ${editing ? '💾 Simpan Perubahan' : '💾 Simpan Pekerja'}
+          </button>
+          ${editing ? `<button class="btn btn-outline" onclick="cancelEditPatient()">Batal Edit</button>` : ''}
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>👤 Daftar Pekerja</h2>
+        <span style="font-size:.75rem;color:#64748b">${filtered.length} dari ${patients.length} pekerja</span>
+      </div>
       <div class="panel-body" style="padding-bottom:0">
         <div class="search-bar">
-          <input id="patSearch" placeholder="🔍 Cari nama pekerja..." value="${qP}" oninput="renderPatients()">
-          <select id="patKat" onchange="renderPatients()">${katOpts.replace(`value="${kP}"`, `value="${kP}" selected`)}</select>
+          <input id="patSearch" placeholder="🔍 Cari nama pekerja..." value="${escapeHtml(qP)}" oninput="renderPatients()">
+          <select id="patKat" onchange="renderPatients()">
+            ${katOpts.replace(`value="${kP}"`, `value="${kP}" selected`)}
+          </select>
           <button class="btn btn-outline btn-sm" onclick="document.getElementById('patSearch').value='';document.getElementById('patKat').value='';renderPatients()">✕ Reset</button>
         </div>
       </div>
-      <div style="overflow-x:auto"><table><thead><tr><th>Nama</th><th>Tgl Lahir</th><th>Usia</th><th>JK</th><th>No. HP</th><th>Jml Periksa</th><th>Terakhir S/D</th><th>Kategori</th><th>Aksi</th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="9" class="empty">Tidak ada data yang sesuai</td></tr>'}</tbody></table></div></div>`;
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Nama</th>
+              <th>Tgl Lahir</th>
+              <th>Usia</th>
+              <th>JK</th>
+              <th>No. HP</th>
+              <th>Jml Periksa</th>
+              <th>Terakhir S/D</th>
+              <th>Kategori</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>${rows || '<tr><td colspan="9" class="empty">Tidak ada data yang sesuai</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  autoAge();
+  formatPhone();
 }
 
 function autoAge(){
   const pDob = document.getElementById('pDob');
   const pAge = document.getElementById('pAge');
-
   if(!pDob || !pAge) return;
-
   pAge.value = pDob.value ? calcAge(pDob.value) + ' tahun' : '';
 }
 
 function normalizePhone(value){
   let phone = String(value || '').replace(/\D/g, '');
-
   if(phone.startsWith('0')) phone = '62' + phone.slice(1);
   else if(phone.startsWith('8')) phone = '62' + phone;
-
   return phone;
 }
 
 function formatPhone(){
   const pPhone = document.getElementById('pPhone');
   const pPhonePreview = document.getElementById('pPhonePreview');
-
   if(!pPhone || !pPhonePreview) return;
-
   const phone = normalizePhone(pPhone.value);
-
   pPhone.value = phone;
   pPhonePreview.value = phone ? 'wa.me/' + phone : '';
+}
+
+function editPatient(id){
+  editingPatientId = id;
+  renderPatients();
+}
+
+function cancelEditPatient(){
+  editingPatientId = null;
+  renderPatients();
 }
 
 function addPatient(){
@@ -1087,6 +1188,31 @@ function addPatient(){
   const phone = normalizePhone(pPhone.value);
 
   if(!name || !dob) return alert('Nama dan tanggal lahir wajib diisi!');
+
+  if(editingPatientId != null){
+    const idx = patients.findIndex(p => String(p.id) === String(editingPatientId));
+    if(idx === -1) return alert('Data pekerja yang akan diedit tidak ditemukan.');
+
+    patients[idx] = {
+      ...patients[idx],
+      name,
+      dob,
+      gender,
+      phone
+    };
+
+    followups = followups.map(f =>
+      String(f.patientId) === String(editingPatientId)
+        ? { ...f, patientName: name }
+        : f
+    );
+
+    editingPatientId = null;
+    save();
+    renderPatients();
+    if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
+    return;
+  }
 
   patients.push({
     id: nextPid++,
@@ -1107,9 +1233,12 @@ function delPatient(id){
   exams = exams.filter(e => e.patientId !== id);
   followups = followups.filter(f => f.patientId !== id);
 
+  if(String(editingPatientId) === String(id)) {
+    editingPatientId = null;
+  }
+
   save();
   renderPatients();
-
   if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
 }
 // ══ PROGRESS ══════════════════════════════
