@@ -151,6 +151,113 @@ tr:hover td{background:#fafbff;}
 #print-header{display:none;padding:10px 0 16px;border-bottom:2px solid #1e3a5f;margin-bottom:16px;}
 #print-header h2{font-size:1.1rem;color:#1e3a5f;}
 #print-header p{font-size:.8rem;color:#64748b;margin-top:3px;}
+  
+  /* ── RESPONSIVE (HP portrait) ─────────────────────────────── */
+@media (max-width: 900px){
+  body{
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* Sidebar jadi top bar agar tidak memakan lebar */
+  .sidebar{
+    width: 100%;
+    min-height: auto;
+    flex-direction: row;
+    align-items: center;
+    padding: 8px 10px;
+  }
+
+  .sidebar-logo{
+    padding: 10px 10px;
+    border-bottom: none;
+    flex: 0 0 auto;
+  }
+  .sidebar-logo h2{ font-size: .95rem; }
+  .sidebar-logo span{ display: none; }
+
+  .sidebar-nav{
+    padding: 0 6px;
+    flex: 1;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+
+  .nav-item{
+    margin-bottom: 0;
+    flex: 0 0 auto;
+    padding: 8px 10px;
+    border-radius: 10px;
+  }
+
+  .sidebar-foot{ display: none; }
+
+  .main{
+    max-height: none;
+    overflow: visible;
+  }
+
+  .topbar{
+    padding: 12px 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .topbar-right{
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .content{
+    padding: 14px 14px;
+  }
+
+  /* Grid turun kolom */
+  .stats{
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .grid-2{
+    grid-template-columns: 1fr;
+  }
+  .grid-3{
+    grid-template-columns: 1fr;
+  }
+
+  /* Card & panel padding sedikit diperkecil */
+  .panel-body{ padding: 14px; }
+  .panel-head{ padding: 12px 14px; }
+
+  /* Form jadi 1 kolom yang rapi */
+  .form-grid{
+    grid-template-columns: 1fr;
+  }
+
+  /* Chart box sedikit lebih pendek agar tidak makan layar */
+  .chart-box{ height: 220px; }
+
+  /* Table: pastikan bisa swipe horizontal */
+  table{
+    min-width: 720px;
+  }
+  .panel > div[style*="overflow-x:auto"]{
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 520px){
+  .stats{
+    grid-template-columns: 1fr;
+  }
+  .badge-date{ width: 100%; }
+  .topbar h1{ width: 100%; }
+}
 </style>
 </head>
 <body>
