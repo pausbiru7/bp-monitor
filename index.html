@@ -2329,51 +2329,53 @@ function manualSync(){
   syncToSheets(true);
 }
 
-// ── SCANNER BP MONITOR ──────────────────────
 let bpWorkerScanner = null;
 
 function initBpWorkerScanner() {
   const container = document.getElementById('scanner-bp-container');
   if (container) container.style.display = 'block';
 
-  const scannerEl = document.getElementById('scanner-bp-worker');
-  if (!scannerEl) return;
-  if (bpWorkerScanner) { bpWorkerScanner.stop().catch(() => {}); bpWorkerScanner = null; }
+  // Beri jeda sedikit agar elemen DOM container benar-benar siap render
+  setTimeout(() => {
+    const scannerEl = document.getElementById('scanner-bp-worker');
+    if (!scannerEl) return;
+    if (bpWorkerScanner) { bpWorkerScanner.stop().catch(() => {}); bpWorkerScanner = null; }
 
-  bpWorkerScanner = new Html5Qrcode('scanner-bp-worker');
-  bpWorkerScanner.start(
-    { facingMode: 'environment' },
-    { fps: 10, qrbox: { width: 280, height: 130 } },
-    (decodedText) => {
-      const scannedNik = decodedText.trim();
-      const matchedPatient = patients.find(p => String(p.nik).trim() === scannedNik || String(p.id).trim() === scannedNik);
-      
-      if (matchedPatient) {
-        const selectEl = document.getElementById('ePid');
-        if (selectEl) {
-          selectEl.value = matchedPatient.id;
-          fillPatientInfo();
-        }
-        stopBpWorkerScanner();
-        if (container) container.style.display = 'none';
-        if (typeof showToast === 'function') {
-          showToast(`✅ Pekerja ditemukan: ${matchedPatient.name}`, 'success');
+    bpWorkerScanner = new Html5Qrcode('scanner-bp-worker');
+    bpWorkerScanner.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 280, height: 130 } },
+      (decodedText) => {
+        const scannedNik = decodedText.trim();
+        const matchedPatient = patients.find(p => String(p.nik).trim() === scannedNik || String(p.id).trim() === scannedNik);
+        
+        if (matchedPatient) {
+          const selectEl = document.getElementById('ePid');
+          if (selectEl) {
+            selectEl.value = matchedPatient.id;
+            fillPatientInfo();
+          }
+          stopBpWorkerScanner();
+          if (container) container.style.display = 'none';
+          if (typeof showToast === 'function') {
+            showToast(`✅ Pekerja ditemukan: ${matchedPatient.name}`, 'success');
+          } else {
+            alert(`✅ Pekerja ditemukan: ${matchedPatient.name}`);
+          }
         } else {
-          alert(`✅ Pekerja ditemukan: ${matchedPatient.name}`);
+          if (typeof showToast === 'function') {
+            showToast(`⚠️ QR Code terbaca ("${scannedNik}"), tapi data pekerja tidak terdaftar.`, 'error');
+          } else {
+            alert(`⚠️ QR Code terbaca ("${scannedNik}"), tapi data pekerja tidak terdaftar.`);
+          }
         }
-      } else {
-        if (typeof showToast === 'function') {
-          showToast(`⚠️ QR Code terbaca ("${scannedNik}"), tapi data pekerja tidak terdaftar.`, 'error');
-        } else {
-          alert(`⚠️ QR Code terbaca ("${scannedNik}"), tapi data pekerja tidak terdaftar.`);
-        }
-      }
-    },
-    () => {}
-  ).catch(err => {
-    console.error('BP Scanner error:', err);
-    scannerEl.innerHTML = `<div style="padding:16px;text-align:center;color:#dc3545;background:#f8d7da;border-radius:8px;">❌ Gagal akses kamera<br><small>${err}</small></div>`;
-  });
+      },
+      () => {}
+    ).catch(err => {
+      console.error('BP Scanner error:', err);
+      scannerEl.innerHTML = `<div style="padding:16px;text-align:center;color:#dc3545;background:#f8d7da;border-radius:8px;">❌ Gagal akses kamera<br><small>${err}</small></div>`;
+    });
+  }, 100);
 }
 
 function stopBpWorkerScanner() {
