@@ -6,7 +6,6 @@
 <title>BP Monitor — KEPMENKES 4634/2021</title>
 <!-- Pustaka untuk Grafik -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <!-- Pustaka untuk Scanner Barcode/QR -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script><style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -1079,8 +1078,11 @@ function renderPatients(){
       ? `<span style="font-size:.78rem">${safePhone}</span>`
       : '<span style="color:#cbd5e1">—</span>';
 
+    const safeNik = escapeHtml(p.nik || p.id || '-');
+
     return `
       <tr>
+        <td><code>${safeNik}</code></td>
         <td><strong>${safeName}</strong></td>
         <td>${safeDob}</td>
         <td>${p.dob ? calcAge(p.dob) + ' th' : '-'}</td>
@@ -1121,6 +1123,10 @@ function renderPatients(){
       <div class="panel-body">
         <div class="form-grid">
           <div class="fg">
+            <label>No. ID / NIK Pekerja</label>
+            <input id="pNik" placeholder="Contoh: EMP001 / NIK" value="${escapeHtml(editing?.nik || editing?.id || '')}">
+          </div>
+          <div class="fg">
             <label>Nama Lengkap</label>
             <input id="pName" placeholder="Nama pekerja" value="${escapeHtml(editing?.name || '')}">
           </div>
@@ -1149,7 +1155,7 @@ function renderPatients(){
           </div>
         </div>
 
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
           <button class="btn btn-primary" onclick="addPatient()">
             ${editing ? '💾 Simpan Perubahan' : '💾 Simpan Pekerja'}
           </button>
@@ -1176,6 +1182,7 @@ function renderPatients(){
         <table>
           <thead>
             <tr>
+              <th>No. ID</th>
               <th>Nama</th>
               <th>Tgl Lahir</th>
               <th>Usia</th>
@@ -1187,7 +1194,7 @@ function renderPatients(){
               <th>Aksi</th>
             </tr>
           </thead>
-          <tbody>${rows || '<tr><td colspan="9" class="empty">Tidak ada data yang sesuai</td></tr>'}</tbody>
+          <tbody>${rows || '<tr><td colspan="10" class="empty">Tidak ada data yang sesuai</td></tr>'}</tbody>
         </table>
       </div>
     </div>
@@ -1222,15 +1229,13 @@ function formatPhone(){
 
 function editPatient(id){
   editingPatientId = id;
-  renderPatients(); // Mengisi form atas dengan data pekerja
+  renderPatients();
   
-  // 1. Gulir kontainer '.content' ke paling atas secara halus
   const contentArea = document.querySelector('.content');
   if (contentArea) {
     contentArea.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // 2. Fokuskan kursor ke input Nama agar form siap diketik
   setTimeout(() => {
     const pNameInput = document.getElementById('pName');
     if (pNameInput) {
@@ -1245,19 +1250,21 @@ function cancelEditPatient(){
 }
 
 function addPatient(){
+  const pNik = document.getElementById('pNik');
   const pName = document.getElementById('pName');
   const pDob = document.getElementById('pDob');
   const pGender = document.getElementById('pGender');
   const pPhone = document.getElementById('pPhone');
 
-  if(!pName || !pDob || !pGender || !pPhone) return;
+  if(!pNik || !pName || !pDob || !pGender || !pPhone) return;
 
+  const nik = pNik.value.trim();
   const name = pName.value.trim();
   const dob = pDob.value;
   const gender = pGender.value;
   const phone = normalizePhone(pPhone.value);
 
-  if(!name || !dob) return alert('Nama dan tanggal lahir wajib diisi!');
+  if(!nik || !name || !dob) return alert('No. ID/NIK, Nama, dan tanggal lahir wajib diisi!');
 
   if(editingPatientId != null){
     const idx = patients.findIndex(p => String(p.id) === String(editingPatientId));
@@ -1265,6 +1272,7 @@ function addPatient(){
 
     patients[idx] = {
       ...patients[idx],
+      nik,
       name,
       dob,
       gender,
@@ -1286,6 +1294,7 @@ function addPatient(){
 
   patients.push({
     id: nextPid++,
+    nik,
     name,
     dob,
     gender,
@@ -1295,7 +1304,7 @@ function addPatient(){
   save();
   renderPatients();
 }
-
+  
 function delPatient(id){
   if(!confirm('Hapus pekerja dan semua pemeriksaannya?')) return;
 
