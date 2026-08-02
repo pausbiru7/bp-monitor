@@ -805,7 +805,7 @@ function renderDashboard(){
 }
 // ══ INPUT PEMERIKSAAN ═════════════════════
 function renderRecords(){
-  const opts = patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+  const opts = patients.map(p => `<option value="${p.id}">${p.name} (${p.nik || ''})</option>`).join('');
   const qR = document.getElementById('recSearch')?.value || '';
   const kR = document.getElementById('recKat')?.value || '';
   const filteredExams = filterExams(qR, kR).slice(0, 30);
@@ -825,6 +825,15 @@ function renderRecords(){
 
   pageRecords.innerHTML = `
     <div class="panel"><div class="panel-head"><h2>➕ Tambah Hasil Pemeriksaan</h2></div><div class="panel-body">
+      <div style="margin-bottom:12px;">
+        <button type="button" class="btn btn-outline" onclick="toggleBpScanner()">📷 Scan QR Code Pekerja</button>
+        <div id="scanner-bp-container" style="display:none; margin-top:10px; padding:10px; border:1px solid var(--border); border-radius:8px; background:#f8fafc;">
+          <div id="scanner-bp-worker" style="width:100%; max-width:350px; margin:0 auto;"></div>
+          <div style="text-align:center; margin-top:8px;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="stopBpWorkerScanner(); document.getElementById('scanner-bp-container').style.display='none';">Tutup Kamera</button>
+          </div>
+        </div>
+      </div>
       <div class="form-grid">
         <div class="fg"><label>Pekerja</label><select id="ePid" onchange="fillPatientInfo()">${opts}</select></div>
         <div class="fg"><label>Tgl Lahir</label><input id="eDob" readonly></div>
@@ -2294,9 +2303,6 @@ async function loadFromSheets(){
     const json = await fetchAllFromSheets();
     const normalized = normalizeSheetsPayload(json);
 
-    // Penting:
-    // Data dari Sheets selalu menjadi source saat load.
-    // Jika Sheets kosong, data lokal juga ikut kosong.
     patients = normalized.patients;
     exams = normalized.exams;
     followups = normalized.followups;
@@ -2323,31 +2329,92 @@ function manualSync(){
   syncToSheets(true);
 }
 
+// ── SCANNER BP MONITOR ──────────────────────
+let bpWorkerScanner = null;
+
+function initBpWorkerScanner() {
+  const container = document.getElementById('scanner-bp-container');
+  if (container) container.style.display = 'block';
+
+  const scannerEl = document.getElementById('scanner-bp-worker');
+  if (!scannerEl) return;
+  if (bpWorkerScanner) { bpWorkerScanner.stop().catch(() => {}); bpWorkerScanner = null; }
+
+  bpWorkerScanner = new Html5Qrcode('scanner-bp-worker');
+  bpWorkerScanner.start(
+    { facingMode: 'environment' },
+    { fps: 10, qrbox: { width: 280, height: 130 } },
+    (decodedText) => {
+      const scannedNik = decodedText.trim();
+      const matchedPatient = patients.find(p => String(p.nik).trim() === scannedNik || String(p.id).trim() === scannedNik);
+      
+      if (matchedPatient) {
+        const selectEl = document.getElementById('ePid');
+        if (selectEl) {
+          selectEl.value = matchedPatient.id;
+          fillPatientInfo();
+        }
+        stopBpWorkerScanner();
+        if (container) container.style.display = 'none';
+        if (typeof showToast === 'function') {
+          showToast(`✅ Pekerja ditemukan: ${matchedPatient.name}`, 'success');
+        } else {
+          alert(`✅ Pekerja ditemukan: ${matchedPatient.name}`);
+        }
+      } else {
+        if (typeof showToast === 'function') {
+          showToast(`⚠️ QR Code terbaca ("${scannedNik}"), tapi data pekerja tidak terdaftar.`, 'error');
+        } else {
+          alert(`⚠️ QR Code terbaca ("${scannedNik}"), tapi data pekerja tidak terdaftar.`);
+        }
+      }
+    },
+    () => {}
+  ).catch(err => {
+    console.error('BP Scanner error:', err);
+    scannerEl.innerHTML = `<div style="padding:16px;text-align:center;color:#dc3545;background:#f8d7da;border-radius:8px;">❌ Gagal akses kamera<br><small>${err}</small></div>`;
+  });
+}
+
+function stopBpWorkerScanner() {
+  if (bpWorkerScanner) {
+    bpWorkerScanner.stop().catch(() => {});
+    bpWorkerScanner = null;
+  }
+}
+
+function toggleBpScanner() {
+  const container = document.getElementById('scanner-bp-container');
+  if (container && container.style.display === 'none') {
+    initBpWorkerScanner();
+  } else {
+    stopBpWorkerScanner();
+    if (container) container.style.display = 'none';
+  }
+}
+
 // ══ INIT ══════════════════════════════════
 (async () => {
   await loadFromSheets();
   renderDashboard();
   loadAndShowReminders();
 })();
-  // ══════════════════════════════════════════
+
+// ══════════════════════════════════════════
 // ⌨️ KONTROL KEYBOARD UNTUK LOGIN PIN
 // ══════════════════════════════════════════
 document.addEventListener('keydown', function(event) {
   const loginOverlay = document.getElementById('loginOverlay');
   
-  // Hanya jalankan jika layar Login sedang terbuka (tidak di-hide)
   if (loginOverlay && window.getComputedStyle(loginOverlay).display !== 'none') {
     const key = event.key;
 
-    // Jika tombol yang ditekan adalah angka 0-9
     if (/^[0-9]$/.test(key)) {
       pinPress(key);
     } 
-    // Jika tombol yang ditekan adalah Backspace (Hapus)
     else if (key === 'Backspace') {
       pinDelete();
     }
-    // Jika tombol yang ditekan adalah Escape atau Delete (Hapus Semua)
     else if (key === 'Escape' || key === 'Delete') {
       pinClear();
     }
