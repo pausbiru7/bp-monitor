@@ -1171,7 +1171,7 @@ function renderPatients(){
       </div>
       <div class="panel-body" style="padding-bottom:0">
         <div class="search-bar">
-          <input id="patSearch" placeholder="🔍 Cari nama pekerja..." value="${escapeHtml(qP)}" oninput="renderPatients()">
+         <input id="patSearch" placeholder="🔍 Cari nama pekerja..." value="${escapeHtml(qP)}" oninput="filterAndRenderTable()">
           <select id="patKat" onchange="renderPatients()">
             ${katOpts.replace(`value="${kP}"`, `value="${kP}" selected`)}
           </select>
@@ -1203,7 +1203,61 @@ function renderPatients(){
   autoAge();
   formatPhone();
 }
+function filterAndRenderTable() {
+  const qP = document.getElementById('patSearch')?.value || '';
+  const kP = document.getElementById('patKat')?.value || '';
+  const filtered = filterPatients(qP, kP);
 
+  const rows = filtered.map(p => {
+    const le = lastExam(p.id);
+    const st = le ? getStatus(le.systolic, le.diastolic) : null;
+    const examsCount = pExams(p.id).length;
+    const safeName = escapeHtml(p.name || '');
+    const safeDob = p.dob ? fmt(p.dob) : '-';
+    const safePhone = escapeHtml(p.phone || '');
+
+    const waBtn = p.phone
+      ? `<a href="https://wa.me/${safePhone}" target="_blank" rel="noopener noreferrer" class="btn btn-success btn-sm" title="Buka WA ${safeName}" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">💬</a>`
+      : '<span style="color:#cbd5e1;font-size:.75rem">—</span>';
+
+    const phoneHtml = p.phone
+      ? `<span style="font-size:.78rem">${safePhone}</span>`
+      : '<span style="color:#cbd5e1">—</span>';
+
+    const safeNik = escapeHtml(p.nik || p.id || '-');
+
+    return `
+      <tr>
+        <td><code>${safeNik}</code></td>
+        <td><strong>${safeName}</strong></td>
+        <td>${safeDob}</td>
+        <td>${p.dob ? calcAge(p.dob) + ' th' : '-'}</td>
+        <td>${p.gender === 'L' ? 'L' : 'P'}</td>
+        <td>${phoneHtml}</td>
+        <td>${examsCount} kali</td>
+        <td>${le ? `${le.systolic}/${le.diastolic}` : '-'}</td>
+        <td>${st ? `<span class="badge ${st.cls}">${st.label}</span>` : '-'}</td>
+        <td style="display:flex;gap:5px;flex-wrap:wrap">
+          ${waBtn}
+          <button class="btn btn-outline btn-sm" onclick="editPatient(${p.id})" title="Edit">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="delPatient(${p.id})" title="Hapus">🗑️</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  // Perbarui isi tabel secara instan tanpa mereset form atas
+  const tbodyEl = document.querySelector('#page-patients tbody');
+  if (tbodyEl) {
+    tbodyEl.innerHTML = rows || '<tr><td colspan="10" class="empty">Tidak ada data yang sesuai</td></tr>';
+  }
+  
+  // Perbarui counter jumlah data
+  const countEl = document.querySelector('.panel-head span');
+  if (countEl) {
+    countEl.textContent = `${filtered.length} dari ${patients.length} pekerja`;
+  }
+}
 function autoAge(){
   const pDob = document.getElementById('pDob');
   const pAge = document.getElementById('pAge');
