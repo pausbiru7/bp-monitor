@@ -2541,10 +2541,7 @@ function renderAlcoholPage() {
           </div>
           <div class="fg">
             <label>Hasil Tes / Status Alkohol (Otomatis)</label>
-            <select id="alcStatus">
-              <option value="Pass">Pass (0.00 - Aman)</option>
-              <option value="Fail">Fail (> 0.00 - Tidak Layak)</option>
-            </select>
+            <input id="alcStatus" type="text" readonly value="Pass" style="font-weight:700; background:#f8fafc;">
           </div>
           <div class="fg">
             <label>Tanggal Pemeriksaan</label>
@@ -2591,17 +2588,19 @@ function renderAlcoholPage() {
 // Otomatisasi Status Pass / Fail Berdasarkan Nilai BAC
 function autoDetectAlcoholStatus() {
   const levelInput = document.getElementById('alcLevel');
-  const statusSelect = document.getElementById('alcStatus');
+  const statusInput = document.getElementById('alcStatus');
   
-  if (!levelInput || !statusSelect) return;
+  if (!levelInput || !statusInput) return;
 
   const valStr = levelInput.value.trim().replace(',', '.');
   const valNum = parseFloat(valStr);
 
   if (valStr === '' || isNaN(valNum) || valNum === 0) {
-    statusSelect.value = 'Pass';
+    statusInput.value = 'Pass';
+    statusInput.style.color = '#16a34a'; // Warna hijau untuk Pass
   } else if (valNum > 0) {
-    statusSelect.value = 'Fail';
+    statusInput.value = 'Fail';
+    statusInput.style.color = '#dc2626'; // Warna merah untuk Fail
   }
 }
 
