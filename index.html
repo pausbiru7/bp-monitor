@@ -736,7 +736,7 @@ function renderDashboard(){
   if(!dashboardEl) return;
 
   dashboardEl.innerHTML = `
-    <!-- BARIS 1: TABEL DATA TERBARU -->
+    <!-- BARIS 1: PEMERIKSAAN BP (Kiri) & ALKOHOL (Kanan) -->
     <div class="grid-2" style="margin-bottom:18px">
       <div class="panel">
         <div class="panel-head"><h2>📋 Pemeriksaan BP Terbaru</h2></div>
@@ -749,20 +749,13 @@ function renderDashboard(){
       </div>
     </div>
 
-    <!-- BARIS 2: GRAFIK TEKANAN DARAH -->
+    <!-- BARIS 2: DISTRIBUSI BP (Kiri) & DISTRIBUSI ALKOHOL (Kanan) -->
     <div class="grid-2" style="margin-bottom:18px">
-      <div class="panel">
-        <div class="panel-head"><h2>📊 Tren Rata-rata Sistolik (6 Bulan)</h2></div>
-        <div class="panel-body"><div class="chart-box"><canvas id="dashTrendChart"></canvas></div></div>
-      </div>
       <div class="panel">
         <div class="panel-head"><h2>🥧 Distribusi Kategori BP (Terakhir)</h2></div>
         <div class="panel-body"><div class="chart-box"><canvas id="dashPieChart"></canvas></div></div>
       </div>
-    </div>
 
-    <!-- BARIS 3: ALKOHOL & FOLLOW-UP -->
-    <div class="grid-2" style="margin-bottom:18px">
       <div class="panel">
         <div class="panel-head"><h2>🥧 Status Tes Alkohol (Pass vs Fail)</h2></div>
         <div class="panel-body">
@@ -773,15 +766,31 @@ function renderDashboard(){
           <div class="chart-box" style="height:220px"><canvas id="dashAlcPieChart"></canvas></div>
         </div>
       </div>
-      
+    </div>
+
+    <!-- BARIS 3: TREN SISTOLIK (Kiri) & KLASIFIKASI ALKOHOL (Kanan) -->
+    <div class="grid-2" style="margin-bottom:18px">
+      <div class="panel">
+        <div class="panel-head"><h2>📊 Tren Rata-rata Sistolik (6 Bulan)</h2></div>
+        <div class="panel-body"><div class="chart-box"><canvas id="dashTrendChart"></canvas></div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>📖 Klasifikasi Tes Alkohol (BAC)</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Status</th><th>Nilai BAC</th><th>Keterangan</th></tr></thead><tbody>
+          <tr><td><span class="badge b-nor">Pass</span></td><td>0.00</td><td>Aman / Layak Kerja</td></tr>
+          <tr><td><span class="badge b-ht2">Fail</span></td><td>&gt; 0.00</td><td>Tidak Layak Kerja (Tindakan Diperlukan)</td></tr>
+        </tbody></table></div>
+      </div>
+    </div>
+
+    <!-- BARIS 4: FOLLOW UP PENDING (Kiri) & KLASIFIKASI BP (Kanan) -->
+    <div class="grid-2">
       <div class="panel">
         <div class="panel-head"><h2>🔔 Follow-Up Pending</h2><span style="font-size:.75rem;color:#f59e0b">${pend.length} menunggu</span></div>
         <div class="panel-body">${fuHtml}</div>
       </div>
-    </div>
 
-    <!-- BARIS 4: KLASIFIKASI -->
-    <div class="grid-2">
       <div class="panel">
         <div class="panel-head"><h2>📖 Klasifikasi Tekanan Darah (KEPMENKES)</h2></div>
         <div style="overflow-x:auto"><table><thead><tr><th>Kategori</th><th>Sistolik</th><th>Diastolik</th><th>Risiko</th></tr></thead><tbody>
@@ -793,16 +802,98 @@ function renderDashboard(){
           <tr><td><span class="badge b-ht3">HT Derajat 3</span></td><td>≥180</td><td>≥110</td><td>Sangat Tinggi</td></tr>
         </tbody></table></div>
       </div>
-      
-      <div class="panel">
-        <div class="panel-head"><h2>📖 Klasifikasi Tes Alkohol (BAC)</h2></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Status</th><th>Nilai BAC</th><th>Keterangan</th></tr></thead><tbody>
-          <tr><td><span class="badge b-nor">Pass</span></td><td>0.00</td><td>Aman / Layak Kerja</td></tr>
-          <tr><td><span class="badge b-ht2">Fail</span></td><td>&gt; 0.00</td><td>Tidak Layak Kerja (Tindakan Diperlukan)</td></tr>
-        </tbody></table></div>
-      </div>
     </div>`;
 
+  requestAnimationFrame(() => {
+    // ── Render Chart Trend BP (Garis) ──
+    const trendCanvas = document.getElementById('dashTrendChart');
+    if(trendCanvas){
+      destroyChart('dashTrendChart');
+      new Chart(trendCanvas, {
+        type: 'line',
+        data: {
+          labels: months.map(m => monthLabel(m)),
+          datasets: [{
+            label: 'Rata-rata Sistolik',
+            data: avgByMonth,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37,99,235,.1)',
+            fill: true,
+            tension: .4,
+            pointRadius: 5,
+            pointBackgroundColor: '#2563eb',
+            spanGaps: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { min: 80, max: 200, ticks: { callback: v => v + ' mmHg' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // ── Render Chart Pie BP ──
+    const pieCanvas = document.getElementById('dashPieChart');
+    if(pieCanvas){
+      destroyChart('dashPieChart');
+      const catDefs = [
+        {key:'opt', label:'Optimal', color:'#0891b2'},
+        {key:'nor', label:'Normal', color:'#16a34a'},
+        {key:'pre', label:'Normal-Tinggi', color:'#ca8a04'},
+        {key:'ht1', label:'HT Derajat 1', color:'#ea580c'},
+        {key:'ht2', label:'HT Derajat 2', color:'#dc2626'},
+        {key:'ht3', label:'HT Derajat 3', color:'#7c3aed'},
+        {key:'iso', label:'HT Sistolik Terisolasi', color:'#2563eb'},
+        {key:'low', label:'Hipotensi', color:'#0369a1'}
+      ];
+
+      const active = catDefs.filter(c => catCount[c.key] > 0);
+      new Chart(pieCanvas, {
+        type: 'doughnut',
+        data: {
+          labels: active.map(c => c.label),
+          datasets: [{ data: active.map(c => catCount[c.key]), backgroundColor: active.map(c => c.color), borderWidth: 2 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } } }
+      });
+    }
+
+    // ── Render Chart Pie Alkohol ──
+    const alcPieCanvas = document.getElementById('dashAlcPieChart');
+    if (alcPieCanvas) {
+      destroyChart('dashAlcPieChart');
+      if (totalAlc > 0) {
+        new Chart(alcPieCanvas, {
+          type: 'doughnut',
+          data: {
+            labels: ['Pass (Aman)', 'Fail (Tidak Layak)'],
+            datasets: [{
+              data: [alcPass, alcFail],
+              backgroundColor: ['#16a34a', '#dc2626'],
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }
+          }
+        });
+      } else {
+        const ctx = alcPieCanvas.getContext('2d');
+        ctx.font = '12px Arial';
+        ctx.fillStyle = '#94a3b8';
+        ctx.textAlign = 'center';
+        ctx.fillText('Belum ada data', alcPieCanvas.width/2, alcPieCanvas.height/2);
+      }
+    }
+  });
+}
   requestAnimationFrame(() => {
     // ── Render Chart Trend BP (Garis) ──
     const trendCanvas = document.getElementById('dashTrendChart');
