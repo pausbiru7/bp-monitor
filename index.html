@@ -1080,24 +1080,6 @@ function updateExam(id){
   alert('✅ Data berhasil diperbarui!');
 }
 // ══ MASTER PEKERJA ═════════════════════════
-let editingPatientId = null;
-
-function escapeHtml(v){
-  return String(v ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function getEditingPatient(){
-  return editingPatientId == null
-    ? null
-    : patients.find(p => String(p.id) === String(editingPatientId)) || null;
-}
-
-// ══ MASTER PEKERJA ═════════════════════════
 function renderPatients(){
   const qP = document.getElementById('patSearch')?.value || '';
   const kP = document.getElementById('patKat')?.value || '';
@@ -1131,6 +1113,7 @@ function renderPatients(){
         <td>${le ? `${le.systolic}/${le.diastolic}` : '-'}</td>
         <td>${st ? `<span class="badge ${st.cls}">${st.label}</span>` : '-'}</td>
         <td style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm" onclick="showWorkerBarcode(${p.id})" title="Lihat QR Code" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:#f8fafc;">🏷️</button>
           ${waBtn}
           <button class="btn btn-outline btn-sm" onclick="editPatient(${p.id})" title="Edit" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">✏️</button>
           <button class="btn btn-danger btn-sm" onclick="delPatient(${p.id})" title="Hapus" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">🗑️</button>
@@ -1165,16 +1148,15 @@ function renderPatients(){
           <div class="fg"><label>No. HP / WhatsApp</label><input id="pPhone" type="tel" placeholder="628xxxxxxxxxx" oninput="formatPhone()" value="${escapeHtml(editing?.phone || '')}"></div>
         </div>
         
-        <!-- AREA LIVE PREVIEW BARCODE (STYLE MARISSA STORE) -->
-        <div style="text-align:center; padding:20px; background:#fafafa; border-radius:12px; margin-top:14px; border:2px dashed #ddd;">
-          <div id="formBarcodeWrapper" style="display:none;">
-            <div style="background:#fff; padding:15px 15px 10px; border:1px solid #e2e8f0; border-radius:12px; display:inline-block; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-              <svg id="formBarcodeCanvas" style="max-width: 100%; height: auto;"></svg>
-            </div>
-            <div id="formBarcodeLabel" style="margin-top:10px; font-size:0.85rem; font-weight:700; color:#475569; letter-spacing:0.5px;"></div>
+        <!-- AREA LIVE PREVIEW QR CODE (GAYA MARISSA STORE) -->
+        <div class="barcode-box" id="w-barcode-box" style="display:none; text-align:center; margin-top:14px; background:#fafafa; border-radius:12px; border:2px dashed #ddd; padding:20px;">
+          <div style="background:#fff; padding:12px; border:1px solid #e2e8f0; border-radius:12px; display:inline-block; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+            <img id="w-barcode-img" src="" alt="QR Code Pekerja" style="width:180px; height:180px; object-fit:contain;" />
           </div>
-          <div id="formBarcodeEmpty" style="font-size: 0.85rem; color: #999; padding: 10px 0;">
-            Ketik NIK dan Nama untuk memunculkan Barcode
+          <div class="label" id="w-barcode-label" style="margin-top:10px; font-size:0.85rem; font-weight:700; color:#475569;"></div>
+          <div class="btn-row" style="display:flex; gap:10px; justify-content:center; margin-top:12px;">
+            <button class="btn btn-outline" style="width:auto; padding:8px 14px;" onclick="downloadBarcode('w')">📥 Download</button>
+            <button class="btn btn-outline" style="width:auto; padding:8px 14px;" onclick="printBarcode('w')">🖨️ Print</button>
           </div>
         </div>
 
@@ -1210,62 +1192,97 @@ function renderPatients(){
   
   autoAge();
   formatPhone();
-  generateFormBarcode(); // Panggil saat edit agar langsung muncul
+  generateFormBarcode();
 }
 
-// ── FUNGSI LIVE PREVIEW BARCODE ALA MARISSA STORE ──
+// ── FUNGSI LIVE PREVIEW QR CODE (GAYA MARISSA STORE) ──
 function generateFormBarcode() {
   const pNikInput = document.getElementById('pNik');
   const pNameInput = document.getElementById('pName');
-  const wrapper = document.getElementById('formBarcodeWrapper');
-  const canvas = document.getElementById('formBarcodeCanvas');
-  const label = document.getElementById('formBarcodeLabel');
-  const emptyText = document.getElementById('formBarcodeEmpty');
+  const box = document.getElementById('w-barcode-box');
+  const img = document.getElementById('w-barcode-img');
+  const label = document.getElementById('w-barcode-label');
   
-  if (!pNikInput || !canvas || !emptyText) return;
+  if (!pNikInput || !box || !img || !label) return;
   
-  const val = pNikInput.value.trim();
+  const nikVal = pNikInput.value.trim();
   const nameVal = pNameInput ? pNameInput.value.trim() : '';
   
-  if (val === '') {
-    wrapper.style.display = 'none';
-    emptyText.style.display = 'block';
+  if (nikVal === '') {
+    box.style.display = 'none';
     return;
   }
   
-  if (typeof JsBarcode === 'undefined') {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js';
-    script.onload = () => drawFormBarcode(val, nameVal, canvas, wrapper, emptyText, label);
-    document.head.appendChild(script);
-  } else {
-    drawFormBarcode(val, nameVal, canvas, wrapper, emptyText, label);
-  }
+  box.style.display = 'block';
+  img.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(nikVal)}`;
+  label.textContent = nameVal ? `${nameVal} • ${nikVal}` : nikVal;
 }
 
-function drawFormBarcode(val, nameVal, canvas, wrapper, emptyText, label) {
-  emptyText.style.display = 'none';
-  wrapper.style.display = 'block';
+function showWorkerBarcode(id){
+  const p = patients.find(x => String(x.id) === String(id));
+  if(!p) return;
   
-  // Setting barcode persis seperti di Marissa Store
-  JsBarcode(canvas, val, {
-    format: "CODE128",
-    lineColor: "#111",
-    width: 2,
-    height: 60,
-    displayValue: true,
-    fontSize: 14,
-    margin: 8,
-    background: "transparent"
-  });
-  
-  // Memunculkan nama dan NIK di bawah barcode
-  if(label) {
-    label.textContent = nameVal ? `${nameVal} • ${val}` : val;
-  }
+  const nikVal = String(p.nik || p.id || '').trim();
+  if(!nikVal) return;
+
+  const box = document.getElementById('w-barcode-box');
+  const img = document.getElementById('w-barcode-img');
+  const label = document.getElementById('w-barcode-label');
+  const pNikInput = document.getElementById('pNik');
+  const pNameInput = document.getElementById('pName');
+
+  if(pNikInput) pNikInput.value = p.nik || p.id || '';
+  if(pNameInput) pNameInput.value = p.name || '';
+
+  generateFormBarcode();
+  if(box) box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-// ── Fungsi Tambahan Pendukung ──
+// ── Fungsi Pendukung Download & Print Barcode ──
+function downloadBarcode(type) {
+  const imgEl = document.getElementById(`${type}-barcode-img`);
+  if (!imgEl || !imgEl.src) return;
+
+  fetch(imgEl.src)
+    .then(res => res.blob())
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.download = `qrcode-pekerja-${Date.now()}.png`;
+      a.href = url;
+      a.click();
+      URL.revokeObjectURL(url);
+    }).catch(() => {});
+}
+
+function printBarcode(type) {
+  const box = document.getElementById(`${type}-barcode-box`);
+  if (!box) return;
+  
+  const win = window.open('', '_blank');
+  win.document.write(`
+    <html>
+      <head>
+        <title>Cetak QR Code Pekerja</title>
+        <style>
+          body { text-align: center; padding: 30px; font-family: sans-serif; }
+          img { width: 220px; height: 220px; object-fit: contain; }
+          .label { margin-top: 12px; font-size: 18px; font-weight: bold; color: #1e293b; }
+        </style>
+      </head>
+      <body>
+        ${box.innerHTML}
+      </body>
+    </html>
+  `);
+  win.document.close();
+  win.focus();
+  setTimeout(() => {
+    win.print();
+    win.close();
+  }, 250);
+}
+
 function filterAndRenderTable() {
   const qP = document.getElementById('patSearch')?.value || '';
   const kP = document.getElementById('patKat')?.value || '';
@@ -1285,6 +1302,7 @@ function filterAndRenderTable() {
     return `<tr>
       <td><code>${safeNik}</code></td><td><strong>${safeName}</strong></td><td>${safeDob}</td><td>${p.dob ? calcAge(p.dob) + ' th' : '-'}</td><td>${p.gender === 'L' ? 'L' : 'P'}</td><td>${phoneHtml}</td><td>${examsCount} kali</td><td>${le ? `${le.systolic}/${le.diastolic}` : '-'}</td><td>${st ? `<span class="badge ${st.cls}">${st.label}</span>` : '-'}</td>
       <td style="display:flex;gap:5px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="showWorkerBarcode(${p.id})" title="Lihat QR Code" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:#f8fafc;">🏷️</button>
         ${waBtn}
         <button class="btn btn-outline btn-sm" onclick="editPatient(${p.id})" title="Edit" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">✏️</button>
         <button class="btn btn-danger btn-sm" onclick="delPatient(${p.id})" title="Hapus" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">🗑️</button>
@@ -1298,6 +1316,7 @@ function filterAndRenderTable() {
   const countEl = document.querySelector('.panel-head span');
   if (countEl) countEl.textContent = `${filtered.length} dari ${patients.length} pekerja`;
 }
+
 function autoAge(){
   const pDob = document.getElementById('pDob');
   const pAge = document.getElementById('pAge');
