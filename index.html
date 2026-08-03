@@ -658,15 +658,20 @@ function renderStats(){
 
   const pend = followups.filter(f => f.status === 'pending').length;
 
+  // ── STATISTIK ALKOHOL ──
+  const alcTotal = alcoholExams.length;
+  const alcFail = alcoholExams.filter(a => a.status === 'Fail').length;
+
   const statsArea = document.getElementById('statsArea');
   if(!statsArea) return;
 
   statsArea.innerHTML = `
     <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">👥</div><div class="stat-info"><h3>Total Pekerja</h3><div class="val">${patients.length}</div><div class="sub">Terdaftar</div></div></div>
     <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🔴</div><div class="stat-info"><h3>Hipertensi</h3><div class="val" style="color:#dc2626">${ht}</div><div class="sub">Perlu penanganan</div></div></div>
-    <div class="stat-card"><div class="stat-icon" style="background:#fef9c3">🟡</div><div class="stat-info"><h3>Normal-Tinggi</h3><div class="val" style="color:#ca8a04">${pre}</div><div class="sub">Perlu monitoring</div></div></div>
     <div class="stat-card"><div class="stat-icon" style="background:#dcfce7">🟢</div><div class="stat-info"><h3>Optimal/Normal</h3><div class="val" style="color:#16a34a">${nor}</div><div class="sub">Kondisi baik</div></div></div>
-    <div class="stat-card"><div class="stat-icon" style="background:#fef3c7">🔔</div><div class="stat-info"><h3>Follow-Up</h3><div class="val" style="color:#d97706">${pend}</div><div class="sub">Menunggu</div></div></div>`;
+    <div class="stat-card"><div class="stat-icon" style="background:#fef3c7">🔔</div><div class="stat-info"><h3>Follow-Up</h3><div class="val" style="color:#d97706">${pend}</div><div class="sub">Menunggu</div></div></div>
+    <!-- KARTU BARU: TES ALKOHOL -->
+    <div class="stat-card" style="border: ${alcFail > 0 ? '1px solid #fecaca' : 'none'}"><div class="stat-icon" style="background:#fce7f3">🍷</div><div class="stat-info"><h3>Tes Alkohol</h3><div class="val">${alcTotal}</div><div class="sub" style="${alcFail > 0 ? 'color:#dc2626;font-weight:bold' : 'color:#16a34a'}">${alcFail > 0 ? '⚠️ ' + alcFail + ' Kasus Fail' : 'Semua Pass ✓'}</div></div></div>`;
 }
 // ══ DASHBOARD ═════════════════════════════
 function renderDashboard(){
@@ -694,9 +699,10 @@ function renderDashboard(){
       catCount[getStatus(e.systolic, e.diastolic).key]++;
     });
 
+  // ── 1. ROWS UNTUK TEKANAN DARAH TERBARU ──
   const recent = [...exams]
     .sort((a, b) => String(b.examDate).localeCompare(String(a.examDate)))
-    .slice(0, 6);
+    .slice(0, 5); // Ambil 5 terbaru saja agar ringkas
 
   const rows = recent.map(e => {
     const st = getStatus(e.systolic, e.diastolic);
@@ -705,6 +711,16 @@ function renderDashboard(){
     const prev = idx > 0 ? pex[idx - 1] : null;
 
     return `<tr><td><strong>${pName(e.patientId)}</strong></td><td>${fmt(e.examDate)}</td><td class="${vCls(e.systolic,140,120)}">${e.systolic}</td><td class="${vCls(e.diastolic,90,80)}">${e.diastolic}</td><td>${trendArrow(e.systolic,prev?.systolic)}</td><td><span class="badge ${st.cls}">${st.label}</span></td></tr>`;
+  }).join('');
+
+  // ── 2. ROWS UNTUK TES ALKOHOL TERBARU ──
+  const recentAlcohol = [...alcoholExams]
+    .sort((a, b) => String(b.examDate).localeCompare(String(a.examDate)))
+    .slice(0, 5);
+
+  const alcRows = recentAlcohol.map(a => {
+    const badgeCls = a.status === 'Pass' ? 'b-nor' : 'b-ht2';
+    return `<tr><td><strong>${escapeHtml(a.patientName)}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
   }).join('');
 
   const pend = followups.filter(f => f.status === 'pending');
@@ -718,69 +734,43 @@ function renderDashboard(){
 
   dashboardEl.innerHTML = `
     <div class="grid-2" style="margin-bottom:18px">
-      <div class="panel"><div class="panel-head"><h2>📋 Pemeriksaan Terbaru</h2><span style="font-size:.75rem;color:#64748b">${exams.length} total</span></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Trend</th><th>Kategori</th></tr></thead><tbody>${rows || '<tr><td colspan="6" class="empty">Belum ada data</td></tr>'}</tbody></table></div></div>
-      <div>
-        <div class="panel" style="margin-bottom:18px"><div class="panel-head"><h2>📊 Tren Rata-rata Sistolik (6 Bulan)</h2></div>
-          <div class="panel-body"><div class="chart-box"><canvas id="dashTrendChart"></canvas></div></div></div>
-        <div class="panel"><div class="panel-head"><h2>🔔 Follow-Up Pending</h2><span style="font-size:.75rem;color:#f59e0b">${pend.length} menunggu</span></div>
-          <div class="panel-body">${fuHtml}</div></div>
+      <!-- PANEL BP TERBARU -->
+      <div class="panel">
+        <div class="panel-head"><h2>📋 Pemeriksaan Tekanan Darah Terbaru</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Trend</th><th>Kategori</th></tr></thead><tbody>${rows || '<tr><td colspan="6" class="empty">Belum ada data</td></tr>'}</tbody></table></div>
+      </div>
+      
+      <!-- PANEL ALKOHOL TERBARU -->
+      <div class="panel">
+        <div class="panel-head"><h2>🍷 Hasil Tes Alkohol Terbaru</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Nilai BAC</th><th>Status</th></tr></thead><tbody>${alcRows || '<tr><td colspan="4" class="empty">Belum ada data tes alkohol</td></tr>'}</tbody></table></div>
       </div>
     </div>
+
     <div class="grid-2">
       <div class="panel"><div class="panel-head"><h2>🥧 Distribusi Kategori Pekerja (Terakhir)</h2></div>
         <div class="panel-body"><div class="chart-box"><canvas id="dashPieChart"></canvas></div></div></div>
-      <div class="panel"><div class="panel-head"><h2>📖 Tabel Klasifikasi KEPMENKES 4634/2021</h2></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Kategori</th><th>Sistolik</th><th>Diastolik</th><th>Risiko</th></tr></thead><tbody>
-          <tr><td><span class="badge b-opt">Optimal</span></td><td>&lt;120</td><td>&lt;80</td><td>Minimal</td></tr>
-          <tr><td><span class="badge b-nor">Normal</span></td><td>120–129</td><td>80–84</td><td>Rendah</td></tr>
-          <tr><td><span class="badge b-pre">Normal-Tinggi</span></td><td>130–139</td><td>85–89</td><td>Rendah-Sedang</td></tr>
-          <tr><td><span class="badge b-ht1">HT Derajat 1</span></td><td>140–159</td><td>90–99</td><td>Sedang</td></tr>
-          <tr><td><span class="badge b-ht2">HT Derajat 2</span></td><td>160–179</td><td>100–109</td><td>Tinggi</td></tr>
-          <tr><td><span class="badge b-ht3">HT Derajat 3</span></td><td>≥180</td><td>≥110</td><td>Sangat Tinggi</td></tr>
-          <tr><td><span class="badge b-iso">HT Sistolik Terisolasi</span></td><td>≥140</td><td>&lt;90</td><td>Sedang</td></tr>
-        <tr><td><span class="badge b-low">Hipotensi</span></td><td>&lt;90</td><td>&lt;60</td><td>Perlu Perhatian</td></tr>
-        </tbody></table></div></div>
+      
+      <div>
+        <div class="panel" style="margin-bottom:18px"><div class="panel-head"><h2>🔔 Follow-Up Pending</h2><span style="font-size:.75rem;color:#f59e0b">${pend.length} menunggu</span></div>
+          <div class="panel-body">${fuHtml}</div></div>
+        
+        <div class="panel"><div class="panel-head"><h2>📖 Klasifikasi KEPMENKES 4634/2021</h2></div>
+          <div style="overflow-x:auto"><table><thead><tr><th>Kategori</th><th>Sistolik</th><th>Diastolik</th><th>Risiko</th></tr></thead><tbody>
+            <tr><td><span class="badge b-opt">Optimal</span></td><td>&lt;120</td><td>&lt;80</td><td>Minimal</td></tr>
+            <tr><td><span class="badge b-nor">Normal</span></td><td>120–129</td><td>80–84</td><td>Rendah</td></tr>
+            <tr><td><span class="badge b-pre">Normal-Tinggi</span></td><td>130–139</td><td>85–89</td><td>Rendah-Sedang</td></tr>
+            <tr><td><span class="badge b-ht1">HT Derajat 1</span></td><td>140–159</td><td>90–99</td><td>Sedang</td></tr>
+            <tr><td><span class="badge b-ht2">HT Derajat 2</span></td><td>160–179</td><td>100–109</td><td>Tinggi</td></tr>
+          </tbody></table></div></div>
+      </div>
     </div>`;
 
   requestAnimationFrame(() => {
-    const trendCanvas = document.getElementById('dashTrendChart');
     const pieCanvas = document.getElementById('dashPieChart');
-
-    if(trendCanvas){
-      destroyChart('dashTrendChart');
-      new Chart(trendCanvas, {
-        type: 'line',
-        data: {
-          labels: months.map(m => monthLabel(m)),
-          datasets: [{
-            label: 'Rata-rata Sistolik',
-            data: avgByMonth,
-            borderColor: '#2563eb',
-            backgroundColor: 'rgba(37,99,235,.1)',
-            fill: true,
-            tension: .4,
-            pointRadius: 5,
-            pointBackgroundColor: '#2563eb',
-            spanGaps: true
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { min: 80, max: 200, ticks: { callback: v => v + ' mmHg' } },
-            x: { grid: { display: false } }
-          }
-        }
-      });
-    }
-
     if(pieCanvas){
       destroyChart('dashPieChart');
-
-     const catDefs = [
+      const catDefs = [
         {key:'opt', label:'Optimal', color:'#0891b2'},
         {key:'nor', label:'Normal', color:'#16a34a'},
         {key:'pre', label:'Normal-Tinggi', color:'#ca8a04'},
@@ -807,10 +797,7 @@ function renderDashboard(){
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: {
-              position: 'right',
-              labels: { font: { size: 11 } }
-            }
+            legend: { position: 'right', labels: { font: { size: 11 } } }
           }
         }
       });
