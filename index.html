@@ -1080,7 +1080,24 @@ function updateExam(id){
   alert('✅ Data berhasil diperbarui!');
 }
 // ══ MASTER PEKERJA ═════════════════════════
-function renderPatients(){
+function escapeHtml(v){
+  return String(v ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function filterPatients(query, kategori){
+  return patients.filter(p => {
+    const le = lastExam(p.id);
+    const matchName = !query || p.name.toLowerCase().includes(query.toLowerCase()) || String(p.nik || '').toLowerCase().includes(query.toLowerCase());
+    const matchKat  = !kategori || (le && getStatus(le.systolic, le.diastolic).key === kategori);
+    return matchName && matchKat;
+  });
+}
+  function renderPatients(){
   const qP = document.getElementById('patSearch')?.value || '';
   const kP = document.getElementById('patKat')?.value || '';
   const filtered = filterPatients(qP, kP);
