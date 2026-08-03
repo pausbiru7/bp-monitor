@@ -347,6 +347,7 @@ table th, table td {
     <div class="nav-item" onclick="showPage('progress')"><span class="nav-icon">📈</span> Progress Pekerja</div>
     <div class="nav-item" onclick="showPage('monthly')"><span class="nav-icon">🗓️</span> Laporan Bulanan</div>
     <div class="nav-item" onclick="showPage('followup')"><span class="nav-icon">🔔</span> Follow-Up</div>
+    <div class="nav-item" onclick="showPage('alcohol')"><span class="nav-icon">🍷</span> Tes Alkohol</div>
     <div class="nav-item" onclick="document.getElementById('changePinModal').style.display='flex'"><span class="nav-icon">🔐</span> Ganti PIN</div>
     <div class="nav-item" onclick="doLogout()"><span class="nav-icon">🚪</span> Keluar</div>
   </div>
@@ -374,6 +375,7 @@ table th, table td {
     <div id="page-progress" style="display:none"></div>
     <div id="page-monthly" style="display:none"></div>
     <div id="page-followup" style="display:none"></div>
+    <div id="page-alcohol" style="display:none"></div>
   </div>
 </div>
 <script>
@@ -384,15 +386,23 @@ let patients = JSON.parse(localStorage.getItem('bpm_patients') || 'null') || [];
 let exams = (JSON.parse(localStorage.getItem('bpm_exams') || 'null') || [])
   .map(e => ({ ...e, examDate: e.examDate?.slice(0, 10) }));
 let followups = JSON.parse(localStorage.getItem('bpm_followups') || 'null') || [];
-
+// ── TAMBAHKAN DATA TES ALKOHOL DI SINI ──
+let alcoholExams = (JSON.parse(localStorage.getItem('bpm_alcohol') || 'null') || [])
+  .map(e => ({ ...e, examDate: e.examDate?.slice(0, 10) }));
+// ────────────────────────────────────────
 let nextEid = exams.length ? Math.max(...exams.map(e => +e.id)) + 1 : 1;
 let nextFid = followups.length ? Math.max(...followups.map(f => +f.id)) + 1 : 1;
 let nextPid = patients.length ? Math.max(...patients.map(p => +p.id)) + 1 : 1;
-
+// ── TAMBAHKAN ID ALKOHOL DI SINI ──
+let nextAid = alcoholExams.length ? Math.max(...alcoholExams.map(a => +a.id)) + 1 : 1;
+// ──────────────────────────────────
 function save(){
   localStorage.setItem('bpm_patients', JSON.stringify(patients));
   localStorage.setItem('bpm_exams', JSON.stringify(exams));
   localStorage.setItem('bpm_followups', JSON.stringify(followups));
+  // ── TAMBAHKAN SIMPAN ALKOHOL DI SINI ──
+  localStorage.setItem('bpm_alcohol', JSON.stringify(alcoholExams));
+  // ──────────────────────────────────────
 }
 
 // ══ KEPMENKES 4634/2021 CLASSIFICATION ════
@@ -575,7 +585,7 @@ document.getElementById('printDate').textContent = new Date().toLocaleDateString
   year: 'numeric'
 });
 
-const pages = ['dashboard', 'records', 'patients', 'progress', 'monthly', 'followup'];
+const pages = ['dashboard', 'records', 'patients', 'progress', 'monthly', 'followup', 'alcohol']; // Tambahkan 'alcohol' di sini
 
 const titles = {
   dashboard: 'Dashboard',
@@ -583,7 +593,8 @@ const titles = {
   patients: 'Master Data Pekerja',
   progress: 'Progress Pekerja',
   monthly: 'Laporan Bulanan',
-  followup: 'Manajemen Follow-Up'
+  followup: 'Manajemen Follow-Up',
+  alcohol: 'Tes Alkohol (BAC)' // Tambahkan judul halamannya
 };
 
 function showPage(p){
@@ -609,6 +620,7 @@ function showPage(p){
   if(p === 'progress') renderProgress();
   if(p === 'monthly') renderMonthly();
   if(p === 'followup') renderFollowups();
+  if(p === 'alcohol') renderAlcoholPage(); // ── TAMBAHKAN BARIS INI AGAR HALAMAN ALKOHOL MERENDER ──
 
   if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
 }
@@ -2488,6 +2500,200 @@ document.addEventListener('keydown', function(event) {
     }
   }
 });
+
+// ============================================================
+// 🍷 MODUL TES ALKOHOL (DITEMPATKAN DI SINI)
+// ============================================================
+let scanActiveAlcohol = false;
+
+function renderAlcoholPage() {
+  const pageAlcohol = document.getElementById('page-alcohol');
+  if(!pageAlcohol) return;
+
+  pageAlcohol.innerHTML = `
+    <div class="panel">
+      <div class="panel-head">
+        <h2>🍷 Pemeriksaan Tes Alkohol (BAC)</h2>
+      </div>
+      <div class="panel-body">
+        <div style="margin-bottom:15px; display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="toggleAlcoholScanner()">
+            ${scanActiveAlcohol ? '⏹ Matikan Kamera' : '📷 Scan QR / NIK Pekerja'}
+          </button>
+        </div>
+
+        <div id="alcoholScannerContainer" style="display:${scanActiveAlcohol ? 'block' : 'none'}; margin-bottom:15px; text-align:center;">
+          <div id="alcohol-reader" style="width:100%; max-width:400px; margin:0 auto;"></div>
+          <p style="font-size:.8rem; color:#64748b; margin-top:5px;">Arahkan kamera ke QR Code atau NIK Pekerja</p>
+        </div>
+
+        <div class="form-grid">
+          <div class="fg">
+            <label>Cari / Pilih Pekerja (NIK / Nama)</label>
+            <select id="alcPatientId">
+              <option value="">-- Pilih Pekerja --</option>
+              ${patients.map(p => `<option value="${p.id}">[${p.nik || p.id}] ${p.name}</option>`).join('')}
+            </select>
+          </div>
+          <div class="fg">
+            <label>Hasil Tes / Status Alkohol</label>
+            <select id="alcStatus">
+              <option value="Negatif">Negatif (0.00% - Aman)</option>
+              <option value="Positif Ringan">Positif Ringan</option>
+              <option value="Positif Tinggi">Positif Tinggi (Tidak Layak Kerja)</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Nilai BAC (Opsional, misal: 0.00)</label>
+            <input id="alcLevel" type="text" placeholder="Contoh: 0.00 mg/L">
+          </div>
+          <div class="fg">
+            <label>Tanggal Pemeriksaan</label>
+            <input id="alcDate" type="date" value="${new Date().toISOString().slice(0,10)}">
+          </div>
+        </div>
+
+        <div style="margin-top:15px;">
+          <button class="btn btn-primary" onclick="saveAlcoholExam()">💾 Simpan Hasil Tes Alkohol</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>📋 Riwayat Tes Alkohol</h2>
+        <span style="font-size:.75rem;color:#64748b">${alcoholExams.length} data tercatat</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>No. ID / NIK</th>
+              <th>Nama Pekerja</th>
+              <th>Hasil / Status</th>
+              <th>Nilai BAC</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${renderAlcoholRows()}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  if (scanActiveAlcohol) {
+    initAlcoholScanner();
+  }
+}
+
+function renderAlcoholRows() {
+  if (alcoholExams.length === 0) {
+    return '<tr><td colspan="6" class="empty">Belum ada riwayat tes alkohol</td></tr>';
+  }
+  const sorted = [...alcoholExams].sort((a, b) => new Date(b.examDate) - new Date(a.examDate));
+  return sorted.map(e => {
+    const pat = patients.find(p => String(p.id) === String(e.patientId)) || {};
+    const badgeCls = e.status === 'Negatif' ? 'badge-success' : 'badge-danger';
+    return `
+      <tr>
+        <td>${e.examDate || '-'}</td>
+        <td><code>${escapeHtml(pat.nik || pat.id || '-')}</code></td>
+        <td><strong>${escapeHtml(pat.name || e.patientName || 'Tidak dikenal')}</strong></td>
+        <td><span class="badge ${badgeCls}">${escapeHtml(e.status)}</span></td>
+        <td>${escapeHtml(e.alcoholLevel || '-')}</td>
+        <td>
+          <button class="btn btn-danger btn-sm" onclick="delAlcoholExam(${e.id})" title="Hapus">🗑️</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function saveAlcoholExam() {
+  const patientId = document.getElementById('alcPatientId').value;
+  const status = document.getElementById('alcStatus').value;
+  const alcoholLevel = document.getElementById('alcLevel').value.trim();
+  const examDate = document.getElementById('alcDate').value;
+
+  if (!patientId || !examDate) {
+    return alert('Pilih pekerja dan tanggal pemeriksaan terlebih dahulu!');
+  }
+
+  const pat = patients.find(p => String(p.id) === String(patientId));
+  const newId = nextAid++;
+
+  alcoholExams.push({
+    id: newId,
+    patientId: Number(patientId),
+    patientName: pat ? pat.name : '',
+    status: status,
+    alcoholLevel: alcoholLevel,
+    examDate: examDate
+  });
+
+  save();
+  renderAlcoholPage();
+  alert('Hasil tes alkohol berhasil disimpan!');
+}
+
+function delAlcoholExam(id) {
+  if (!confirm('Hapus data pemeriksaan alkohol ini?')) return;
+  alcoholExams = alcoholExams.filter(e => String(e.id) !== String(id));
+  save();
+  renderAlcoholPage();
+}
+
+function toggleAlcoholScanner() {
+  scanActiveAlcohol = !scanActiveAlcohol;
+  renderAlcoholPage();
+}
+
+let html5QrCodeAlcohol = null;
+function initAlcoholScanner() {
+  if (typeof Html5Qrcode === 'undefined') return;
+  setTimeout(() => {
+    if (!html5QrCodeAlcohol) {
+      html5QrCodeAlcohol = new Html5Qrcode("alcohol-reader");
+    }
+    html5QrCodeAlcohol.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 150 } },
+      (decodedText) => {
+        handleAlcoholScanResult(decodedText.trim());
+      },
+      (errorMessage) => {}
+    ).catch(err => {
+      console.error("Gagal membuka kamera:", err);
+    });
+  }, 200);
+}
+
+function handleAlcoholScanResult(codeText) {
+  const found = patients.find(p => String(p.nik).trim() === codeText || String(p.id) === codeText);
+  if (found) {
+    const selectEl = document.getElementById('alcPatientId');
+    if (selectEl) {
+      selectEl.value = found.id;
+      if (html5QrCodeAlcohol && scanActiveAlcohol) {
+        html5QrCodeAlcohol.stop().then(() => {
+          scanActiveAlcohol = false;
+          renderAlcoholPage();
+        }).catch(() => {
+          scanActiveAlcohol = false;
+          renderAlcoholPage();
+        });
+      }
+      alert(`Pekerja dikenali: ${found.name}`);
+    }
+  } else {
+    alert(`⚠️ QR Code / NIK "${codeText}" tidak terdaftar di database pekerja!`);
+  }
+}
+// ============================================================
+
 </script>
 </body>
 </html>
