@@ -2527,7 +2527,7 @@ function renderAlcoholPage() {
           <p style="font-size:.8rem; color:#64748b; margin-top:5px;">Arahkan kamera ke QR Code atau NIK Pekerja</p>
         </div>
 
-        <div class="form-grid">
+       <div class="form-grid">
           <div class="fg">
             <label>Cari / Pilih Pekerja (NIK / Nama)</label>
             <select id="alcPatientId">
@@ -2536,16 +2536,15 @@ function renderAlcoholPage() {
             </select>
           </div>
           <div class="fg">
-            <label>Hasil Tes / Status Alkohol</label>
-            <select id="alcStatus">
-              <option value="Negatif">Negatif (0.00% - Aman)</option>
-              <option value="Positif Ringan">Positif Ringan</option>
-              <option value="Positif Tinggi">Positif Tinggi (Tidak Layak Kerja)</option>
-            </select>
+            <label>Nilai BAC (Contoh: 0.00)</label>
+            <input id="alcLevel" type="text" placeholder="Contoh: 0.00" oninput="autoDetectAlcoholStatus()">
           </div>
           <div class="fg">
-            <label>Nilai BAC (Opsional, misal: 0.00)</label>
-            <input id="alcLevel" type="text" placeholder="Contoh: 0.00 mg/L">
+            <label>Hasil Tes / Status Alkohol (Otomatis)</label>
+            <select id="alcStatus">
+              <option value="Pass">Pass (0.00 - Aman)</option>
+              <option value="Fail">Fail (> 0.00 - Tidak Layak)</option>
+            </select>
           </div>
           <div class="fg">
             <label>Tanggal Pemeriksaan</label>
@@ -2589,6 +2588,23 @@ function renderAlcoholPage() {
   }
 }
 
+// Otomatisasi Status Pass / Fail Berdasarkan Nilai BAC
+function autoDetectAlcoholStatus() {
+  const levelInput = document.getElementById('alcLevel');
+  const statusSelect = document.getElementById('alcStatus');
+  
+  if (!levelInput || !statusSelect) return;
+
+  const valStr = levelInput.value.trim().replace(',', '.');
+  const valNum = parseFloat(valStr);
+
+  if (valStr === '' || isNaN(valNum) || valNum === 0) {
+    statusSelect.value = 'Pass';
+  } else if (valNum > 0) {
+    statusSelect.value = 'Fail';
+  }
+}
+
 function renderAlcoholRows() {
   if (alcoholExams.length === 0) {
     return '<tr><td colspan="6" class="empty">Belum ada riwayat tes alkohol</td></tr>';
@@ -2596,7 +2612,8 @@ function renderAlcoholRows() {
   const sorted = [...alcoholExams].sort((a, b) => new Date(b.examDate) - new Date(a.examDate));
   return sorted.map(e => {
     const pat = patients.find(p => String(p.id) === String(e.patientId)) || {};
-    const badgeCls = e.status === 'Negatif' ? 'badge-success' : 'badge-danger';
+    // Pass berwarna hijau (b-nor), Fail berwarna merah (b-ht2)
+    const badgeCls = e.status === 'Pass' ? 'b-nor' : 'b-ht2';
     return `
       <tr>
         <td>${e.examDate || '-'}</td>
