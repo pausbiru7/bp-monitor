@@ -1097,6 +1097,7 @@ function getEditingPatient(){
     : patients.find(p => String(p.id) === String(editingPatientId)) || null;
 }
 
+// ══ MASTER PEKERJA ═════════════════════════
 function renderPatients(){
   const qP = document.getElementById('patSearch')?.value || '';
   const kP = document.getElementById('patKat')?.value || '';
@@ -1112,21 +1113,10 @@ function renderPatients(){
     const safePhone = escapeHtml(p.phone || '');
 
     const waBtn = p.phone
-      ? `<a
-          href="https://wa.me/${safePhone}"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="btn btn-success btn-sm"
-          title="Buka WA ${safeName}"
-          aria-label="Buka WhatsApp ${safeName}"
-          style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center"
-        >💬</a>`
+      ? `<a href="https://wa.me/${safePhone}" target="_blank" rel="noopener noreferrer" class="btn btn-success btn-sm" title="Buka WA" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">💬</a>`
       : '<span style="color:#cbd5e1;font-size:.75rem">—</span>';
 
-    const phoneHtml = p.phone
-      ? `<span style="font-size:.78rem">${safePhone}</span>`
-      : '<span style="color:#cbd5e1">—</span>';
-
+    const phoneHtml = p.phone ? `<span style="font-size:.78rem">${safePhone}</span>` : '<span style="color:#cbd5e1">—</span>';
     const safeNik = escapeHtml(p.nik || p.id || '-');
 
     return `
@@ -1142,20 +1132,8 @@ function renderPatients(){
         <td>${st ? `<span class="badge ${st.cls}">${st.label}</span>` : '-'}</td>
         <td style="display:flex;gap:5px;flex-wrap:wrap">
           ${waBtn}
-          <button
-            class="btn btn-outline btn-sm"
-            onclick="editPatient(${p.id})"
-            title="Edit data pekerja"
-            aria-label="Edit data pekerja"
-            style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center"
-          >✏️</button>
-          <button
-            class="btn btn-danger btn-sm"
-            onclick="delPatient(${p.id})"
-            title="Hapus data pekerja"
-            aria-label="Hapus data pekerja"
-            style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center"
-          >🗑️</button>
+          <button class="btn btn-outline btn-sm" onclick="editPatient(${p.id})" title="Edit" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="delPatient(${p.id})" title="Hapus" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">🗑️</button>
         </td>
       </tr>
     `;
@@ -1173,41 +1151,35 @@ function renderPatients(){
         <div class="form-grid">
           <div class="fg">
             <label>No. ID / NIK Pekerja</label>
-            <input id="pNik" placeholder="Contoh: EMP001 / NIK" value="${escapeHtml(editing?.nik || editing?.id || '')}">
+            <input id="pNik" placeholder="Contoh: EMP001 / NIK" value="${escapeHtml(editing?.nik || editing?.id || '')}" oninput="generateFormBarcode()">
           </div>
           <div class="fg">
             <label>Nama Lengkap</label>
-            <input id="pName" placeholder="Nama pekerja" value="${escapeHtml(editing?.name || '')}">
+            <input id="pName" placeholder="Nama pekerja" value="${escapeHtml(editing?.name || '')}" oninput="generateFormBarcode()">
           </div>
-          <div class="fg">
-            <label>Tanggal Lahir</label>
-            <input id="pDob" type="date" onchange="autoAge()" value="${escapeHtml(editing?.dob || '')}">
+          <div class="fg"><label>Tanggal Lahir</label><input id="pDob" type="date" onchange="autoAge()" value="${escapeHtml(editing?.dob || '')}"></div>
+          <div class="fg"><label>Usia (otomatis)</label><input id="pAge" readonly placeholder="Dari tgl lahir"></div>
+          <div class="fg"><label>Jenis Kelamin</label>
+            <select id="pGender"><option value="L" ${(editing?.gender || 'L') === 'L' ? 'selected' : ''}>Laki-laki</option><option value="P" ${(editing?.gender || 'L') === 'P' ? 'selected' : ''}>Perempuan</option></select>
           </div>
-          <div class="fg">
-            <label>Usia (otomatis)</label>
-            <input id="pAge" readonly placeholder="Dari tgl lahir">
+          <div class="fg"><label>No. HP / WhatsApp</label><input id="pPhone" type="tel" placeholder="628xxxxxxxxxx" oninput="formatPhone()" value="${escapeHtml(editing?.phone || '')}"></div>
+        </div>
+        
+        <!-- AREA LIVE PREVIEW BARCODE (STYLE MARISSA STORE) -->
+        <div style="text-align:center; padding:20px; background:#fafafa; border-radius:12px; margin-top:14px; border:2px dashed #ddd;">
+          <div id="formBarcodeWrapper" style="display:none;">
+            <div style="background:#fff; padding:15px 15px 10px; border:1px solid #e2e8f0; border-radius:12px; display:inline-block; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+              <svg id="formBarcodeCanvas" style="max-width: 100%; height: auto;"></svg>
+            </div>
+            <div id="formBarcodeLabel" style="margin-top:10px; font-size:0.85rem; font-weight:700; color:#475569; letter-spacing:0.5px;"></div>
           </div>
-          <div class="fg">
-            <label>Jenis Kelamin</label>
-            <select id="pGender">
-              <option value="L" ${(editing?.gender || 'L') === 'L' ? 'selected' : ''}>Laki-laki</option>
-              <option value="P" ${(editing?.gender || 'L') === 'P' ? 'selected' : ''}>Perempuan</option>
-            </select>
-          </div>
-          <div class="fg">
-            <label>No. HP / WhatsApp</label>
-            <input id="pPhone" type="tel" placeholder="628xxxxxxxxxx" oninput="formatPhone()" value="${escapeHtml(editing?.phone || '')}">
-          </div>
-          <div class="fg">
-            <label style="color:#94a3b8;font-size:.7rem">Format: 628xxx (awali 62, tanpa +)</label>
-            <input id="pPhonePreview" readonly style="font-size:.75rem;color:#64748b">
+          <div id="formBarcodeEmpty" style="font-size: 0.85rem; color: #999; padding: 10px 0;">
+            Ketik NIK dan Nama untuk memunculkan Barcode
           </div>
         </div>
 
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
-          <button class="btn btn-primary" onclick="addPatient()">
-            ${editing ? '💾 Simpan Perubahan' : '💾 Simpan Pekerja'}
-          </button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+          <button class="btn btn-primary" onclick="addPatient()">${editing ? '💾 Simpan Perubahan' : '💾 Simpan Pekerja'}</button>
           ${editing ? `<button class="btn btn-outline" onclick="cancelEditPatient()">Batal Edit</button>` : ''}
         </div>
       </div>
@@ -1221,37 +1193,79 @@ function renderPatients(){
       <div class="panel-body" style="padding-bottom:0">
         <div class="search-bar">
          <input id="patSearch" placeholder="🔍 Cari nama pekerja..." value="${escapeHtml(qP)}" oninput="filterAndRenderTable()">
-          <select id="patKat" onchange="renderPatients()">
-            ${katOpts.replace(`value="${kP}"`, `value="${kP}" selected`)}
-          </select>
+          <select id="patKat" onchange="renderPatients()">${katOpts.replace(`value="${kP}"`, `value="${kP}" selected`)}</select>
           <button class="btn btn-outline btn-sm" onclick="document.getElementById('patSearch').value='';document.getElementById('patKat').value='';renderPatients()">✕ Reset</button>
         </div>
       </div>
       <div style="overflow-x:auto">
         <table>
           <thead>
-            <tr>
-              <th>No. ID</th>
-              <th>Nama</th>
-              <th>Tgl Lahir</th>
-              <th>Usia</th>
-              <th>JK</th>
-              <th>No. HP</th>
-              <th>Jml Periksa</th>
-              <th>Terakhir S/D</th>
-              <th>Kategori</th>
-              <th>Aksi</th>
-            </tr>
+            <tr><th>No. ID</th><th>Nama</th><th>Tgl Lahir</th><th>Usia</th><th>JK</th><th>No. HP</th><th>Jml Periksa</th><th>Terakhir S/D</th><th>Kategori</th><th>Aksi</th></tr>
           </thead>
           <tbody>${rows || '<tr><td colspan="10" class="empty">Tidak ada data yang sesuai</td></tr>'}</tbody>
         </table>
       </div>
     </div>
   `;
-
+  
   autoAge();
   formatPhone();
+  generateFormBarcode(); // Panggil saat edit agar langsung muncul
 }
+
+// ── FUNGSI LIVE PREVIEW BARCODE ALA MARISSA STORE ──
+function generateFormBarcode() {
+  const pNikInput = document.getElementById('pNik');
+  const pNameInput = document.getElementById('pName');
+  const wrapper = document.getElementById('formBarcodeWrapper');
+  const canvas = document.getElementById('formBarcodeCanvas');
+  const label = document.getElementById('formBarcodeLabel');
+  const emptyText = document.getElementById('formBarcodeEmpty');
+  
+  if (!pNikInput || !canvas || !emptyText) return;
+  
+  const val = pNikInput.value.trim();
+  const nameVal = pNameInput ? pNameInput.value.trim() : '';
+  
+  if (val === '') {
+    wrapper.style.display = 'none';
+    emptyText.style.display = 'block';
+    return;
+  }
+  
+  if (typeof JsBarcode === 'undefined') {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js';
+    script.onload = () => drawFormBarcode(val, nameVal, canvas, wrapper, emptyText, label);
+    document.head.appendChild(script);
+  } else {
+    drawFormBarcode(val, nameVal, canvas, wrapper, emptyText, label);
+  }
+}
+
+function drawFormBarcode(val, nameVal, canvas, wrapper, emptyText, label) {
+  emptyText.style.display = 'none';
+  wrapper.style.display = 'block';
+  
+  // Setting barcode persis seperti di Marissa Store
+  JsBarcode(canvas, val, {
+    format: "CODE128",
+    lineColor: "#111",
+    width: 2,
+    height: 60,
+    displayValue: true,
+    fontSize: 14,
+    margin: 8,
+    background: "transparent"
+  });
+  
+  // Memunculkan nama dan NIK di bawah barcode
+  if(label) {
+    label.textContent = nameVal ? `${nameVal} • ${val}` : val;
+  }
+}
+
+// ── Fungsi Tambahan Pendukung ──
 function filterAndRenderTable() {
   const qP = document.getElementById('patSearch')?.value || '';
   const kP = document.getElementById('patKat')?.value || '';
@@ -1264,48 +1278,25 @@ function filterAndRenderTable() {
     const safeName = escapeHtml(p.name || '');
     const safeDob = p.dob ? fmt(p.dob) : '-';
     const safePhone = escapeHtml(p.phone || '');
-
-    const waBtn = p.phone
-      ? `<a href="https://wa.me/${safePhone}" target="_blank" rel="noopener noreferrer" class="btn btn-success btn-sm" title="Buka WA ${safeName}" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">💬</a>`
-      : '<span style="color:#cbd5e1;font-size:.75rem">—</span>';
-
-    const phoneHtml = p.phone
-      ? `<span style="font-size:.78rem">${safePhone}</span>`
-      : '<span style="color:#cbd5e1">—</span>';
-
+    const waBtn = p.phone ? `<a href="https://wa.me/${safePhone}" target="_blank" class="btn btn-success btn-sm" title="Buka WA" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">💬</a>` : '<span style="color:#cbd5e1;font-size:.75rem">—</span>';
+    const phoneHtml = p.phone ? `<span style="font-size:.78rem">${safePhone}</span>` : '<span style="color:#cbd5e1">—</span>';
     const safeNik = escapeHtml(p.nik || p.id || '-');
 
-    return `
-      <tr>
-        <td><code>${safeNik}</code></td>
-        <td><strong>${safeName}</strong></td>
-        <td>${safeDob}</td>
-        <td>${p.dob ? calcAge(p.dob) + ' th' : '-'}</td>
-        <td>${p.gender === 'L' ? 'L' : 'P'}</td>
-        <td>${phoneHtml}</td>
-        <td>${examsCount} kali</td>
-        <td>${le ? `${le.systolic}/${le.diastolic}` : '-'}</td>
-        <td>${st ? `<span class="badge ${st.cls}">${st.label}</span>` : '-'}</td>
-        <td style="display:flex;gap:5px;flex-wrap:wrap">
-          ${waBtn}
-          <button class="btn btn-outline btn-sm" onclick="editPatient(${p.id})" title="Edit">✏️</button>
-          <button class="btn btn-danger btn-sm" onclick="delPatient(${p.id})" title="Hapus">🗑️</button>
-        </td>
-      </tr>
-    `;
+    return `<tr>
+      <td><code>${safeNik}</code></td><td><strong>${safeName}</strong></td><td>${safeDob}</td><td>${p.dob ? calcAge(p.dob) + ' th' : '-'}</td><td>${p.gender === 'L' ? 'L' : 'P'}</td><td>${phoneHtml}</td><td>${examsCount} kali</td><td>${le ? `${le.systolic}/${le.diastolic}` : '-'}</td><td>${st ? `<span class="badge ${st.cls}">${st.label}</span>` : '-'}</td>
+      <td style="display:flex;gap:5px;flex-wrap:wrap">
+        ${waBtn}
+        <button class="btn btn-outline btn-sm" onclick="editPatient(${p.id})" title="Edit" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="delPatient(${p.id})" title="Hapus" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">🗑️</button>
+      </td>
+    </tr>`;
   }).join('');
 
-  // Perbarui isi tabel secara instan tanpa mereset form atas
   const tbodyEl = document.querySelector('#page-patients tbody');
-  if (tbodyEl) {
-    tbodyEl.innerHTML = rows || '<tr><td colspan="10" class="empty">Tidak ada data yang sesuai</td></tr>';
-  }
+  if (tbodyEl) tbodyEl.innerHTML = rows || '<tr><td colspan="10" class="empty">Tidak ada data yang sesuai</td></tr>';
   
-  // Perbarui counter jumlah data
   const countEl = document.querySelector('.panel-head span');
-  if (countEl) {
-    countEl.textContent = `${filtered.length} dari ${patients.length} pekerja`;
-  }
+  if (countEl) countEl.textContent = `${filtered.length} dari ${patients.length} pekerja`;
 }
 function autoAge(){
   const pDob = document.getElementById('pDob');
