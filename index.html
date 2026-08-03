@@ -1097,16 +1097,15 @@ function filterPatients(query, kategori){
     return matchName && matchKat;
   });
 }
-// ══ MASTER PEKERJA (LENGKAP DENGAN PEMERIKSAAN) ═════════════════════════
+// ══ MASTER PEKERJA (DENGAN PEMERIKSAAN OTOMATIS AMAN) ═════════════════════════
 function renderPatients(){
+  // 1. Ambil data pekerja
   let localData = [];
   try {
     const p1 = JSON.parse(localStorage.getItem('patients') || '[]');
     const p2 = JSON.parse(localStorage.getItem('wh_workers') || '[]');
     localData = p1.length ? p1 : p2;
-  } catch(e) {
-    localData = [];
-  }
+  } catch(e) { localData = []; }
 
   if (typeof patients === 'undefined' || !patients.length) {
     window.patients = localData.map(w => ({
@@ -1119,24 +1118,52 @@ function renderPatients(){
     }));
   }
 
+  // 2. Ambil data pemeriksaan secara aman dari localStorage jika variabel global tidak ada
+  let allExams = [];
+  try {
+    if (typeof exams !== 'undefined' && Array.isArray(exams)) {
+      allExams = exams;
+    } else {
+      allExams = JSON.parse(localStorage.getItem('wh_exams') || localStorage.getItem('exams') || '[]');
+    }
+  } catch(e) { allExams = []; }
+
   const listPatients = (typeof patients !== 'undefined') ? patients : [];
   const qP = document.getElementById('patSearch')?.value || '';
-  const kP = document.getElementById('patKat')?.value || '';
   
   const filtered = listPatients.filter(p => {
-    const le = typeof lastExam === 'function' ? lastExam(p.id) : null;
-    const matchName = !qP || String(p.name).toLowerCase().includes(qP.toLowerCase()) || String(p.nik).toLowerCase().includes(qP.toLowerCase());
-    const matchKat  = !kP || (le && typeof getStatus === 'function' && getStatus(le.systolic, le.diastolic).key === kP);
-    return matchName && matchKat;
+    const nameMatch = !qP || String(p.name).toLowerCase().includes(qP.toLowerCase()) || String(p.nik).toLowerCase().includes(qP.toLowerCase());
+    return nameMatch;
   });
 
   const editing = typeof getEditingPatient === 'function' ? getEditingPatient() : null;
 
   const rows = filtered.map(p => {
-    // Ambil data pemeriksaan dari sistem utama Anda secara aman
-    const le = typeof lastExam === 'function' ? lastExam(p.id) : null;
-    const st = le && typeof getStatus === 'function' ? getStatus(le.systolic, le.diastolic) : null;
-    const examsCount = typeof pExams === 'function' ? pExams(p.id).length : 0;
+    // Cari pemeriksaan milik pekerja ini berdasarkan id atau nik
+    const pExList = allExams.filter(e => String(e.patientId || e.workerId || e.id_pekerja || e.nik) === String(p.id) || String(e.nik) === String(p.nik));
+    const examsCount = pExList.length;
+    
+    // Ambil pemeriksaan terakhir (urutkan berdasarkan tanggal jika ada)
+    let le = null;
+    if (examsCount > 0) {
+      // Ambil yang paling akhir/baru
+      le = pExList[pExList.length - 1];
+    }
+
+    // Tentukan kategori status tekanan darah secara mandiri jika fungsi getStatus tidak ada
+    let st = null;
+    if (le && le.systolic && le.diastolic) {
+      if (typeof getStatus === 'function') {
+        st = getStatus(le.systolic, le.diastolic);
+      } else {
+        // Logika standar kategori tensi
+        const sys = Number(le.systolic);
+        const dia = Number(le.diastolic);
+        if (sys < 120 && dia < 80) st = { label: 'Normal', cls: 'badge-success' };
+        else if (sys <= 139 || dia <= 89) st = { label: 'Pre-Hipertensi', cls: 'badge-warning' };
+        else st = { label: 'Hipertensi', cls: 'badge-danger' };
+      }
+    }
 
     const safeName = escapeHtml(p.name || '');
     const safeDob = p.dob ? (typeof fmt === 'function' ? fmt(p.dob) : p.dob) : '-';
@@ -1150,6 +1177,8 @@ function renderPatients(){
     const safeNik = escapeHtml(p.nik || p.id || '-');
     const ageText = (p.dob && typeof calcAge === 'function') ? calcAge(p.dob) + ' th' : '-';
 
+    const badgeHtml = st ? `<span class="badge ${st.cls || 'badge-info'}" style="padding:4px 8px;border-radius:4px;font-size:0.75rem;font-weight:600;">${st.label}</span>` : '-';
+
     return `
       <tr>
         <td><code>${safeNik}</code></td>
@@ -1158,9 +1187,9 @@ function renderPatients(){
         <td>${ageText}</td>
         <td>${p.gender === 'L' ? 'L' : 'P'}</td>
         <td>${phoneHtml}</td>
-        <td>${examsCount} kali</td>
+        <td>${examsCount > 0 ? examsCount + ' kali' : '0 kali'}</td>
         <td>${le ? `${le.systolic}/${le.diastolic}` : '-'}</td>
-        <td>${st ? `<span class="badge ${st.cls}">${st.label}</span>` : '-'}</td>
+        <td>${badgeHtml}</td>
         <td style="display:flex;gap:5px;flex-wrap:wrap">
           <button class="btn btn-outline btn-sm" onclick="showWorkerBarcode('${p.id}')" title="Lihat QR Code" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:#f8fafc;">🏷️</button>
           ${waBtn}
