@@ -678,42 +678,38 @@ function renderDashboard(){
   renderStats();
 
   const now = new Date();
+  
+  // ── Hitung Data Grafik Tren BP (6 Bulan) ──
   const months = [];
-
   for(let i = 5; i >= 0; i--){
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
   }
-
   const avgByMonth = months.map(mk => {
     const me = exams.filter(e => monthKey(e.examDate) === mk);
     return me.length ? Math.round(me.reduce((a, e) => a + e.systolic, 0) / me.length) : null;
   });
 
+  // ── Hitung Kategori Tekanan Darah ──
   const catCount = {opt:0, nor:0, pre:0, ht1:0, ht2:0, ht3:0, iso:0, low:0};
+  patients.map(p => lastExam(p.id)).filter(Boolean).forEach(e => {
+    catCount[getStatus(e.systolic, e.diastolic).key]++;
+  });
 
-  patients
-    .map(p => lastExam(p.id))
-    .filter(Boolean)
-    .forEach(e => {
-      catCount[getStatus(e.systolic, e.diastolic).key]++;
-    });
-
-  // ── 1. ROWS UNTUK TEKANAN DARAH TERBARU ──
+  // ── Data Tabel BP Terbaru ──
   const recent = [...exams]
     .sort((a, b) => String(b.examDate).localeCompare(String(a.examDate)))
-    .slice(0, 5); // Ambil 5 terbaru saja agar ringkas
+    .slice(0, 5);
 
   const rows = recent.map(e => {
     const st = getStatus(e.systolic, e.diastolic);
     const pex = pExams(e.patientId);
     const idx = pex.findIndex(x => x.id === e.id);
     const prev = idx > 0 ? pex[idx - 1] : null;
-
     return `<tr><td><strong>${pName(e.patientId)}</strong></td><td>${fmt(e.examDate)}</td><td class="${vCls(e.systolic,140,120)}">${e.systolic}</td><td class="${vCls(e.diastolic,90,80)}">${e.diastolic}</td><td>${trendArrow(e.systolic,prev?.systolic)}</td><td><span class="badge ${st.cls}">${st.label}</span></td></tr>`;
   }).join('');
 
-  // ── 2. ROWS UNTUK TES ALKOHOL TERBARU ──
+  // ── Data Tabel Alkohol Terbaru ──
   const recentAlcohol = [...alcoholExams]
     .sort((a, b) => String(b.examDate).localeCompare(String(a.examDate)))
     .slice(0, 5);
@@ -723,8 +719,15 @@ function renderDashboard(){
     return `<tr><td><strong>${escapeHtml(a.patientName)}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
   }).join('');
 
-  const pend = followups.filter(f => f.status === 'pending');
+  // ── Hitung Persentase Tes Alkohol ──
+  const alcPass = alcoholExams.filter(a => a.status === 'Pass').length;
+  const alcFail = alcoholExams.filter(a => a.status === 'Fail').length;
+  const totalAlc = alcoholExams.length;
+  const passPct = totalAlc > 0 ? Math.round((alcPass / totalAlc) * 100) : 0;
+  const failPct = totalAlc > 0 ? Math.round((alcFail / totalAlc) * 100) : 0;
 
+  // ── Data Follow-up Pending ──
+  const pend = followups.filter(f => f.status === 'pending');
   const fuHtml = pend.slice(0, 3).map(f => {
     return `<div class="fu-card pending"><div><div class="fu-name">${f.patientName}</div><div class="fu-reason">${f.reason}</div><div class="fu-date">📅 ${fmt(f.dueDate)}</div></div><span class="badge b-pending">Menunggu</span></div>`;
   }).join('') || '<div class="empty">✅ Tidak ada follow-up pending</div>';
@@ -733,40 +736,107 @@ function renderDashboard(){
   if(!dashboardEl) return;
 
   dashboardEl.innerHTML = `
+    <!-- BARIS 1: TABEL DATA TERBARU -->
     <div class="grid-2" style="margin-bottom:18px">
-      <!-- PANEL BP TERBARU -->
       <div class="panel">
-        <div class="panel-head"><h2>📋 Pemeriksaan Tekanan Darah Terbaru</h2></div>
+        <div class="panel-head"><h2>📋 Pemeriksaan BP Terbaru</h2></div>
         <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Trend</th><th>Kategori</th></tr></thead><tbody>${rows || '<tr><td colspan="6" class="empty">Belum ada data</td></tr>'}</tbody></table></div>
       </div>
       
-      <!-- PANEL ALKOHOL TERBARU -->
       <div class="panel">
         <div class="panel-head"><h2>🍷 Hasil Tes Alkohol Terbaru</h2></div>
         <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Nilai BAC</th><th>Status</th></tr></thead><tbody>${alcRows || '<tr><td colspan="4" class="empty">Belum ada data tes alkohol</td></tr>'}</tbody></table></div>
       </div>
     </div>
 
-    <div class="grid-2">
-      <div class="panel"><div class="panel-head"><h2>🥧 Distribusi Kategori Pekerja (Terakhir)</h2></div>
-        <div class="panel-body"><div class="chart-box"><canvas id="dashPieChart"></canvas></div></div></div>
+    <!-- BARIS 2: GRAFIK TEKANAN DARAH -->
+    <div class="grid-2" style="margin-bottom:18px">
+      <div class="panel">
+        <div class="panel-head"><h2>📊 Tren Rata-rata Sistolik (6 Bulan)</h2></div>
+        <div class="panel-body"><div class="chart-box"><canvas id="dashTrendChart"></canvas></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>🥧 Distribusi Kategori BP (Terakhir)</h2></div>
+        <div class="panel-body"><div class="chart-box"><canvas id="dashPieChart"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- BARIS 3: ALKOHOL & FOLLOW-UP -->
+    <div class="grid-2" style="margin-bottom:18px">
+      <div class="panel">
+        <div class="panel-head"><h2>🥧 Status Tes Alkohol (Pass vs Fail)</h2></div>
+        <div class="panel-body">
+          <div style="display:flex; justify-content:center; gap:10px; margin-bottom:10px;">
+            <span class="badge b-nor" style="font-size:.85rem">Pass: ${passPct}%</span> 
+            <span class="badge b-ht2" style="font-size:.85rem">Fail: ${failPct}%</span>
+          </div>
+          <div class="chart-box" style="height:220px"><canvas id="dashAlcPieChart"></canvas></div>
+        </div>
+      </div>
       
-      <div>
-        <div class="panel" style="margin-bottom:18px"><div class="panel-head"><h2>🔔 Follow-Up Pending</h2><span style="font-size:.75rem;color:#f59e0b">${pend.length} menunggu</span></div>
-          <div class="panel-body">${fuHtml}</div></div>
-        
-        <div class="panel"><div class="panel-head"><h2>📖 Klasifikasi KEPMENKES 4634/2021</h2></div>
-          <div style="overflow-x:auto"><table><thead><tr><th>Kategori</th><th>Sistolik</th><th>Diastolik</th><th>Risiko</th></tr></thead><tbody>
-            <tr><td><span class="badge b-opt">Optimal</span></td><td>&lt;120</td><td>&lt;80</td><td>Minimal</td></tr>
-            <tr><td><span class="badge b-nor">Normal</span></td><td>120–129</td><td>80–84</td><td>Rendah</td></tr>
-            <tr><td><span class="badge b-pre">Normal-Tinggi</span></td><td>130–139</td><td>85–89</td><td>Rendah-Sedang</td></tr>
-            <tr><td><span class="badge b-ht1">HT Derajat 1</span></td><td>140–159</td><td>90–99</td><td>Sedang</td></tr>
-            <tr><td><span class="badge b-ht2">HT Derajat 2</span></td><td>160–179</td><td>100–109</td><td>Tinggi</td></tr>
-          </tbody></table></div></div>
+      <div class="panel">
+        <div class="panel-head"><h2>🔔 Follow-Up Pending</h2><span style="font-size:.75rem;color:#f59e0b">${pend.length} menunggu</span></div>
+        <div class="panel-body">${fuHtml}</div>
+      </div>
+    </div>
+
+    <!-- BARIS 4: KLASIFIKASI -->
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><h2>📖 Klasifikasi Tekanan Darah (KEPMENKES)</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Kategori</th><th>Sistolik</th><th>Diastolik</th><th>Risiko</th></tr></thead><tbody>
+          <tr><td><span class="badge b-opt">Optimal</span></td><td>&lt;120</td><td>&lt;80</td><td>Minimal</td></tr>
+          <tr><td><span class="badge b-nor">Normal</span></td><td>120–129</td><td>80–84</td><td>Rendah</td></tr>
+          <tr><td><span class="badge b-pre">Normal-Tinggi</span></td><td>130–139</td><td>85–89</td><td>Sedang</td></tr>
+          <tr><td><span class="badge b-ht1">HT Derajat 1</span></td><td>140–159</td><td>90–99</td><td>Sedang</td></tr>
+          <tr><td><span class="badge b-ht2">HT Derajat 2</span></td><td>160–179</td><td>100–109</td><td>Tinggi</td></tr>
+          <tr><td><span class="badge b-ht3">HT Derajat 3</span></td><td>≥180</td><td>≥110</td><td>Sangat Tinggi</td></tr>
+        </tbody></table></div>
+      </div>
+      
+      <div class="panel">
+        <div class="panel-head"><h2>📖 Klasifikasi Tes Alkohol (BAC)</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Status</th><th>Nilai BAC</th><th>Keterangan</th></tr></thead><tbody>
+          <tr><td><span class="badge b-nor">Pass</span></td><td>0.00</td><td>Aman / Layak Kerja</td></tr>
+          <tr><td><span class="badge b-ht2">Fail</span></td><td>&gt; 0.00</td><td>Tidak Layak Kerja (Tindakan Diperlukan)</td></tr>
+        </tbody></table></div>
       </div>
     </div>`;
 
   requestAnimationFrame(() => {
+    // ── Render Chart Trend BP (Garis) ──
+    const trendCanvas = document.getElementById('dashTrendChart');
+    if(trendCanvas){
+      destroyChart('dashTrendChart');
+      new Chart(trendCanvas, {
+        type: 'line',
+        data: {
+          labels: months.map(m => monthLabel(m)),
+          datasets: [{
+            label: 'Rata-rata Sistolik',
+            data: avgByMonth,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37,99,235,.1)',
+            fill: true,
+            tension: .4,
+            pointRadius: 5,
+            pointBackgroundColor: '#2563eb',
+            spanGaps: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { min: 80, max: 200, ticks: { callback: v => v + ' mmHg' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // ── Render Chart Pie BP ──
     const pieCanvas = document.getElementById('dashPieChart');
     if(pieCanvas){
       destroyChart('dashPieChart');
@@ -782,25 +852,45 @@ function renderDashboard(){
       ];
 
       const active = catDefs.filter(c => catCount[c.key] > 0);
-
       new Chart(pieCanvas, {
         type: 'doughnut',
         data: {
           labels: active.map(c => c.label),
-          datasets: [{
-            data: active.map(c => catCount[c.key]),
-            backgroundColor: active.map(c => c.color),
-            borderWidth: 2
-          }]
+          datasets: [{ data: active.map(c => catCount[c.key]), backgroundColor: active.map(c => c.color), borderWidth: 2 }]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'right', labels: { font: { size: 11 } } }
-          }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } } }
       });
+    }
+
+    // ── Render Chart Pie Alkohol ──
+    const alcPieCanvas = document.getElementById('dashAlcPieChart');
+    if (alcPieCanvas) {
+      destroyChart('dashAlcPieChart');
+      if (totalAlc > 0) {
+        new Chart(alcPieCanvas, {
+          type: 'doughnut',
+          data: {
+            labels: ['Pass (Aman)', 'Fail (Tidak Layak)'],
+            datasets: [{
+              data: [alcPass, alcFail],
+              backgroundColor: ['#16a34a', '#dc2626'],
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }
+          }
+        });
+      } else {
+        // Tampilkan teks jika belum ada data tes alkohol
+        const ctx = alcPieCanvas.getContext('2d');
+        ctx.font = '12px Arial';
+        ctx.fillStyle = '#94a3b8';
+        ctx.textAlign = 'center';
+        ctx.fillText('Belum ada data', alcPieCanvas.width/2, alcPieCanvas.height/2);
+      }
     }
   });
 }
