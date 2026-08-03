@@ -2336,6 +2336,51 @@ function refreshIdCounters(){
   nextFid = followups.length ? Math.max(...followups.map(f => +f.id)) + 1 : 1;
 }
 
+// ── Normalisasi data dari Google Sheets ────
+function normalizeSheetsPayload(json){
+  const nextPatients = (json.patients || []).map(p => ({
+    ...p,
+    id: +p.id,
+    phone: p.phone ? String(p.phone) : ''
+  }));
+
+  const nextExams = (json.exams || []).map(e => {
+    const pulseRaw = e.pulse;
+    return {
+      ...e,
+      id: +e.id,
+      patientId: +e.patientId,
+      systolic: +e.systolic,
+      diastolic: +e.diastolic,
+      pulse: pulseRaw === '' || pulseRaw == null ? null : +pulseRaw,
+      examDate: e.examDate ? String(e.examDate).slice(0, 10) : ''
+    };
+  });
+
+  const nextFollowups = (json.followups || []).map(f => ({
+    ...f,
+    id: +f.id,
+    patientId: +f.patientId,
+    dueDate: f.dueDate ? String(f.dueDate).slice(0, 10) : '',
+    status: f.status || 'pending'
+  }));
+
+  // ── Penambahan untuk Data Tes Alkohol ──
+  const nextAlcohol = (json.alcoholExams || []).map(a => ({
+    ...a,
+    id: +a.id,
+    patientId: +a.patientId,
+    examDate: a.examDate ? String(a.examDate).slice(0, 10) : ''
+  }));
+
+  return {
+    patients: nextPatients,
+    exams: nextExams,
+    followups: nextFollowups,
+    alcoholExams: nextAlcohol // ── Dikembalikan ke lokal
+  };
+}
+
 // ── Verifikasi data sheet tanpa menimpa lokal ─
 async function verifySheetsData(){
   try {
@@ -2345,6 +2390,7 @@ async function verifySheetsData(){
     const samePatientCount = remote.patients.length === patients.length;
     const sameExamCount = remote.exams.length === exams.length;
     const sameFollowupCount = remote.followups.length === followups.length;
+    const sameAlcoholCount = (remote.alcoholExams || []).length === alcoholExams.length; // ── Cek jumlah data alkohol
 
     const localLastExamId = exams.length ? Math.max(...exams.map(e => +e.id)) : 0;
     const remoteLastExamId = remote.exams.length ? Math.max(...remote.exams.map(e => +e.id)) : 0;
@@ -2355,13 +2401,18 @@ async function verifySheetsData(){
     const localLastFollowupId = followups.length ? Math.max(...followups.map(f => +f.id)) : 0;
     const remoteLastFollowupId = remote.followups.length ? Math.max(...remote.followups.map(f => +f.id)) : 0;
 
+    const localLastAlcoholId = alcoholExams.length ? Math.max(...alcoholExams.map(a => +a.id)) : 0;
+    const remoteLastAlcoholId = remote.alcoholExams.length ? Math.max(...remote.alcoholExams.map(a => +a.id)) : 0; // ── Cek ID terakhir alkohol
+
     return (
       samePatientCount &&
       sameExamCount &&
       sameFollowupCount &&
+      sameAlcoholCount && // ── Validasi tambahan alkohol
       localLastExamId === remoteLastExamId &&
       localLastPatientId === remoteLastPatientId &&
-      localLastFollowupId === remoteLastFollowupId
+      localLastFollowupId === remoteLastFollowupId &&
+      localLastAlcoholId === remoteLastAlcoholId // ── Validasi tambahan alkohol
     );
   } catch(err){
     console.error('Verify error:', err);
@@ -2385,6 +2436,7 @@ async function loadFromSheets(){
     patients = normalized.patients;
     exams = normalized.exams;
     followups = normalized.followups;
+    alcoholExams = normalized.alcoholExams; // ── Ambil dari sheet dan simpan ke variabel lokal
 
     refreshIdCounters();
     saveLocal();
