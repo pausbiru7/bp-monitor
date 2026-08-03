@@ -1097,9 +1097,8 @@ function filterPatients(query, kategori){
     return matchName && matchKat;
   });
 }
-// ══ MASTER PEKERJA (ANTI-KOSONG) ═════════════════════════
+// ══ MASTER PEKERJA (LENGKAP DENGAN PEMERIKSAAN) ═════════════════════════
 function renderPatients(){
-  // 1. Ambil data dari berbagai sumber penyimpanan lokal yang mungkin digunakan
   let localData = [];
   try {
     const p1 = JSON.parse(localStorage.getItem('patients') || '[]');
@@ -1109,7 +1108,6 @@ function renderPatients(){
     localData = [];
   }
 
-  // Masukkan ke variabel global jika kosong
   if (typeof patients === 'undefined' || !patients.length) {
     window.patients = localData.map(w => ({
       id: w.id || Date.now() + Math.random(),
@@ -1125,15 +1123,21 @@ function renderPatients(){
   const qP = document.getElementById('patSearch')?.value || '';
   const kP = document.getElementById('patKat')?.value || '';
   
-  // Filter data aman
   const filtered = listPatients.filter(p => {
-    const nameMatch = !qP || String(p.name).toLowerCase().includes(qP.toLowerCase()) || String(p.nik).toLowerCase().includes(qP.toLowerCase());
-    return nameMatch;
+    const le = typeof lastExam === 'function' ? lastExam(p.id) : null;
+    const matchName = !qP || String(p.name).toLowerCase().includes(qP.toLowerCase()) || String(p.nik).toLowerCase().includes(qP.toLowerCase());
+    const matchKat  = !kP || (le && typeof getStatus === 'function' && getStatus(le.systolic, le.diastolic).key === kP);
+    return matchName && matchKat;
   });
 
   const editing = typeof getEditingPatient === 'function' ? getEditingPatient() : null;
 
   const rows = filtered.map(p => {
+    // Ambil data pemeriksaan dari sistem utama Anda secara aman
+    const le = typeof lastExam === 'function' ? lastExam(p.id) : null;
+    const st = le && typeof getStatus === 'function' ? getStatus(le.systolic, le.diastolic) : null;
+    const examsCount = typeof pExams === 'function' ? pExams(p.id).length : 0;
+
     const safeName = escapeHtml(p.name || '');
     const safeDob = p.dob ? (typeof fmt === 'function' ? fmt(p.dob) : p.dob) : '-';
     const safePhone = escapeHtml(p.phone || '');
@@ -1154,9 +1158,9 @@ function renderPatients(){
         <td>${ageText}</td>
         <td>${p.gender === 'L' ? 'L' : 'P'}</td>
         <td>${phoneHtml}</td>
-        <td>-</td>
-        <td>-</td>
-        <td>-</td>
+        <td>${examsCount} kali</td>
+        <td>${le ? `${le.systolic}/${le.diastolic}` : '-'}</td>
+        <td>${st ? `<span class="badge ${st.cls}">${st.label}</span>` : '-'}</td>
         <td style="display:flex;gap:5px;flex-wrap:wrap">
           <button class="btn btn-outline btn-sm" onclick="showWorkerBarcode('${p.id}')" title="Lihat QR Code" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:#f8fafc;">🏷️</button>
           ${waBtn}
@@ -1188,7 +1192,7 @@ function renderPatients(){
           <div class="fg"><label>Tanggal Lahir</label><input id="pDob" type="date" onchange="autoAge()" value="${escapeHtml(editing?.dob || '')}"></div>
           <div class="fg"><label>Usia (otomatis)</label><input id="pAge" readonly placeholder="Dari tgl lahir"></div>
           <div class="fg"><label>Jenis Kelamin</label>
-            <select id="pGender"><option value="L" ${(editing?.gender || 'L') === 'L' ? 'selected' : ''}>Laki-laki</option><option value="P" ${(editing?.gender || 'L') === 'L' ? 'selected' : ''}>Perempuan</option></select>
+            <select id="pGender"><option value="L" ${(editing?.gender || 'L') === 'L' ? 'selected' : ''}>Laki-laki</option><option value="P" ${(editing?.gender || 'L') === 'P' ? 'selected' : ''}>Perempuan</option></select>
           </div>
           <div class="fg"><label>No. HP / WhatsApp</label><input id="pPhone" type="tel" placeholder="628xxxxxxxxxx" oninput="formatPhone()" value="${escapeHtml(editing?.phone || '')}"></div>
         </div>
