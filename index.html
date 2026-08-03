@@ -1,1167 +1,235 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BP Monitor — KEPMENKES 4634/2021</title>
-<!-- Pustaka untuk Grafik -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Pustaka untuk Scanner Barcode/QR -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script><style>
-*{margin:0;padding:0;box-sizing:border-box;}
-  html { font-size: clamp(12px, 1vw + 10px, 16px); }
-body{font-family:'Segoe UI',sans-serif;background:#f1f5f9;color:#1e293b;display:flex;min-height:100vh;font-size:14px;}
-.sidebar{width:clamp(190px, 18vw, 240px);background:linear-gradient(180deg,#1e3a5f,#2563eb);color:#fff;display:flex;flex-direction:column;min-height:100vh;flex-shrink:0;}.sidebar-logo{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,.15);}
-.sidebar-logo h2{font-size:1rem;font-weight:700;}
-.sidebar-logo span{font-size:.7rem;opacity:.65;display:block;margin-top:3px;}
-.sidebar-nav{padding:14px 10px;flex:1;}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;cursor:pointer;font-size:.85rem;font-weight:500;transition:.2s;margin-bottom:3px;color:rgba(255,255,255,.72);}
-.nav-item:hover{background:rgba(255,255,255,.12);color:#fff;}
-.nav-item.active{background:rgba(255,255,255,.2);color:#fff;font-weight:700;}
-.nav-icon{font-size:1rem;width:20px;text-align:center;}
-.sidebar-foot{padding:14px 18px;border-top:1px solid rgba(255,255,255,.1);font-size:.7rem;opacity:.5;}
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden;max-height:100vh;}
-.topbar{background:#fff;padding:13px 26px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.04);flex-shrink:0;}
-.topbar h1{font-size:1rem;font-weight:700;}
-.topbar-right{display:flex;align-items:center;gap:10px;}
-.badge-date{font-size:.75rem;color:#64748b;background:#f1f5f9;padding:5px 13px;border-radius:20px;}
-.sync-badge{font-size:.75rem;padding:5px 13px;border-radius:20px;display:flex;align-items:center;gap:6px;font-weight:600;}
-.sync-ok{background:#dcfce7;color:#166534;}
-.sync-err{background:#fee2e2;color:#991b1b;}
-.sync-loading{background:#fef9c3;color:#854d0e;}
-.sync-local{background:#f1f5f9;color:#64748b;}
-.spin{display:inline-block;animation:spin .8s linear infinite;}
-@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.content{padding:20px 24px;overflow-y:auto;flex:1;min-width:0;}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px;}
-.stat-card{background:#fff;border-radius:13px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.06);display:flex;align-items:center;gap:13px;}
-.stat-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
-.stat-info h3{font-size:.7rem;color:#64748b;text-transform:uppercase;letter-spacing:.3px;}
-.stat-info .val{font-size:1.5rem;font-weight:700;line-height:1.2;}
-.stat-info .sub{font-size:.7rem;color:#94a3b8;margin-top:1px;}
-.panel{background:#fff;border-radius:13px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden;margin-bottom:18px;}
-.panel-head{padding:14px 18px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;}
-.panel-head h2{font-size:.9rem;font-weight:700;}
-.panel-body{padding:18px;}
-.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:18px;}
-.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;}
-table{width:100%;min-width:850px;border-collapse:collapse;font-size:.83rem;}
-th{padding:9px 13px;text-align:left;color:#64748b;font-weight:600;font-size:.75rem;text-transform:uppercase;background:#f8fafc;letter-spacing:.3px;white-space:nowrap;}
-td{padding:10px 13px;border-bottom:1px solid #f1f5f9;color:#334155;white-space:nowrap;}
-tr:last-child td{border-bottom:none;}
-tr:hover td{background:#fafbff;}
-.badge{padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600;display:inline-block;}
-.b-opt{background:#e0f7fa;color:#006064;}.b-nor{background:#dcfce7;color:#166534;}
-.b-pre{background:#fef9c3;color:#854d0e;}.b-ht1{background:#ffedd5;color:#9a3412;}
-.b-ht2{background:#fee2e2;color:#991b1b;}.b-ht3{background:#f3e8ff;color:#6b21a8;}
-.b-iso{background:#dbeafe;color:#1e40af;}.b-low{background:#e0f2fe;color:#0369a1;}.b-pending{background:#fef9c3;color:#854d0e;}
-.b-done{background:#dcfce7;color:#166534;}
-.trend-up{color:#dc2626;font-weight:700;}.trend-dn{color:#16a34a;font-weight:700;}.trend-eq{color:#64748b;}
-.v-hi{color:#dc2626;font-weight:700;}.v-md{color:#d97706;font-weight:700;}.v-ok{color:#16a34a;font-weight:700;}
-.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:14px;}
-.fg{display:flex;flex-direction:column;gap:4px;}
-.fg label{font-size:.75rem;font-weight:600;color:#475569;}
-.fg input,.fg select{padding:8px 11px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.83rem;outline:none;transition:.2s;}
-.fg input:focus,.fg select:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1);}
-.fg input[readonly]{background:#f8fafc;color:#64748b;}
-.btn{padding:8px 18px;border:none;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;transition:.2s;display:inline-flex;align-items:center;gap:5px;}
-.btn-primary{background:#2563eb;color:#fff;}.btn-primary:hover{background:#1d4ed8;}
-.btn-danger{background:#fee2e2;color:#dc2626;}.btn-danger:hover{background:#fecaca;}
-.btn-success{background:#dcfce7;color:#16a34a;}.btn-success:hover{background:#bbf7d0;}
-.btn-pdf{background:#dc2626;color:#fff;}.btn-pdf:hover{background:#b91c1c;}
-.btn-sm{padding:4px 11px;font-size:.73rem;}
-.month-select{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;}
-.month-select select{padding:7px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.82rem;outline:none;}
-/* CHART CANVAS */
-.chart-box{position:relative;height:260px;}
-/* PROGRESS */
-.progress-card{border:1px solid #e2e8f0;border-radius:11px;padding:14px;margin-bottom:10px;transition:.2s;}
-.progress-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.07);}
-.pc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.pc-name{font-weight:700;font-size:.9rem;}
-.pc-exams{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;}
-.exam-chip{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px;font-size:.72rem;flex-shrink:0;min-width:80px;text-align:center;}
-.exam-chip.latest{border-color:#2563eb;background:#eff6ff;}
-.ec-date{color:#94a3b8;font-size:.65rem;}.ec-val{font-weight:700;font-size:.85rem;}
-/* REKOMENDASI */
-.rekom-box{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:.8rem;line-height:1.6;}
-.rekom-box.opt{background:#e0f7fa;border-left:3px solid #0891b2;}
-.rekom-box.nor{background:#dcfce7;border-left:3px solid #16a34a;}
-.rekom-box.pre{background:#fef9c3;border-left:3px solid #ca8a04;}
-.rekom-box.ht1{background:#ffedd5;border-left:3px solid #ea580c;}
-.rekom-box.ht2{background:#fee2e2;border-left:3px solid #dc2626;}
-.rekom-box.ht3{background:#f3e8ff;border-left:3px solid #7c3aed;}
-.rekom-box.iso{background:#dbeafe;border-left:3px solid #2563eb;}
-.rekom-title{font-weight:700;margin-bottom:4px;}
-/* FU */
-.fu-card{border:1px solid #e2e8f0;border-radius:11px;padding:13px 15px;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;transition:.2s;}
-.fu-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.07);}
-.fu-card.pending{border-left:4px solid #f59e0b;}.fu-card.done{border-left:4px solid #22c55e;opacity:.7;}
-.fu-name{font-weight:700;font-size:.87rem;}.fu-reason{font-size:.75rem;color:#64748b;margin-top:2px;}
-.fu-date{font-size:.72rem;color:#94a3b8;margin-top:3px;}.fu-actions{display:flex;gap:7px;flex-shrink:0;}
-.empty{text-align:center;padding:36px;color:#94a3b8;font-size:.85rem;}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marissa Store & BP Monitor</title>
+  <link rel="icon" href="./favicon.ico" sizes="any">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Marissa Store">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root { --primary:#2563eb; --card-bg:#ffffff; --border:#e2e8f0; --text-muted:#64748b; --bg:#f8fafc; --text-primary:#1e293b; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',sans-serif; background:#f0f2f5; min-height:100vh; padding-bottom:80px; }
 
-/* ── LOGIN ── */
-#loginOverlay{position:fixed;inset:0;background:linear-gradient(135deg,#1e3a5f,#2563eb);display:flex;align-items:center;justify-content:center;z-index:9999;}
-.login-box{background:#fff;border-radius:20px;padding:40px 36px;width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);}
-.login-logo{font-size:2.5rem;margin-bottom:8px;}
-.login-title{font-size:1.2rem;font-weight:700;color:#1e3a5f;margin-bottom:4px;}
-.login-sub{font-size:.8rem;color:#94a3b8;margin-bottom:28px;}
-.pin-display{display:flex;justify-content:center;gap:10px;margin-bottom:24px;}
-.pin-dot{width:18px;height:18px;border-radius:50%;border:2px solid #cbd5e1;transition:.2s;}
-.pin-dot.filled{background:#2563eb;border-color:#2563eb;}
-.pin-dot.error{background:#dc2626;border-color:#dc2626;}
-.pin-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
-.pin-key{padding:16px;border:1.5px solid #e2e8f0;border-radius:12px;font-size:1.1rem;font-weight:700;cursor:pointer;background:#fff;color:#1e293b;transition:.15s;}
-.pin-key:hover{background:#eff6ff;border-color:#2563eb;color:#2563eb;}
-.pin-key:active{transform:scale(.95);}
-.pin-key.del{background:#fee2e2;border-color:#fecaca;color:#dc2626;}
-.pin-key.del:hover{background:#fecaca;}
-.login-err{color:#dc2626;font-size:.8rem;margin-top:8px;min-height:20px;}
-.login-hint{font-size:.72rem;color:#94a3b8;margin-top:12px;}
-/* CHANGE PIN */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:8888;}
-.modal-box{background:#fff;border-radius:16px;padding:28px;width:340px;text-align:center;}
-.modal-box h3{font-size:1rem;font-weight:700;margin-bottom:16px;}
-/* ── SEARCH / FILTER ── */
-.search-bar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
-.search-bar input{padding:8px 13px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.83rem;outline:none;flex:1;min-width:180px;}
-.search-bar input:focus{border-color:#2563eb;}
-.search-bar select{padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.82rem;outline:none;background:#fff;}
-.search-bar select:focus{border-color:#2563eb;}
-/* ── REMINDER BANNER ── */
-.reminder-banner{background:linear-gradient(135deg,#fef3c7,#fde68a);border:1.5px solid #f59e0b;border-radius:12px;padding:14px 18px;margin-bottom:18px;}
-.reminder-banner-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.reminder-banner-head h3{font-size:.9rem;font-weight:700;color:#92400e;}
-.reminder-item{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:8px;padding:10px 14px;margin-bottom:7px;}
-.reminder-item:last-child{margin-bottom:0;}
-.reminder-days{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px;}
-.days-today{background:#fee2e2;color:#dc2626;}
-.days-soon{background:#ffedd5;color:#ea580c;}
-.days-ok{background:#fef9c3;color:#854d0e;}
-/* ── PDF PRINT STYLES ── */
-@media print {
-  body{display:block;background:#fff;font-size:12px;}
-  .sidebar,.topbar,.btn,.btn-pdf,.fu-actions,button{display:none!important;}
-  .content{padding:10px;max-height:none;overflow:visible;}
-  .stats{display:none;}
-  .panel{box-shadow:none;border:1px solid #ccc;page-break-inside:avoid;}
-  .panel-head{background:#f1f5f9;}
-  #print-header{display:block!important;}
-  canvas{max-width:100%;}
-}
-#print-header{display:none;padding:10px 0 16px;border-bottom:2px solid #1e3a5f;margin-bottom:16px;}
-#print-header h2{font-size:1.1rem;color:#1e3a5f;}
-#print-header p{font-size:.8rem;color:#64748b;margin-top:3px;}
-  
-  /* ── RESPONSIVE (HP portrait) ─────────────────────────────── */
-@media (max-width: 900px){
-  body{
-    flex-direction: column;
-    min-height: 100vh;
-  }
+    #login-screen { position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#1e3a5f,#2563eb,#1d4ed8);display:flex;align-items:center;justify-content:center;padding:20px; }
+    #login-screen.hidden { display:none; }
+    .login-box { background:#fff;border-radius:20px;padding:36px 28px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+    .login-logo { text-align:center;margin-bottom:24px; }
+    .login-logo h1 { font-size:1.4rem;font-weight:700;color:#1e3a5f;margin-bottom:2px; }
+    .login-field { margin-bottom:16px; }
+    .login-field label { display:block;font-size:0.82rem;font-weight:600;color:#374151;margin-bottom:6px; }
+    .login-field input { width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:0.9rem;outline:none;background:#f8fafc;color:#1e293b; }
+    .login-btn { width:100%;padding:13px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:10px;font-size:0.95rem;font-weight:600;cursor:pointer;margin-top:6px; }
+    .login-error { background:#fee2e2;color:#991b1b;border:1px solid #fecaca;border-radius:8px;padding:10px 12px;font-size:0.82rem;margin-bottom:14px;display:none; }
+    .login-error.show { display:block; }
 
-  /* Sidebar jadi top bar agar tidak memakan lebar */
-  .sidebar{
-    width: 100%;
-    min-height: auto;
-    flex-direction: row;
-    align-items: center;
-    padding: 8px 10px;
-  }
+    .navbar { background: linear-gradient(135deg,#1a73e8,#0d47a1); color: white; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
+    .navbar h1 { font-size: 1.2rem; margin: 0; }
+    .navbar-subtitle { font-size: 0.72rem; opacity: 0.9; margin-top: 3px; font-weight: 400; }
+    .topbar-actions { display: flex; align-items: center; gap: 8px; }
 
-  .sidebar-logo{
-    padding: 10px 10px;
-    border-bottom: none;
-    flex: 0 0 auto;
-  }
-  .sidebar-logo h2{ font-size: .95rem; }
-  .sidebar-logo span{ display: none; }
+    .bottom-nav { position:fixed;bottom:0;left:0;right:0;background:white;display:flex;box-shadow:0 -2px 10px rgba(0,0,0,0.1);z-index:100; }
+    .bottom-nav button { flex:1;padding:10px 4px;border:none;background:none;cursor:pointer;font-size:0.7rem;color:#666;display:flex;flex-direction:column;align-items:center;gap:3px; }
+    .bottom-nav button.active { color:#1a73e8; }
+    .bottom-nav button .icon { font-size:1.3rem; }
 
-  .sidebar-nav{
-    padding: 0 6px;
-    flex: 1;
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    white-space: nowrap;
-  }
+    .container { width:100%;max-width:100%;margin:0;padding:10px; }
+    .card, .panel { background:white;border-radius:10px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+    .card h2, .panel-head h2 { font-size:1rem;color:#1a73e8;margin-bottom:14px;display:flex;align-items:center;gap:8px; }
+    .section { display:none; }
+    .section.active { display:block; }
 
-  .nav-item{
-    margin-bottom: 0;
-    flex: 0 0 auto;
-    padding: 8px 10px;
-    border-radius: 10px;
-  }
+    .form-group, .fg { margin-bottom:12px; }
+    .form-group label, .fg label { display:block;font-size:0.8rem;color:#555;font-weight:600;margin-bottom:4px; }
+    .form-group input, .form-group select, .fg input, .fg select { width:100%;padding:11px 14px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:0.95rem; }
+    .form-grid { display:grid;grid-template-columns:1fr;gap:10px; }
+    @media(min-width:640px){.form-grid{grid-template-columns:1fr 1fr;}}
 
-  .sidebar-foot{ display: none; }
-
-  .main{
-    max-height: none;
-    overflow: visible;
-  }
-
-  .topbar{
-    padding: 12px 14px;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .topbar-right{
-    width: 100%;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .content{
-    padding: 14px 14px;
-  }
-
-  /* Grid turun kolom */
-  .stats{
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .grid-2{
-    grid-template-columns: 1fr;
-  }
-  .grid-3{
-    grid-template-columns: 1fr;
-  }
-
-  /* Card & panel padding sedikit diperkecil */
-  .panel-body{ padding: 14px; }
-  .panel-head{ padding: 12px 14px; }
-
-  /* Form jadi 1 kolom yang rapi */
-  .form-grid{
-    grid-template-columns: 1fr;
-  }
-
-  /* Chart box sedikit lebih pendek agar tidak makan layar */
-  .chart-box{ height: 220px; }
-
-  /* Table: pastikan bisa swipe horizontal */
-  table{
-    min-width: 720px;
-  }
-  .panel > div[style*="overflow-x:auto"]{
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch;
-  }
-}
-
-/* Extra small phones */
-@media (max-width: 520px){
-  .stats{
-    grid-template-columns: 1fr;
-  }
-  .badge-date{ width: 100%; }
-  .topbar h1{ width: 100%; }
-}
-  /* PENGAMAN TABEL RESPONSIVE */
-.panel {
-  max-width: 100%;
-}
-
-.panel > div[style*="overflow-x"] {
-  width: 100% !important;
-  max-width: 100vw !important;
-  overflow-x: auto !important;
-  display: block !important;
-  /* Menambahkan bayangan tipis di kanan agar pengguna tahu tabel bisa digeser */
-  box-shadow: inset -10px 0 8px -10px rgba(0,0,0,0.1); 
-}
-
-/* Memastikan teks tabel tidak turun baris */
-table th, table td {
-  white-space: nowrap !important;
-}
-</style>
+    .btn { padding:12px 20px;border:none;border-radius:10px;cursor:pointer;font-size:0.9rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px; }
+    .btn-primary { background:#1a73e8;color:white; }
+    .btn-success { background:#28a745;color:white; }
+    .btn-danger  { background:#ef4444;color:white; }
+    .btn-outline { background:white;color:#1a73e8;border:1.5px solid #1a73e8; }
+    
+    table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+    th, td { padding:10px 12px; border-bottom:1px solid #e2e8f0; text-align:left; }
+    th { background:#f8fafc; font-weight:600; color:#475569; }
+    .empty { text-align:center;padding:30px;color:#999;font-size:0.9rem; }
+    .toast { position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:12px 24px;border-radius:10px;color:white;font-size:0.88rem;z-index:9999; }
+    .toast.success { background:#28a745; } .toast.error { background:#dc3545; } .toast.info { background:#1a73e8; }
+  </style>
 </head>
 <body>
-<!-- LOGIN OVERLAY -->
-<div id="loginOverlay">
+
+<div id="login-screen">
   <div class="login-box">
-    <div class="login-logo">🩺</div>
-    <div class="login-title">BP Monitor</div>
-    <div class="login-sub">Masukkan PIN 6 digit untuk masuk</div>
-    <div class="pin-display" id="pinDisplay">
-      <div class="pin-dot" id="dot0"></div>
-      <div class="pin-dot" id="dot1"></div>
-      <div class="pin-dot" id="dot2"></div>
-      <div class="pin-dot" id="dot3"></div>
-      <div class="pin-dot" id="dot4"></div>
-      <div class="pin-dot" id="dot5"></div>
+    <div class="login-logo">
+      <span style="font-size:3rem">🏪</span>
+      <h1>Marissa Store</h1>
+      <p style="font-size:0.8rem;color:#64748b">Sistem Manajemen & Kesehatan K3</p>
     </div>
-    <div class="pin-keypad">
-      <button class="pin-key" onclick="pinPress('1')">1</button>
-      <button class="pin-key" onclick="pinPress('2')">2</button>
-      <button class="pin-key" onclick="pinPress('3')">3</button>
-      <button class="pin-key" onclick="pinPress('4')">4</button>
-      <button class="pin-key" onclick="pinPress('5')">5</button>
-      <button class="pin-key" onclick="pinPress('6')">6</button>
-      <button class="pin-key" onclick="pinPress('7')">7</button>
-      <button class="pin-key" onclick="pinPress('8')">8</button>
-      <button class="pin-key" onclick="pinPress('9')">9</button>
-      <button class="pin-key" onclick="pinClear()" style="font-size:.8rem">Hapus<br>Semua</button>
-      <button class="pin-key" onclick="pinPress('0')">0</button>
-      <button class="pin-key del" onclick="pinDelete()">⌫</button>
-    </div>
-    <div class="login-err" id="loginErr"></div>
-    <div class="login-hint">PIN default: <strong>123456</strong></div>
+    <div class="login-error" id="login-error"></div>
+    <div class="login-field"><label>👤 Username</label><input type="text" id="login-username" placeholder="Username" onkeydown="if(event.key==='Enter') doLogin()"/></div>
+    <div class="login-field"><label>🔒 Password</label><input type="password" id="login-password" placeholder="Password" onkeydown="if(event.key==='Enter') doLogin()"/></div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">🔑 Masuk</button>
   </div>
 </div>
 
-<!-- CHANGE PIN MODAL -->
-<div class="modal-overlay" id="changePinModal" style="display:none">
-  <div class="modal-box">
-    <h3>🔐 Ganti PIN</h3>
-    <div class="fg" style="margin-bottom:12px;text-align:left">
-      <label>PIN Lama</label>
-      <input type="password" id="oldPin" maxlength="6" placeholder="••••••" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:1rem;outline:none;letter-spacing:4px">
-    </div>
-    <div class="fg" style="margin-bottom:12px;text-align:left">
-      <label>PIN Baru (6 digit)</label>
-      <input type="password" id="newPin" maxlength="6" placeholder="••••••" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:1rem;outline:none;letter-spacing:4px">
-    </div>
-    <div class="fg" style="margin-bottom:16px;text-align:left">
-      <label>Konfirmasi PIN Baru</label>
-      <input type="password" id="confirmPin" maxlength="6" placeholder="••••••" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:1rem;outline:none;letter-spacing:4px">
-    </div>
-    <div id="changePinErr" style="color:#dc2626;font-size:.8rem;margin-bottom:12px;min-height:18px"></div>
-    <div style="display:flex;gap:10px;justify-content:center">
-      <button class="btn btn-primary" onclick="doChangePin()">💾 Simpan PIN</button>
-      <button class="btn btn-outline" onclick="document.getElementById('changePinModal').style.display='none'">Batal</button>
-    </div>
+<nav class="navbar">
+  <div class="navbar-title">
+    <h1>🏪 Marissa Store & BP</h1>
+    <div class="navbar-subtitle">Sistem Terpadu K3 & Inventori</div>
   </div>
-</div>
+  <div class="topbar-actions">
+    <span id="sync-status" style="font-size:0.8rem;color:#fff;">🟢 Online</span>
+    <div id="user-badge" onclick="doLogout()" style="display:none;background:#fff;padding:4px 10px;border-radius:20px;font-size:0.75rem;cursor:pointer;">👤 Keluar</div>
+  </div>
+</nav>
 
-<div class="sidebar">
-  <div class="sidebar-logo"><h2>🩺 BP Monitor</h2><span>KEPMENKES 4634/2021</span></div>
-  <div class="sidebar-nav">
-    <div class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">📊</span> Dashboard</div>
-    <div class="nav-item" onclick="showPage('records')"><span class="nav-icon">📋</span> Input Pemeriksaan</div>
-    <div class="nav-item" onclick="showPage('patients')"><span class="nav-icon">👤</span> Data Pekerja</div>
-    <div class="nav-item" onclick="showPage('progress')"><span class="nav-icon">📈</span> Progress Pekerja</div>
-    <div class="nav-item" onclick="showPage('monthly')"><span class="nav-icon">🗓️</span> Laporan Bulanan</div>
-    <div class="nav-item" onclick="showPage('followup')"><span class="nav-icon">🔔</span> Follow-Up</div>
-    <div class="nav-item" onclick="showPage('alcohol')"><span class="nav-icon">🍷</span> Tes Alkohol</div>
-    <div class="nav-item" onclick="document.getElementById('changePinModal').style.display='flex'"><span class="nav-icon">🔐</span> Ganti PIN</div>
-    <div class="nav-item" onclick="doLogout()"><span class="nav-icon">🚪</span> Keluar</div>
+<div class="container">
+  <!-- SECTION: WORKERS (DATA PEKERJA) -->
+  <div class="section active" id="section-workers">
+    <div id="page-patients"></div>
   </div>
-  <div class="sidebar-foot">BP Monitor v1.0 · pausbiru7</div>
-</div>
-<div class="main">
-  <div class="topbar">
-    <h1 id="pageTitle">Dashboard</h1>
-    <div class="topbar-right">
-      <div id="syncBadge" class="sync-badge sync-local" title="Status sinkronisasi ke Google Sheets">
-        <span id="syncIcon">☁️</span><span id="syncText">Lokal</span>
+
+  <!-- SECTION: DASHBOARD -->
+  <div class="section" id="section-dashboard">
+    <div class="card">
+      <h2>📊 Dashboard Utama</h2>
+      <div id="dash-summary" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:15px;">
+        <div style="background:#e3f2fd;padding:15px;border-radius:10px;text-align:center;">
+          <h3 id="dash-total-workers" style="font-size:1.5rem;color:#1565c0;">0</h3>
+          <p style="font-size:0.8rem;color:#555;">Total Pekerja</p>
+        </div>
       </div>
-      <button class="btn" style="background:#f1f5f9;color:#475569;font-size:.78rem;padding:6px 14px" onclick="manualSync()" title="Sync sekarang ke Google Sheets">🔄 Sync</button>
-      <button class="btn btn-pdf" onclick="exportPDF()">🖨️ PDF</button>
-      <span class="badge-date" id="currentDate"></span>
     </div>
   </div>
-  <div class="content">
-    <div id="print-header"><h2>🩺 BP Monitor — Laporan Tekanan Darah</h2><p>Berdasarkan KEPMENKES RI No. HK.01.07/MENKES/4634/2021 &nbsp;|&nbsp; Dicetak: <span id="printDate"></span></p></div>
-    <div class="stats" id="statsArea"></div>
-    <div id="reminderBanner"></div>
-    <div id="page-dashboard"></div>
-    <div id="page-records" style="display:none"></div>
-    <div id="page-patients" style="display:none"></div>
-    <div id="page-progress" style="display:none"></div>
-    <div id="page-monthly" style="display:none"></div>
-    <div id="page-followup" style="display:none"></div>
-    <div id="page-alcohol" style="display:none"></div>
-  </div>
 </div>
+
+<div class="bottom-nav">
+  <button onclick="showSection('dashboard')" id="bnav-dashboard"><span class="icon">📊</span>Dashboard</button>
+  <button onclick="showSection('workers')" id="bnav-workers" class="active"><span class="icon">👷</span>Pekerja</button>
+</div>
+
 <script>
-"use strict";
+// ==================== STATE GLOBAL ====================
+let patients = JSON.parse(localStorage.getItem('wh_workers') || localStorage.getItem('patients') || '[]');
+let exams = JSON.parse(localStorage.getItem('wh_exams') || '[]');
+let followups = JSON.parse(localStorage.getItem('wh_followups') || '[]');
+let editingPatientId = null;
 
-// ══ DATA ══════════════════════════════════
-let patients = JSON.parse(localStorage.getItem('bpm_patients') || 'null') || [];
-let exams = (JSON.parse(localStorage.getItem('bpm_exams') || 'null') || [])
-  .map(e => ({ ...e, examDate: e.examDate?.slice(0, 10) }));
-let followups = JSON.parse(localStorage.getItem('bpm_followups') || 'null') || [];
-// ── TAMBAHKAN DATA TES ALKOHOL DI SINI ──
-let alcoholExams = (JSON.parse(localStorage.getItem('bpm_alcohol') || 'null') || [])
-  .map(e => ({ ...e, examDate: e.examDate?.slice(0, 10) }));
-// ────────────────────────────────────────
-let nextEid = exams.length ? Math.max(...exams.map(e => +e.id)) + 1 : 1;
-let nextFid = followups.length ? Math.max(...followups.map(f => +f.id)) + 1 : 1;
-let nextPid = patients.length ? Math.max(...patients.map(p => +p.id)) + 1 : 1;
-// ── TAMBAHKAN ID ALKOHOL DI SINI ──
-let nextAid = alcoholExams.length ? Math.max(...alcoholExams.map(a => +a.id)) + 1 : 1;
-// ──────────────────────────────────
 function save(){
-  localStorage.setItem('bpm_patients', JSON.stringify(patients));
-  localStorage.setItem('bpm_exams', JSON.stringify(exams));
-  localStorage.setItem('bpm_followups', JSON.stringify(followups));
-  // ── TAMBAHKAN SIMPAN ALKOHOL DI SINI ──
-  localStorage.setItem('bpm_alcohol', JSON.stringify(alcoholExams));
-  // ──────────────────────────────────────
+  localStorage.setItem('wh_workers', JSON.stringify(patients));
+  localStorage.setItem('wh_exams', JSON.stringify(exams));
+  localStorage.setItem('wh_followups', JSON.stringify(followups));
 }
 
-// ══ KEPMENKES 4634/2021 CLASSIFICATION ════
-function getStatus(s, d){
-  s = +s;
-  d = +d;
-  if(s >= 180 || d >= 110) return {key:'ht3', label:'Hipertensi Derajat 3', cls:'b-ht3', color:'#7c3aed'};
-  if(s >= 160 || d >= 100) return {key:'ht2', label:'Hipertensi Derajat 2', cls:'b-ht2', color:'#dc2626'};
-  if(s >= 140 && d < 90)   return {key:'iso', label:'HT Sistolik Terisolasi', cls:'b-iso', color:'#2563eb'};
-  if(s >= 140 || d >= 90)  return {key:'ht1', label:'Hipertensi Derajat 1', cls:'b-ht1', color:'#ea580c'};
-  if(s >= 130 || d >= 85)  return {key:'pre', label:'Normal-Tinggi', cls:'b-pre', color:'#ca8a04'};
-  if(s >= 120 || d >= 80)  return {key:'nor', label:'Normal', cls:'b-nor', color:'#16a34a'};
-  if(s < 90 || d < 60)     return {key:'low', label:'Hipotensi', cls:'b-low', color:'#0369a1'};
-  return {key:'opt', label:'Optimal', cls:'b-opt', color:'#0891b2'};
+function showToast(msg, type = 'info') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
 }
 
-// ══ REKOMENDASI OTOMATIS ══════════════════
-function getRekomendasi(s, d, prevS, pex){
-  const st = getStatus(s, d);
-  const trend = prevS != null ? (s < prevS ? 'turun' : s > prevS ? 'naik' : 'tetap') : null;
-  const trendNote =
-    trend === 'turun'
-      ? 'Tekanan darah menunjukkan perbaikan. '
-      : trend === 'naik'
-        ? 'Perhatian: tekanan darah meningkat dari pemeriksaan sebelumnya. '
-        : '';
-
-  const rekom = {
-    opt: {
-      icon: '✅',
-      judul: 'Optimal — Pertahankan!',
-      isi: `${trendNote}Tekanan darah dalam kondisi optimal. Pertahankan gaya hidup sehat: olahraga teratur, diet rendah garam, hindari stres. Kontrol ulang 12 bulan.`,
-      jadwal: 'Kontrol: 12 bulan'
-    },
-    nor: {
-      icon: '✅',
-      judul: 'Normal — Jaga Konsistensi',
-      isi: `${trendNote}Tekanan darah normal. Lanjutkan pola hidup sehat. Batasi konsumsi garam <5g/hari, olahraga 30 menit/hari. Kontrol ulang 6–12 bulan.`,
-      jadwal: 'Kontrol: 6–12 bulan'
-    },
-    pre: {
-      icon: '⚠️',
-      judul: 'Normal-Tinggi — Waspadai',
-      isi: `${trendNote}Tekanan darah di batas normal-tinggi. Modifikasi gaya hidup segera: kurangi garam, turunkan berat badan jika overweight, olahraga aerobik rutin, batasi alkohol & rokok. Belum perlu obat, namun perlu monitoring ketat.`,
-      jadwal: 'Kontrol: 3–6 bulan'
-    },
-    ht1: {
-      icon: '🔶',
-      judul: 'Hipertensi Derajat 1 — Tindakan Diperlukan',
-      isi: `${trendNote}Diperlukan modifikasi gaya hidup intensif + evaluasi dokter. Pertimbangkan terapi farmakologis jika ada faktor risiko kardiovaskular. Pantau tekanan darah mandiri setiap hari. Batasi garam <5g/hari.`,
-      jadwal: 'Kontrol: 1–3 bulan'
-    },
-    ht2: {
-      icon: '🔴',
-      judul: 'Hipertensi Derajat 2 — Segera Tangani',
-      isi: `${trendNote}Wajib terapi antihipertensi + modifikasi gaya hidup. Rujuk ke dokter spesialis penyakit dalam. Pantau tekanan darah harian. Periksa organ target (jantung, ginjal, mata).`,
-      jadwal: 'Kontrol: 2–4 minggu'
-    },
-    ht3: {
-      icon: '🚨',
-      judul: 'Hipertensi Derajat 3 — DARURAT!',
-      isi: `${trendNote}Tekanan darah sangat tinggi — risiko kerusakan organ akut. SEGERA rujuk ke IGD/RS. Hindari aktivitas berat. Jangan hentikan obat tiba-tiba. Evaluasi tanda-tanda komplikasi (nyeri dada, sesak, gangguan penglihatan).`,
-      jadwal: 'SEGERA ke IGD/RS'
-    },
-   iso: {
-      icon: '🔵',
-      judul: 'HT Sistolik Terisolasi — Perlu Evaluasi',
-      isi: `${trendNote}Tekanan sistolik tinggi namun diastolik normal — sering pada lansia. Evaluasi dokter diperlukan. Perhatikan risiko kardiovaskular. Terapi disesuaikan kondisi pekerja.`,
-      jadwal: 'Kontrol: 1–2 bulan'
-    },
-    low: {
-      icon: '🧊',
-      judul: 'Hipotensi (Tekanan Darah Rendah)',
-      isi: `${trendNote}Tekanan darah di bawah normal. Jika disertai gejala pusing, lemas, pucat, atau pandangan gelap, segera istirahat (berbaring) dan minum air yang cukup. Konsultasi ke dokter/klinik jika keluhan berlanjut.`,
-      jadwal: 'Bila ada keluhan'
-    }
-  };
-
-  const r = rekom[st.key];
-
-  return `<div class="rekom-box ${st.key}"><div class="rekom-title">${r.icon} ${r.judul}</div><div>${r.isi}</div><div style="margin-top:6px;font-weight:600;font-size:.78rem">📅 ${r.jadwal}</div></div>`;
-}
-// ══ HELPERS ═══════════════════════════════
-function calcAge(dob){
-  if(!dob) return '-';
-
-  const b = new Date(dob);
-  const t = new Date();
-
-  let a = t.getFullYear() - b.getFullYear();
-
-  if(
-    t.getMonth() < b.getMonth() ||
-    (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())
-  ){
-    a--;
-  }
-
-  return a;
-}
-
-function fmt(d){
-  if(!d) return '-';
-
-  const raw = String(d);
-  const s = raw.includes('T') ? raw.slice(0, 10) : raw;
-  const p = s.split('-');
-
-  if(p.length !== 3) return raw;
-
-  return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString('id-ID', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  });
-}
-
-function monthKey(d){
-  return d ? String(d).slice(0, 7) : null;
-}
-
-function monthLabel(k){
-  if(!k) return '';
-
-  const [y, m] = String(k).split('-');
-
-  return new Date(+y, +m - 1).toLocaleDateString('id-ID', {
-    month: 'short',
-    year: 'numeric'
-  });
-}
-
-function trendArrow(c, p){
-  if(p == null) return '<span class="trend-eq">—</span>';
-
-  const d = c - p;
-
-  if(d > 0) return `<span class="trend-up">▲${d}</span>`;
-  if(d < 0) return `<span class="trend-dn">▼${Math.abs(d)}</span>`;
-
-  return '<span class="trend-eq">=</span>';
-}
-
-function pName(pid){
-  const p = patients.find(x => x.id === pid);
-  return p ? p.name : '—';
-}
-
-function pExams(pid){
-  return exams
-    .filter(e => e.patientId === pid)
-    .sort((a, b) => String(a.examDate).localeCompare(String(b.examDate)));
-}
-
-function lastExam(pid){
-  const ex = pExams(pid);
-  return ex.length ? ex[ex.length - 1] : null;
-}
-
-function vCls(v, hi, md){
-  return v >= hi ? 'v-hi' : v >= md ? 'v-md' : 'v-ok';
-}
-
-function destroyChart(id){
-  const c = Chart.getChart(id);
-  if(c) c.destroy();
-}
-
-// ══ DATE + NAVIGATION ═════════════════════
-document.getElementById('currentDate').textContent = new Date().toLocaleDateString('id-ID', {
-  weekday: 'long',
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric'
-});
-
-document.getElementById('printDate').textContent = new Date().toLocaleDateString('id-ID', {
-  day: '2-digit',
-  month: 'long',
-  year: 'numeric'
-});
-
-const pages = ['dashboard', 'records', 'patients', 'progress', 'monthly', 'followup', 'alcohol']; // Tambahkan 'alcohol' di sini
-
-const titles = {
-  dashboard: 'Dashboard',
-  records: 'Input Pemeriksaan',
-  patients: 'Master Data Pekerja',
-  progress: 'Progress Pekerja',
-  monthly: 'Laporan Bulanan',
-  followup: 'Manajemen Follow-Up',
-  alcohol: 'Tes Alkohol (BAC)' // Tambahkan judul halamannya
-};
-
-function showPage(p){
-  pages.forEach(k => {
-    const pageEl = document.getElementById('page-' + k);
-    if(pageEl) pageEl.style.display = k === p ? 'block' : 'none';
-  });
-
-  document.querySelectorAll('.nav-item').forEach(n => {
-    const targetPage = n.getAttribute('onclick')?.match(/showPage\('([^']+)'\)/)?.[1];
-    n.classList.toggle('active', targetPage === p);
-  });
-
-  const statsArea = document.getElementById('statsArea');
-  if(statsArea) statsArea.style.display = p === 'dashboard' ? 'grid' : 'none';
-
-  const pageTitle = document.getElementById('pageTitle');
-  if(pageTitle) pageTitle.textContent = titles[p] || '';
-
-  if(p === 'dashboard') renderDashboard();
-  if(p === 'records') renderRecords();
-  if(p === 'patients') renderPatients();
-  if(p === 'progress') renderProgress();
-  if(p === 'monthly') renderMonthly();
-  if(p === 'followup') renderFollowups();
-  if(p === 'alcohol') renderAlcoholPage(); // ── TAMBAHKAN BARIS INI AGAR HALAMAN ALKOHOL MERENDER ──
-
-  if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
-}
-// ══ PDF EXPORT ════════════════════════════
-function exportPDF(){
-  const printDate = document.getElementById('printDate');
-
-  if(printDate){
-    printDate.textContent = new Date().toLocaleDateString('id-ID', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    });
-  }
-
-  window.print();
-}
-
-// ══ STATS ═════════════════════════════════
-function renderStats(){
-  const allLast = patients.map(p => lastExam(p.id)).filter(Boolean);
-
-  const ht = allLast.filter(e => {
-    const k = getStatus(e.systolic, e.diastolic).key;
-    return ['ht1', 'ht2', 'ht3', 'iso'].includes(k);
-  }).length;
-
-  const pre = allLast.filter(e => {
-    return getStatus(e.systolic, e.diastolic).key === 'pre';
-  }).length;
-
-  const nor = allLast.filter(e => {
-    return ['opt', 'nor'].includes(getStatus(e.systolic, e.diastolic).key);
-  }).length;
-
-  const pend = followups.filter(f => f.status === 'pending').length;
-
-  // ── STATISTIK ALKOHOL ──
-  const alcTotal = alcoholExams.length;
-  const alcFail = alcoholExams.filter(a => a.status === 'Fail').length;
-
-  const statsArea = document.getElementById('statsArea');
-  if(!statsArea) return;
-
-  statsArea.innerHTML = `
-    <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">👥</div><div class="stat-info"><h3>Total Pekerja</h3><div class="val">${patients.length}</div><div class="sub">Terdaftar</div></div></div>
-    <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🔴</div><div class="stat-info"><h3>Hipertensi</h3><div class="val" style="color:#dc2626">${ht}</div><div class="sub">Perlu penanganan</div></div></div>
-    <div class="stat-card"><div class="stat-icon" style="background:#dcfce7">🟢</div><div class="stat-info"><h3>Optimal/Normal</h3><div class="val" style="color:#16a34a">${nor}</div><div class="sub">Kondisi baik</div></div></div>
-    <div class="stat-card"><div class="stat-icon" style="background:#fef3c7">🔔</div><div class="stat-info"><h3>Follow-Up</h3><div class="val" style="color:#d97706">${pend}</div><div class="sub">Menunggu</div></div></div>
-    <!-- KARTU BARU: TES ALKOHOL -->
-    <div class="stat-card" style="border: ${alcFail > 0 ? '1px solid #fecaca' : 'none'}"><div class="stat-icon" style="background:#fce7f3">🍷</div><div class="stat-info"><h3>Tes Alkohol</h3><div class="val">${alcTotal}</div><div class="sub" style="${alcFail > 0 ? 'color:#dc2626;font-weight:bold' : 'color:#16a34a'}">${alcFail > 0 ? '⚠️ ' + alcFail + ' Kasus Fail' : 'Semua Pass ✓'}</div></div></div>`;
-}
-// ══ DASHBOARD ═════════════════════════════
-function renderDashboard(){
-  renderStats();
-
-  const now = new Date();
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
   
-  // ── Hitung Data Grafik Tren BP (6 Bulan) ──
-  const months = [];
-  for(let i = 5; i >= 0; i--){
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
-  }
-  const avgByMonth = months.map(mk => {
-    const me = exams.filter(e => monthKey(e.examDate) === mk);
-    return me.length ? Math.round(me.reduce((a, e) => a + e.systolic, 0) / me.length) : null;
-  });
-
-  // ── Hitung Kategori Tekanan Darah ──
-  const catCount = {opt:0, nor:0, pre:0, ht1:0, ht2:0, ht3:0, iso:0, low:0};
-  patients.map(p => lastExam(p.id)).filter(Boolean).forEach(e => {
-    catCount[getStatus(e.systolic, e.diastolic).key]++;
-  });
-
-  // ── Data Tabel BP Terbaru ──
-  const recent = [...exams]
-    .sort((a, b) => String(b.examDate).localeCompare(String(a.examDate)))
-    .slice(0, 5);
-
-  const rows = recent.map(e => {
-    const st = getStatus(e.systolic, e.diastolic);
-    const pex = pExams(e.patientId);
-    const idx = pex.findIndex(x => x.id === e.id);
-    const prev = idx > 0 ? pex[idx - 1] : null;
-    return `<tr><td><strong>${pName(e.patientId)}</strong></td><td>${fmt(e.examDate)}</td><td class="${vCls(e.systolic,140,120)}">${e.systolic}</td><td class="${vCls(e.diastolic,90,80)}">${e.diastolic}</td><td>${trendArrow(e.systolic,prev?.systolic)}</td><td><span class="badge ${st.cls}">${st.label}</span></td></tr>`;
-  }).join('');
-
-  // ── Data Tabel Alkohol Terbaru ──
-  const recentAlcohol = [...alcoholExams]
-    .sort((a, b) => String(b.examDate).localeCompare(String(a.examDate)))
-    .slice(0, 5);
-
-  const alcRows = recentAlcohol.map(a => {
-    const badgeCls = a.status === 'Pass' ? 'b-nor' : 'b-ht2';
-    return `<tr><td><strong>${escapeHtml(a.patientName)}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
-  }).join('');
-
-  // ── Hitung Persentase Tes Alkohol ──
-  const alcPass = alcoholExams.filter(a => a.status === 'Pass').length;
-  const alcFail = alcoholExams.filter(a => a.status === 'Fail').length;
-  const totalAlc = alcoholExams.length;
-  const passPct = totalAlc > 0 ? Math.round((alcPass / totalAlc) * 100) : 0;
-  const failPct = totalAlc > 0 ? Math.round((alcFail / totalAlc) * 100) : 0;
-
-  // ── Data Follow-up Pending ──
-  const pend = followups.filter(f => f.status === 'pending');
-  const fuHtml = pend.slice(0, 3).map(f => {
-    return `<div class="fu-card pending"><div><div class="fu-name">${f.patientName}</div><div class="fu-reason">${f.reason}</div><div class="fu-date">📅 ${fmt(f.dueDate)}</div></div><span class="badge b-pending">Menunggu</span></div>`;
-  }).join('') || '<div class="empty">✅ Tidak ada follow-up pending</div>';
-
-  const dashboardEl = document.getElementById('page-dashboard');
-  if(!dashboardEl) return;
-
-  dashboardEl.innerHTML = `
-    <!-- BARIS 1: PEMERIKSAAN BP (Kiri) & ALKOHOL (Kanan) -->
-    <div class="grid-2" style="margin-bottom:18px">
-      <div class="panel">
-        <div class="panel-head"><h2>📋 Pemeriksaan BP Terbaru</h2></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Trend</th><th>Kategori</th></tr></thead><tbody>${rows || '<tr><td colspan="6" class="empty">Belum ada data</td></tr>'}</tbody></table></div>
-      </div>
-      
-      <div class="panel">
-        <div class="panel-head"><h2>🍷 Pemeriksaan Alkohol Terbaru</h2></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Nilai BAC</th><th>Distribusi</th></tr></thead><tbody>${alcRows || '<tr><td colspan="4" class="empty">Belum ada data pemeriksaan alkohol</td></tr>'}</tbody></table></div>
-      </div>
-    </div>
-
-    <!-- BARIS 2: DISTRIBUSI BP (Kiri) & DISTRIBUSI ALKOHOL (Kanan) -->
-    <div class="grid-2" style="margin-bottom:18px">
-      <div class="panel">
-        <div class="panel-head"><h2>🥧 Distribusi Kategori BP (Terakhir)</h2></div>
-        <div class="panel-body"><div class="chart-box"><canvas id="dashPieChart"></canvas></div></div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head"><h2>🥧 Distribusi Tes Alkohol (Pass vs Fail)</h2></div>
-        <div class="panel-body">
-          <div style="display:flex; justify-content:center; gap:10px; margin-bottom:10px;">
-            <span class="badge b-nor" style="font-size:.85rem">Pass: ${passPct}%</span> 
-            <span class="badge b-ht2" style="font-size:.85rem">Fail: ${failPct}%</span>
-          </div>
-          <div class="chart-box" style="height:220px"><canvas id="dashAlcPieChart"></canvas></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- BARIS 3: TREN SISTOLIK (Kiri) & KLASIFIKASI ALKOHOL (Kanan) -->
-    <div class="grid-2" style="margin-bottom:18px">
-      <div class="panel">
-        <div class="panel-head"><h2>📊 Tren Rata-rata Sistolik (6 Bulan)</h2></div>
-        <div class="panel-body"><div class="chart-box"><canvas id="dashTrendChart"></canvas></div></div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head"><h2>📖 Klasifikasi Distribusi Alkohol (BAC)</h2></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Distribusi</th><th>Nilai BAC</th><th>Keterangan</th></tr></thead><tbody>
-          <tr><td><span class="badge b-nor">Pass</span></td><td>0.00</td><td>Aman / Layak Kerja</td></tr>
-          <tr><td><span class="badge b-ht2">Fail</span></td><td>&gt; 0.00</td><td>Tidak Layak Kerja (Tindakan Diperlukan)</td></tr>
-        </tbody></table></div>
-      </div>
-    </div>
-
-    <!-- BARIS 4: FOLLOW UP PENDING (Kiri) & KLASIFIKASI BP (Kanan) -->
-    <div class="grid-2">
-      <div class="panel">
-        <div class="panel-head"><h2>🔔 Follow-Up Pending</h2><span style="font-size:.75rem;color:#f59e0b">${pend.length} menunggu</span></div>
-        <div class="panel-body">${fuHtml}</div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head"><h2>📖 Klasifikasi Tekanan Darah (KEPMENKES)</h2></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Kategori</th><th>Sistolik</th><th>Diastolik</th><th>Risiko</th></tr></thead><tbody>
-          <tr><td><span class="badge b-opt">Optimal</span></td><td>&lt;120</td><td>&lt;80</td><td>Minimal</td></tr>
-          <tr><td><span class="badge b-nor">Normal</span></td><td>120–129</td><td>80–84</td><td>Rendah</td></tr>
-          <tr><td><span class="badge b-pre">Normal-Tinggi</span></td><td>130–139</td><td>85–89</td><td>Sedang</td></tr>
-          <tr><td><span class="badge b-ht1">HT Derajat 1</span></td><td>140–159</td><td>90–99</td><td>Sedang</td></tr>
-          <tr><td><span class="badge b-ht2">HT Derajat 2</span></td><td>160–179</td><td>100–109</td><td>Tinggi</td></tr>
-          <tr><td><span class="badge b-ht3">HT Derajat 3</span></td><td>≥180</td><td>≥110</td><td>Sangat Tinggi</td></tr>
-        </tbody></table></div>
-      </div>
-    </div>`;
-
-  requestAnimationFrame(() => {
-    // ── Render Chart Trend BP (Garis) ──
-    const trendCanvas = document.getElementById('dashTrendChart');
-    if(trendCanvas){
-      destroyChart('dashTrendChart');
-      new Chart(trendCanvas, {
-        type: 'line',
-        data: { labels: months.map(m => monthLabel(m)), datasets: [{ label: 'Rata-rata Sistolik', data: avgByMonth, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.1)', fill: true, tension: .4, pointRadius: 5, pointBackgroundColor: '#2563eb', spanGaps: true }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 80, max: 200, ticks: { callback: v => v + ' mmHg' } }, x: { grid: { display: false } } } }
-      });
-    }
-
-    // ── Render Chart Pie BP ──
-    const pieCanvas = document.getElementById('dashPieChart');
-    if(pieCanvas){
-      destroyChart('dashPieChart');
-      const catDefs = [
-        {key:'opt', label:'Optimal', color:'#0891b2'}, {key:'nor', label:'Normal', color:'#16a34a'}, {key:'pre', label:'Normal-Tinggi', color:'#ca8a04'},
-        {key:'ht1', label:'HT Derajat 1', color:'#ea580c'}, {key:'ht2', label:'HT Derajat 2', color:'#dc2626'}, {key:'ht3', label:'HT Derajat 3', color:'#7c3aed'},
-        {key:'iso', label:'HT Sistolik Terisolasi', color:'#2563eb'}, {key:'low', label:'Hipotensi', color:'#0369a1'}
-      ];
-      const active = catDefs.filter(c => catCount[c.key] > 0);
-      new Chart(pieCanvas, {
-        type: 'doughnut',
-        data: { labels: active.map(c => c.label), datasets: [{ data: active.map(c => catCount[c.key]), backgroundColor: active.map(c => c.color), borderWidth: 2 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } } }
-      });
-    }
-
-    // ── Render Chart Pie Alkohol ──
-    const alcPieCanvas = document.getElementById('dashAlcPieChart');
-    if (alcPieCanvas) {
-      destroyChart('dashAlcPieChart');
-      if (totalAlc > 0) {
-        new Chart(alcPieCanvas, {
-          type: 'doughnut',
-          data: { labels: ['Pass (Aman)', 'Fail (Tidak Layak)'], datasets: [{ data: [alcPass, alcFail], backgroundColor: ['#16a34a', '#dc2626'], borderWidth: 2 }] },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } }
-        });
-      } else {
-        const ctx = alcPieCanvas.getContext('2d');
-        ctx.font = '12px Arial';
-        ctx.fillStyle = '#94a3b8';
-        ctx.textAlign = 'center';
-        ctx.fillText('Belum ada data', alcPieCanvas.width/2, alcPieCanvas.height/2);
-      }
-    }
-  });
-}
- 
-// ══ INPUT PEMERIKSAAN ═════════════════════
-function renderRecords(){
-  const opts = patients.map(p => `<option value="${p.id}">${p.name} (${p.nik || ''})</option>`).join('');
-  const qR = document.getElementById('recSearch')?.value || '';
-  const kR = document.getElementById('recKat')?.value || '';
-  const filteredExams = filterExams(qR, kR).slice(0, 30);
-
-  const rows = filteredExams.map(e => {
-    const st = getStatus(e.systolic, e.diastolic);
-    const pex = pExams(e.patientId);
-    const idx = pex.findIndex(x => x.id === e.id);
-    const prev = idx > 0 ? pex[idx - 1] : null;
-    const pulseText = e.pulse == null || e.pulse === '' ? '-' : e.pulse;
-
-    return `<tr><td><strong>${pName(e.patientId)}</strong></td><td>${fmt(e.examDate)}</td><td class="${vCls(e.systolic,140,120)}">${e.systolic}</td><td class="${vCls(e.diastolic,90,80)}">${e.diastolic}</td><td>${pulseText}</td><td>${trendArrow(e.systolic,prev?.systolic)}</td><td><span class="badge ${st.cls}">${st.label}</span></td><td style="display:flex;gap:4px"><button class="btn btn-warning btn-sm" onclick="editExam(${e.id})">✏️</button><button class="btn btn-danger btn-sm" onclick="delExam(${e.id})">🗑</button></td></tr>`;
-  }).join('');
-
-  const pageRecords = document.getElementById('page-records');
-  if(!pageRecords) return;
-
-  pageRecords.innerHTML = `
-    <div class="panel"><div class="panel-head"><h2>➕ Tambah Hasil Pemeriksaan</h2></div><div class="panel-body">
-      <div style="margin-bottom:12px;">
-        <button type="button" class="btn btn-outline" onclick="toggleBpScanner()">📷 Scan QR Code Pekerja</button>
-        <div id="scanner-bp-container" style="display:none; margin-top:10px; padding:10px; border:1px solid var(--border); border-radius:8px; background:#f8fafc;">
-          <div id="scanner-bp-worker" style="width:100%; max-width:350px; margin:0 auto;"></div>
-          <div style="text-align:center; margin-top:8px;">
-            <button type="button" class="btn btn-outline btn-sm" onclick="stopBpWorkerScanner(); document.getElementById('scanner-bp-container').style.display='none';">Tutup Kamera</button>
-          </div>
-        </div>
-      </div>
-      <div class="form-grid">
-        <div class="fg"><label>Pekerja</label><select id="ePid" onchange="fillPatientInfo()">${opts}</select></div>
-        <div class="fg"><label>Tgl Lahir</label><input id="eDob" readonly></div>
-        <div class="fg"><label>Usia (otomatis)</label><input id="eAge" readonly></div>
-        <div class="fg"><label>Tanggal Periksa</label><input id="eDate" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
-        <div class="fg"><label>Sistolik (mmHg)</label><input id="eSys" type="number" placeholder="120" oninput="previewCat()"></div>
-        <div class="fg"><label>Diastolik (mmHg)</label><input id="eDia" type="number" placeholder="80" oninput="previewCat()"></div>
-        <div class="fg"><label>Denyut Nadi (bpm)</label><input id="ePulse" type="number" placeholder="72"></div>
-        <div class="fg"><label>Kategori (otomatis)</label><input id="eCat" readonly></div>
-      </div>
-      <div id="eRekom"></div>
-      <div style="display:flex;gap:10px;align-items:center;margin-top:12px">
-        <button class="btn btn-primary" onclick="addExam()">💾 Simpan Pemeriksaan</button>
-        <span id="eSaveMsg" style="font-size:.8rem;color:#16a34a"></span>
-      </div>
-    </div></div>
-    <div class="panel"><div class="panel-head"><h2>📋 Riwayat Pemeriksaan</h2><span style="font-size:.75rem;color:#64748b">${filteredExams.length} dari ${exams.length} data</span></div>
-      <div class="panel-body" style="padding-bottom:0">
-        <div class="search-bar">
-          <input id="recSearch" placeholder="🔍 Cari nama pekerja..." value="${qR}" oninput="renderRecords()">
-          <select id="recKat" onchange="renderRecords()">${katOpts.replace(`value="${kR}"`, `value="${kR}" selected`)}</select>
-          <button class="btn btn-outline btn-sm" onclick="document.getElementById('recSearch').value='';document.getElementById('recKat').value='';renderRecords()">✕ Reset</button>
-        </div>
-      </div>
-      <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Nadi</th><th>Trend</th><th>Kategori</th><th>Aksi</th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="8" class="empty">Tidak ada data yang sesuai</td></tr>'}</tbody></table></div></div>`;
-
-  fillPatientInfo();
+  const sec = document.getElementById(`section-${name}`);
+  if (sec) sec.classList.add('active');
+  
+  const btn = document.getElementById(`bnav-${name}`);
+  if (btn) btn.classList.add('active');
+  
+  if (name === 'workers') renderWorkers();
+  if (name === 'dashboard') renderDashboard();
 }
 
-function fillPatientInfo(){
-  const ePid = document.getElementById('ePid');
-  const eDob = document.getElementById('eDob');
-  const eAge = document.getElementById('eAge');
-
-  if(!ePid || !eDob || !eAge) return;
-
-  const pid = +ePid.value;
-  const p = patients.find(x => x.id === pid);
-
-  if(!p){
-    eDob.value = '';
-    eAge.value = '';
-    return;
-  }
-
-  eDob.value = p.dob || '';
-  eAge.value = calcAge(p.dob) + ' tahun';
-
-  previewCat();
-}
-
-function previewCat(){
-  const eSys = document.getElementById('eSys');
-  const eDia = document.getElementById('eDia');
-  const ePid = document.getElementById('ePid');
-  const eCat = document.getElementById('eCat');
-  const eRekom = document.getElementById('eRekom');
-
-  if(!eSys || !eDia || !ePid || !eCat || !eRekom) return;
-
-  const s = +eSys.value;
-  const d = +eDia.value;
-
-  if(!s || !d){
-    eCat.value = '';
-    eRekom.innerHTML = '';
-    return;
-  }
-
-  const pid = +ePid.value;
-  const pex = pExams(pid);
-  const prev = pex.length ? pex[pex.length - 1] : null;
-  const st = getStatus(s, d);
-
-  eCat.value = st.label;
-  eRekom.innerHTML = getRekomendasi(s, d, prev?.systolic, pex);
-}
-
-function addExam(){
-  const ePid = document.getElementById('ePid');
-  const eSys = document.getElementById('eSys');
-  const eDia = document.getElementById('eDia');
-  const eDate = document.getElementById('eDate');
-  const ePulse = document.getElementById('ePulse');
-
-  if(!ePid || !eSys || !eDia || !eDate || !ePulse) return;
-
-  const pid = +ePid.value;
-  const s = +eSys.value;
-  const d = +eDia.value;
-  const dt = eDate.value;
-  const pulseRaw = ePulse.value.trim();
-  const pulse = pulseRaw ? +pulseRaw : null;
-
-  if(!pid || !s || !d || !dt) return alert('Lengkapi data pemeriksaan!');
-
-  exams.push({
-    id: nextEid++,
-    patientId: pid,
-    systolic: s,
-    diastolic: d,
-    pulse,
-    examDate: dt
-  });
-
-  save();
-  renderRecords();
-
-  const saveMsg = document.getElementById('eSaveMsg');
-  if(saveMsg){
-    saveMsg.textContent = '✅ Tersimpan!';
-    setTimeout(() => {
-      const el = document.getElementById('eSaveMsg');
-      if(el) el.textContent = '';
-    }, 2500);
-  }
-}
-
-function delExam(id){
-  if(!confirm('Hapus pemeriksaan ini?')) return;
-
-  exams = exams.filter(e => e.id !== id);
-
-  save();
-  renderRecords();
-}
-
-function editExam(id){
-  const existingModal = document.getElementById('editModal');
-  if(existingModal) existingModal.remove();
-
-  const e = exams.find(x => x.id === id);
-  if(!e) return;
-
-  const p = patients.find(x => x.id === e.patientId);
-  const pageRecords = document.getElementById('page-records');
-
-  if(!pageRecords) return;
-
-  pageRecords.insertAdjacentHTML('afterbegin', `
-    <div id="editModal" style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;display:flex;align-items:center;justify-content:center">
-      <div style="background:#fff;border-radius:12px;padding:24px;width:340px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
-        <h3 style="margin:0 0 16px">✏️ Edit Pemeriksaan</h3>
-        <div style="margin-bottom:10px"><label style="font-size:.8rem;font-weight:600">Pekerja</label>
-          <input readonly value="${p ? p.name : '—'}" style="width:100%;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc"></div>
-        <div style="margin-bottom:10px"><label style="font-size:.8rem;font-weight:600">Tanggal Periksa</label>
-          <input id="edDate" type="date" value="${e.examDate}" style="width:100%;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px"></div>
-        <div style="margin-bottom:10px"><label style="font-size:.8rem;font-weight:600">Sistolik (mmHg)</label>
-          <input id="edSys" type="number" value="${e.systolic}" style="width:100%;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px"></div>
-        <div style="margin-bottom:10px"><label style="font-size:.8rem;font-weight:600">Diastolik (mmHg)</label>
-          <input id="edDia" type="number" value="${e.diastolic}" style="width:100%;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px"></div>
-        <div style="margin-bottom:16px"><label style="font-size:.8rem;font-weight:600">Denyut Nadi (bpm)</label>
-          <input id="edPulse" type="number" value="${e.pulse == null ? '' : e.pulse}" style="width:100%;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px"></div>
-        <div style="display:flex;gap:8px;justify-content:flex-end">
-          <button class="btn btn-outline" onclick="document.getElementById('editModal').remove()">Batal</button>
-          <button class="btn btn-primary" onclick="updateExam(${id})">💾 Simpan</button>
-        </div>
-      </div>
-    </div>`);
-}
-
-function updateExam(id){
-  const e = exams.find(x => x.id === id);
-  if(!e) return;
-
-  const edDate = document.getElementById('edDate');
-  const edSys = document.getElementById('edSys');
-  const edDia = document.getElementById('edDia');
-  const edPulse = document.getElementById('edPulse');
-
-  if(!edDate || !edSys || !edDia || !edPulse) return;
-
-  const dt = edDate.value;
-  const s = +edSys.value;
-  const d = +edDia.value;
-  const pulseRaw = edPulse.value.trim();
-  const pulse = pulseRaw ? +pulseRaw : null;
-
-  if(!dt || !s || !d) return alert('Lengkapi semua data!');
-
-  e.examDate = dt;
-  e.systolic = s;
-  e.diastolic = d;
-  e.pulse = pulse;
-
-  save();
-
-  const editModal = document.getElementById('editModal');
-  if(editModal) editModal.remove();
-
-  renderRecords();
-  alert('✅ Data berhasil diperbarui!');
-}
-// ══ MASTER PEKERJA ═════════════════════════
+// ==================== FUNGSI BANTUAN ====================
 function escapeHtml(v){
-  return String(v ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+  return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-function filterPatients(query, kategori){
+function calcAge(dob){
+  if(!dob) return 0;
+  const diff = Date.now() - new Date(dob).getTime();
+  return Math.abs(new Date(diff).getUTCFullYear() - 1970);
+}
+
+function autoAge(){
+  const pDob = document.getElementById('pDob');
+  const pAge = document.getElementById('pAge');
+  if(!pDob || !pAge) return;
+  pAge.value = pDob.value ? calcAge(pDob.value) + ' tahun' : '';
+}
+
+function normalizePhone(value){
+  let phone = String(value || '').replace(/\D/g, '');
+  if(phone.startsWith('0')) phone = '62' + phone.slice(1);
+  else if(phone.startsWith('8')) phone = '62' + phone;
+  return phone;
+}
+
+function formatPhone(){
+  const pPhone = document.getElementById('pPhone');
+  if(!pPhone) return;
+  pPhone.value = normalizePhone(pPhone.value);
+}
+
+function getEditingPatient(){
+  return editingPatientId == null ? null : patients.find(p => String(p.id) === String(editingPatientId)) || null;
+}
+
+function filterPatients(query){
   return patients.filter(p => {
-    const le = lastExam(p.id);
-    const matchName = !query || p.name.toLowerCase().includes(query.toLowerCase()) || String(p.nik || '').toLowerCase().includes(query.toLowerCase());
-    const matchKat  = !kategori || (le && getStatus(le.systolic, le.diastolic).key === kategori);
-    return matchName && matchKat;
+    const matchName = !query || String(p.name || '').toLowerCase().includes(query.toLowerCase()) || String(p.nik || '').toLowerCase().includes(query.toLowerCase());
+    return matchName;
   });
 }
-// ══ MASTER PEKERJA (ANTI-KOSONG) ═════════════════════════
+
+// ==================== JEMBATAN UTAMA RENDER WORKERS ====================
+function renderWorkers(){
+  renderPatients(); // Mengarahkan langsung ke fungsi utama renderPatients
+}
+
+// ==================== MASTER PEKERJA (GAYA MARISSA STORE + QR CODE) ====================
 function renderPatients(){
-  // 1. Ambil data dari berbagai sumber penyimpanan lokal yang mungkin digunakan
-  let localData = [];
-  try {
-    const p1 = JSON.parse(localStorage.getItem('patients') || '[]');
-    const p2 = JSON.parse(localStorage.getItem('wh_workers') || '[]');
-    localData = p1.length ? p1 : p2;
-  } catch(e) {
-    localData = [];
-  }
-
-  // Masukkan ke variabel global jika kosong
-  if (typeof patients === 'undefined' || !patients.length) {
-    window.patients = localData.map(w => ({
-      id: w.id || Date.now() + Math.random(),
-      nik: w.nik || w.code || w.id || '-',
-      name: w.name || w.nama || 'Tanpa Nama',
-      dob: w.dob || w.tanggalLahir || '',
-      gender: w.gender || w.jk || 'L',
-      phone: w.phone || w.noHp || ''
-    }));
-  }
-
-  const listPatients = (typeof patients !== 'undefined') ? patients : [];
   const qP = document.getElementById('patSearch')?.value || '';
-  const kP = document.getElementById('patKat')?.value || '';
-  
-  // Filter data aman
-  const filtered = listPatients.filter(p => {
-    const nameMatch = !qP || String(p.name).toLowerCase().includes(qP.toLowerCase()) || String(p.nik).toLowerCase().includes(qP.toLowerCase());
-    return nameMatch;
-  });
-
-  const editing = typeof getEditingPatient === 'function' ? getEditingPatient() : null;
+  const filtered = filterPatients(qP);
+  const editing = getEditingPatient();
 
   const rows = filtered.map(p => {
     const safeName = escapeHtml(p.name || '');
-    const safeDob = p.dob ? (typeof fmt === 'function' ? fmt(p.dob) : p.dob) : '-';
+    const safeDob = p.dob || '-';
     const safePhone = escapeHtml(p.phone || '');
 
     const waBtn = p.phone
-      ? `<a href="https://wa.me/${safePhone}" target="_blank" rel="noopener noreferrer" class="btn btn-success btn-sm" title="Buka WA" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">💬</a>`
-      : '<span style="color:#cbd5e1;font-size:.75rem">—</span>';
+      ? `<a href="https://wa.me/${safePhone}" target="_blank" rel="noopener noreferrer" class="btn btn-success btn-sm" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">💬</a>`
+      : '<span style="color:#cbd5e1">—</span>';
 
     const phoneHtml = p.phone ? `<span style="font-size:.78rem">${safePhone}</span>` : '<span style="color:#cbd5e1">—</span>';
     const safeNik = escapeHtml(p.nik || p.id || '-');
-    const ageText = (p.dob && typeof calcAge === 'function') ? calcAge(p.dob) + ' th' : '-';
 
     return `
       <tr>
         <td><code>${safeNik}</code></td>
         <td><strong>${safeName}</strong></td>
         <td>${safeDob}</td>
-        <td>${ageText}</td>
+        <td>${p.dob ? calcAge(p.dob) + ' th' : '-'}</td>
         <td>${p.gender === 'L' ? 'L' : 'P'}</td>
         <td>${phoneHtml}</td>
-        <td>-</td>
-        <td>-</td>
-        <td>-</td>
         <td style="display:flex;gap:5px;flex-wrap:wrap">
-          <button class="btn btn-outline btn-sm" onclick="showWorkerBarcode('${p.id}')" title="Lihat QR Code" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:#f8fafc;">🏷️</button>
+          <button class="btn btn-outline btn-sm" onclick="showWorkerBarcode('${p.id}')" title="Lihat QR Code" style="background:#f8fafc;">🏷️</button>
           ${waBtn}
-          <button class="btn btn-outline btn-sm" onclick="editPatient('${p.id}')" title="Edit" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">✏️</button>
-          <button class="btn btn-danger btn-sm" onclick="delPatient('${p.id}')" title="Hapus" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">🗑️</button>
+          <button class="btn btn-outline btn-sm" onclick="editPatient('${p.id}')" title="Edit">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="delPatient('${p.id}')" title="Hapus">🗑️</button>
         </td>
       </tr>
     `;
@@ -1179,7 +247,7 @@ function renderPatients(){
         <div class="form-grid">
           <div class="fg">
             <label>No. ID / NIK Pekerja</label>
-            <input id="pNik" placeholder="Contoh: EMP001 / NIK" value="${escapeHtml(editing?.nik || editing?.id || '')}" oninput="generateFormBarcode()">
+            <input id="pNik" placeholder="Contoh: EMP001" value="${escapeHtml(editing?.nik || editing?.id || '')}" oninput="generateFormBarcode()">
           </div>
           <div class="fg">
             <label>Nama Lengkap</label>
@@ -1188,18 +256,18 @@ function renderPatients(){
           <div class="fg"><label>Tanggal Lahir</label><input id="pDob" type="date" onchange="autoAge()" value="${escapeHtml(editing?.dob || '')}"></div>
           <div class="fg"><label>Usia (otomatis)</label><input id="pAge" readonly placeholder="Dari tgl lahir"></div>
           <div class="fg"><label>Jenis Kelamin</label>
-            <select id="pGender"><option value="L" ${(editing?.gender || 'L') === 'L' ? 'selected' : ''}>Laki-laki</option><option value="P" ${(editing?.gender || 'L') === 'L' ? 'selected' : ''}>Perempuan</option></select>
+            <select id="pGender"><option value="L" ${(editing?.gender || 'L') === 'L' ? 'selected' : ''}>Laki-laki</option><option value="P" ${(editing?.gender || 'L') === 'P' ? 'selected' : ''}>Perempuan</option></select>
           </div>
           <div class="fg"><label>No. HP / WhatsApp</label><input id="pPhone" type="tel" placeholder="628xxxxxxxxxx" oninput="formatPhone()" value="${escapeHtml(editing?.phone || '')}"></div>
         </div>
         
-        <!-- AREA LIVE PREVIEW QR CODE -->
+        <!-- AREA LIVE PREVIEW QR CODE (GAYA MARISSA STORE) -->
         <div class="barcode-box" id="w-barcode-box" style="display:none; text-align:center; margin-top:14px; background:#fafafa; border-radius:12px; border:2px dashed #ddd; padding:20px;">
           <div style="background:#fff; padding:12px; border:1px solid #e2e8f0; border-radius:12px; display:inline-block; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
             <img id="w-barcode-img" src="" alt="QR Code Pekerja" style="width:180px; height:180px; object-fit:contain;" />
           </div>
           <div class="label" id="w-barcode-label" style="margin-top:10px; font-size:0.85rem; font-weight:700; color:#475569;"></div>
-          <div class="btn-row" style="display:flex; gap:10px; justify-content:center; margin-top:12px;">
+          <div style="display:flex; gap:10px; justify-content:center; margin-top:12px;">
             <button class="btn btn-outline" style="width:auto; padding:8px 14px;" onclick="downloadBarcode('w')">📥 Download</button>
             <button class="btn btn-outline" style="width:auto; padding:8px 14px;" onclick="printBarcode('w')">🖨️ Print</button>
           </div>
@@ -1215,32 +283,29 @@ function renderPatients(){
     <div class="panel">
       <div class="panel-head">
         <h2>👤 Daftar Pekerja</h2>
-        <span style="font-size:.75rem;color:#64748b">${filtered.length} dari ${listPatients.length} pekerja</span>
+        <span style="font-size:.75rem;color:#64748b">${filtered.length} dari ${patients.length} pekerja</span>
       </div>
       <div class="panel-body" style="padding-bottom:0">
-        <div class="search-bar">
-         <input id="patSearch" placeholder="🔍 Cari nama pekerja..." value="${escapeHtml(qP)}" oninput="renderPatients()">
-          <button class="btn btn-outline btn-sm" onclick="document.getElementById('patSearch').value='';renderPatients()">✕ Reset</button>
+        <div class="form-grid">
+          <input id="patSearch" placeholder="🔍 Cari nama pekerja..." value="${escapeHtml(qP)}" oninput="renderPatients()">
         </div>
       </div>
-      <div style="overflow-x:auto">
+      <div style="overflow-x:auto; margin-top:10px;">
         <table>
           <thead>
-            <tr><th>No. ID</th><th>Nama</th><th>Tgl Lahir</th><th>Usia</th><th>JK</th><th>No. HP</th><th>Jml Periksa</th><th>Terakhir S/D</th><th>Kategori</th><th>Aksi</th></tr>
+            <tr><th>No. ID</th><th>Nama</th><th>Tgl Lahir</th><th>Usia</th><th>JK</th><th>No. HP</th><th>Aksi</th></tr>
           </thead>
-          <tbody>${rows || '<tr><td colspan="10" class="empty">Belum ada data pekerja terdaftar</td></tr>'}</tbody>
+          <tbody>${rows || '<tr><td colspan="7" class="empty">Belum ada data pekerja terdaftar</td></tr>'}</tbody>
         </table>
       </div>
     </div>
   `;
-}
   
- if(typeof autoAge === 'function') autoAge();
-  if(typeof formatPhone === 'function') formatPhone();
-  if(typeof generateFormBarcode === 'function') generateFormBarcode();
+  autoAge();
+  formatPhone();
+  generateFormBarcode();
 }
 
-// ── FUNGSI LIVE PREVIEW QR CODE (GAYA MARISSA STORE) ──
 function generateFormBarcode() {
   const pNikInput = document.getElementById('pNik');
   const pNameInput = document.getElementById('pName');
@@ -1267,12 +332,6 @@ function showWorkerBarcode(id){
   const p = patients.find(x => String(x.id) === String(id));
   if(!p) return;
   
-  const nikVal = String(p.nik || p.id || '').trim();
-  if(!nikVal) return;
-
-  const box = document.getElementById('w-barcode-box');
-  const img = document.getElementById('w-barcode-img');
-  const label = document.getElementById('w-barcode-label');
   const pNikInput = document.getElementById('pNik');
   const pNameInput = document.getElementById('pName');
 
@@ -1280,10 +339,10 @@ function showWorkerBarcode(id){
   if(pNameInput) pNameInput.value = p.name || '';
 
   generateFormBarcode();
+  const box = document.getElementById('w-barcode-box');
   if(box) box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-// ── Fungsi Pendukung Download & Print Barcode ──
 function downloadBarcode(type) {
   const imgEl = document.getElementById(`${type}-barcode-img`);
   if (!imgEl || !imgEl.src) return;
@@ -1328,78 +387,10 @@ function printBarcode(type) {
   }, 250);
 }
 
-function filterAndRenderTable() {
-  const qP = document.getElementById('patSearch')?.value || '';
-  const kP = document.getElementById('patKat')?.value || '';
-  const filtered = filterPatients(qP, kP);
-
-  const rows = filtered.map(p => {
-    const le = lastExam(p.id);
-    const st = le ? getStatus(le.systolic, le.diastolic) : null;
-    const examsCount = pExams(p.id).length;
-    const safeName = escapeHtml(p.name || '');
-    const safeDob = p.dob ? fmt(p.dob) : '-';
-    const safePhone = escapeHtml(p.phone || '');
-    const waBtn = p.phone ? `<a href="https://wa.me/${safePhone}" target="_blank" class="btn btn-success btn-sm" title="Buka WA" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">💬</a>` : '<span style="color:#cbd5e1;font-size:.75rem">—</span>';
-    const phoneHtml = p.phone ? `<span style="font-size:.78rem">${safePhone}</span>` : '<span style="color:#cbd5e1">—</span>';
-    const safeNik = escapeHtml(p.nik || p.id || '-');
-
-    return `<tr>
-      <td><code>${safeNik}</code></td><td><strong>${safeName}</strong></td><td>${safeDob}</td><td>${p.dob ? calcAge(p.dob) + ' th' : '-'}</td><td>${p.gender === 'L' ? 'L' : 'P'}</td><td>${phoneHtml}</td><td>${examsCount} kali</td><td>${le ? `${le.systolic}/${le.diastolic}` : '-'}</td><td>${st ? `<span class="badge ${st.cls}">${st.label}</span>` : '-'}</td>
-      <td style="display:flex;gap:5px;flex-wrap:wrap">
-        <button class="btn btn-outline btn-sm" onclick="showWorkerBarcode(${p.id})" title="Lihat QR Code" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:#f8fafc;">🏷️</button>
-        ${waBtn}
-        <button class="btn btn-outline btn-sm" onclick="editPatient(${p.id})" title="Edit" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="delPatient(${p.id})" title="Hapus" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">🗑️</button>
-      </td>
-    </tr>`;
-  }).join('');
-
-  const tbodyEl = document.querySelector('#page-patients tbody');
-  if (tbodyEl) tbodyEl.innerHTML = rows || '<tr><td colspan="10" class="empty">Tidak ada data yang sesuai</td></tr>';
-  
-  const countEl = document.querySelector('.panel-head span');
-  if (countEl) countEl.textContent = `${filtered.length} dari ${patients.length} pekerja`;
-}
-
-function autoAge(){
-  const pDob = document.getElementById('pDob');
-  const pAge = document.getElementById('pAge');
-  if(!pDob || !pAge) return;
-  pAge.value = pDob.value ? calcAge(pDob.value) + ' tahun' : '';
-}
-
-function normalizePhone(value){
-  let phone = String(value || '').replace(/\D/g, '');
-  if(phone.startsWith('0')) phone = '62' + phone.slice(1);
-  else if(phone.startsWith('8')) phone = '62' + phone;
-  return phone;
-}
-
-function formatPhone(){
-  const pPhone = document.getElementById('pPhone');
-  const pPhonePreview = document.getElementById('pPhonePreview');
-  if(!pPhone || !pPhonePreview) return;
-  const phone = normalizePhone(pPhone.value);
-  pPhone.value = phone;
-  pPhonePreview.value = phone ? 'wa.me/' + phone : '';
-}
-
 function editPatient(id){
   editingPatientId = id;
   renderPatients();
-  
-  const contentArea = document.querySelector('.content');
-  if (contentArea) {
-    contentArea.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  setTimeout(() => {
-    const pNameInput = document.getElementById('pName');
-    if (pNameInput) {
-      pNameInput.focus();
-    }
-  }, 300);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function cancelEditPatient(){
@@ -1426,1415 +417,60 @@ function addPatient(){
 
   if(editingPatientId != null){
     const idx = patients.findIndex(p => String(p.id) === String(editingPatientId));
-    if(idx === -1) return alert('Data pekerja yang akan diedit tidak ditemukan.');
+    if(idx === -1) return alert('Data pekerja tidak ditemukan.');
 
-    patients[idx] = {
-      ...patients[idx],
-      nik,
-      name,
-      dob,
-      gender,
-      phone
-    };
-
-    followups = followups.map(f =>
-      String(f.patientId) === String(editingPatientId)
-        ? { ...f, patientName: name }
-        : f
-    );
-
+    patients[idx] = { ...patients[idx], nik, name, dob, gender, phone };
     editingPatientId = null;
     save();
     renderPatients();
-    if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
+    showToast('Data pekerja diupdate!', 'success');
     return;
   }
 
-  patients.push({
-    id: nextPid++,
-    nik,
-    name,
-    dob,
-    gender,
-    phone
-  });
-
+  patients.push({ id: 'P' + Date.now(), nik, name, dob, gender, phone });
   save();
   renderPatients();
+  showToast('Pekerja berhasil didaftarkan!', 'success');
 }
-  
+
 function delPatient(id){
-  if(!confirm('Hapus pekerja dan semua pemeriksaannya?')) return;
-
-  patients = patients.filter(p => p.id !== id);
-  exams = exams.filter(e => e.patientId !== id);
-  followups = followups.filter(f => f.patientId !== id);
-
-  if(String(editingPatientId) === String(id)) {
-    editingPatientId = null;
-  }
-
+  if(!confirm('Hapus pekerja ini?')) return;
+  patients = patients.filter(p => String(p.id) !== String(id));
+  if(String(editingPatientId) === String(id)) editingPatientId = null;
   save();
   renderPatients();
-  if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
+  showToast('Pekerja dihapus', 'info');
 }
-// ══ PROGRESS ══════════════════════════════
-function renderProgress(){
-  const pageProgress = document.getElementById('page-progress');
-  if(!pageProgress) return;
 
-  if(!patients.length){
-    pageProgress.innerHTML = '<div class="empty">Belum ada pekerja terdaftar</div>';
+function renderDashboard(){
+  const el = document.getElementById('dash-total-workers');
+  if(el) el.textContent = patients.length;
+}
+
+// SIMULASI LOGIN & INIT
+function doLogin(){
+  const user = document.getElementById('login-username').value;
+  if(!user) {
+    const err = document.getElementById('login-error');
+    err.textContent = 'Masukkan username!';
+    err.classList.add('show');
     return;
   }
-
-  const firstId = patients[0].id;
-  const opts = patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-
-  pageProgress.innerHTML = `
-    <div class="panel" style="margin-bottom:18px">
-      <div class="panel-head"><h2>📈 Progress & Rekomendasi Pekerja</h2></div>
-      <div class="panel-body" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-        <div class="fg" style="min-width:220px;margin:0">
-          <label>Pilih Pekerja</label>
-          <select id="progressPid" onchange="renderProgressDetail(+this.value)" style="padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.88rem;outline:none;">${opts}</select>
-        </div>
-        <div id="progSummaryBadge" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px"></div>
-      </div>
-    </div>
-    <div id="progressDetail"></div>`;
-
-  renderProgressDetail(firstId);
-}
-
-function renderProgressDetail(pid){
-  const p = patients.find(x => x.id === pid);
-  if(!p) return;
-
-  const sel = document.getElementById('progressPid');
-  if(sel) sel.value = pid;
-
-  const pex = pExams(pid);
-  const container = document.getElementById('progressDetail');
-  const badge = document.getElementById('progSummaryBadge');
-
-  if(!container) return;
-
-  if(badge && pex.length){
-    const last = pex[pex.length - 1];
-    const st = getStatus(last.systolic, last.diastolic);
-    const first = pex[0];
-    const diff = last.systolic - first.systolic;
-
-    const diffHtml =
-      diff === 0
-        ? '<span class="trend-eq">Tetap</span>'
-        : diff < 0
-          ? `<span class="trend-dn">▼ Turun ${Math.abs(diff)} mmHg dari awal</span>`
-          : `<span class="trend-up">▲ Naik ${diff} mmHg dari awal</span>`;
-
-    badge.innerHTML = `<span class="badge ${st.cls}">${st.label}</span>${diffHtml}<span style="font-size:.78rem;color:#64748b">${pex.length} pemeriksaan</span>`;
-  } else if(badge){
-    badge.innerHTML = '';
-  }
-
-  if(!pex.length){
-    container.innerHTML = `<div class="panel"><div class="panel-body"><div class="empty">📋 ${p.name} belum memiliki data pemeriksaan</div></div></div>`;
-    return;
-  }
-
-  const last = pex[pex.length - 1];
-  const stLast = getStatus(last.systolic, last.diastolic);
-  const prevS = pex.length > 1 ? pex[pex.length - 2].systolic : null;
-
-  const chips = pex.map((e, i, arr) => {
-    const isLatest = i === arr.length - 1;
-    const st = getStatus(e.systolic, e.diastolic);
-
-    return `<div class="exam-chip ${isLatest ? 'latest' : ''}" style="min-width:90px">
-      <div class="ec-date">${fmt(e.examDate)}</div>
-      <div class="ec-val" style="color:${st.color}">${e.systolic}/${e.diastolic}</div>
-      <span class="badge ${st.cls}" style="font-size:.6rem;padding:2px 7px">${st.label}</span>
-    </div>`;
-  }).join('');
-
-  const rows = pex.slice().reverse().map((e, i, arr) => {
-    const prev2 = arr[i + 1] || null;
-    const st = getStatus(e.systolic, e.diastolic);
-    const pulseText = e.pulse == null || e.pulse === '' ? '-' : e.pulse;
-
-    return `<tr>
-      <td>${fmt(e.examDate)}</td>
-      <td class="${vCls(e.systolic,140,120)}">${e.systolic}</td>
-      <td class="${vCls(e.diastolic,90,80)}">${e.diastolic}</td>
-      <td>${pulseText}</td>
-      <td>${trendArrow(e.systolic,prev2?.systolic)}</td>
-      <td>${trendArrow(e.diastolic,prev2?.diastolic)}</td>
-      <td><span class="badge ${st.cls}">${st.label}</span></td>
-      <td><button class="btn btn-danger btn-sm" onclick="delExamProgress(${e.id},${pid})">🗑</button></td>
-    </tr>`;
-  }).join('');
-
-  container.innerHTML = `
-    <!-- INFO PEKERJA -->
-    <div class="grid-3" style="margin-bottom:18px">
-      <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">👤</div><div class="stat-info"><h3>Nama</h3><div class="val" style="font-size:1rem">${p.name}</div><div class="sub">${p.gender === 'L' ? 'Laki-laki' : 'Perempuan'} · ${calcAge(p.dob)} tahun</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🩺</div><div class="stat-info"><h3>Terakhir (S/D)</h3><div class="val ${vCls(last.systolic,140,120)}" style="font-size:1.3rem">${last.systolic}/${last.diastolic}</div><div class="sub">${fmt(last.examDate)}</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:${stLast.color}22">📊</div><div class="stat-info"><h3>Kategori Saat Ini</h3><div class="val" style="font-size:.95rem;color:${stLast.color}">${stLast.label}</div><div class="sub">${pex.length} total pemeriksaan</div></div></div>
-    </div>
-    <!-- RIWAYAT CHIPS -->
-    <div class="panel" style="margin-bottom:18px">
-      <div class="panel-head"><h2>📅 Semua Riwayat Pemeriksaan</h2><span style="font-size:.75rem;color:#64748b">${pex.length} data · terbaru di kanan</span></div>
-      <div class="panel-body"><div class="pc-exams" style="gap:8px">${chips}</div></div>
-    </div>
-    <!-- CHART -->
-    <div class="panel" style="margin-bottom:18px">
-      <div class="panel-head"><h2>📈 Grafik Tren Tekanan Darah</h2></div>
-      <div class="panel-body"><div class="chart-box" style="height:280px"><canvas id="progDetailChart"></canvas></div></div>
-    </div>
-    <!-- TABEL DETAIL -->
-    <div class="panel" style="margin-bottom:18px">
-      <div class="panel-head"><h2>📋 Tabel Riwayat Lengkap</h2>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-pdf btn-sm" onclick="exportPDF()">🖨️ Cetak PDF</button>
-          <button class="btn btn-sm" style="background:#25d366;color:#fff" onclick="kirimWA(${pid})">📲 Kirim ke WA</button>
-        </div>
-      </div>
-      <div style="overflow-x:auto"><table><thead><tr><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Nadi</th><th>Trend S</th><th>Trend D</th><th>Kategori</th><th>Aksi</th></tr></thead>
-      <tbody>${rows}</tbody></table></div>
-    </div>
-    <!-- REKOMENDASI -->
-    <div class="panel">
-      <div class="panel-head"><h2>💡 Rekomendasi Klinis (Pemeriksaan Terakhir)</h2></div>
-      <div class="panel-body">${getRekomendasi(last.systolic,last.diastolic,prevS,pex)}</div>
-    </div>`;
-
-  requestAnimationFrame(() => {
-    const chartEl = document.getElementById('progDetailChart');
-    if(!chartEl) return;
-
-    destroyChart('progDetailChart');
-
-    new Chart(chartEl, {
-      type: 'line',
-      data: {
-        labels: pex.map(e => fmt(e.examDate)),
-        datasets: [
-          {
-            label: 'Sistolik',
-            data: pex.map(e => e.systolic),
-            borderColor: '#dc2626',
-            backgroundColor: 'rgba(220,38,38,.08)',
-            tension: .4,
-            fill: true,
-            pointRadius: 5,
-            pointHoverRadius: 7,
-            pointBackgroundColor: '#dc2626'
-          },
-          {
-            label: 'Diastolik',
-            data: pex.map(e => e.diastolic),
-            borderColor: '#2563eb',
-            backgroundColor: 'rgba(37,99,235,.08)',
-            tension: .4,
-            fill: true,
-            pointRadius: 5,
-            pointHoverRadius: 7,
-            pointBackgroundColor: '#2563eb'
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'top' },
-          tooltip: {
-            callbacks: {
-              label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y} mmHg`
-            }
-          }
-        },
-        scales: {
-          y: {
-            min: 50,
-            max: 220,
-            ticks: { callback: v => v + ' mmHg' },
-            grid: { color: 'rgba(0,0,0,.05)' }
-          },
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 } }
-          }
-        }
-      }
-    });
-  });
-}
-
-function delExamProgress(eid, pid){
-  if(!confirm('Hapus data pemeriksaan ini?')) return;
-
-  exams = exams.filter(e => e.id !== eid);
-
-  save();
-  renderProgressDetail(pid);
-  renderStats();
-}
-
-// ══ LAPORAN BULANAN ═══════════════════════
-function renderMonthly(){
-  const allMonths = [...new Set(exams.map(e => monthKey(e.examDate)).filter(Boolean))].sort();
-  const selMonth = allMonths[allMonths.length - 1] || monthKey(new Date().toISOString());
-
-  renderMonthlyData(selMonth, allMonths);
-}
-
-function renderMonthlyData(mk, allMonths){
-  const pageMonthly = document.getElementById('page-monthly');
-  if(!pageMonthly) return;
-
-  if(!allMonths){
-    allMonths = [...new Set(exams.map(e => monthKey(e.examDate)).filter(Boolean))].sort();
-  }
-
-  if(!mk){
-    mk = allMonths[allMonths.length - 1] || monthKey(new Date().toISOString());
-  }
-
-  const opts = allMonths.map(m => {
-    return `<option value="${m}" ${m === mk ? 'selected' : ''}>${monthLabel(m)}</option>`;
-  }).join('');
-
-  const me = exams.filter(e => monthKey(e.examDate) === mk);
-
-  const avgS = me.length
-    ? Math.round(me.reduce((a, e) => a + e.systolic, 0) / me.length)
-    : 0;
-
-  const avgD = me.length
-    ? Math.round(me.reduce((a, e) => a + e.diastolic, 0) / me.length)
-    : 0;
-
-  const last6 = allMonths.slice(-6);
-
-  const l6Avgs = last6.map(m => {
-    const me2 = exams.filter(e => monthKey(e.examDate) === m);
-    return me2.length ? Math.round(me2.reduce((a, e) => a + e.systolic, 0) / me2.length) : null;
-  });
-
-  const catCount = {opt:0, nor:0, pre:0, ht1:0, ht2:0, ht3:0, iso:0, low:0};
-
-  me.forEach(e => {
-    catCount[getStatus(e.systolic, e.diastolic).key]++;
-  });
-
-  const catDefs = [
-        {key:'opt', label:'Optimal', color:'#0891b2'},
-        {key:'nor', label:'Normal', color:'#16a34a'},
-        {key:'pre', label:'Normal-Tinggi', color:'#ca8a04'},
-        {key:'ht1', label:'HT Derajat 1', color:'#ea580c'},
-        {key:'ht2', label:'HT Derajat 2', color:'#dc2626'},
-        {key:'ht3', label:'HT Derajat 3', color:'#7c3aed'},
-        {key:'iso', label:'HT Sistolik Terisolasi', color:'#2563eb'},
-        {key:'low', label:'Hipotensi', color:'#0369a1'}
-      ];
-
-  const rows = me.map(e => {
-    const pex = pExams(e.patientId);
-    const idx = pex.findIndex(x => x.id === e.id);
-    const prev = idx > 0 ? pex[idx - 1] : null;
-    const st = getStatus(e.systolic, e.diastolic);
-
-    return `<tr><td><strong>${pName(e.patientId)}</strong></td><td>${fmt(e.examDate)}</td><td class="${vCls(e.systolic,140,120)}">${e.systolic}</td><td class="${vCls(e.diastolic,90,80)}">${e.diastolic}</td><td>${trendArrow(e.systolic,prev?.systolic)}</td><td><span class="badge ${st.cls}">${st.label}</span></td></tr>`;
-  }).join('');
-
-  pageMonthly.innerHTML = `
-    <div class="month-select"><label style="font-size:.83rem;font-weight:600;color:#475569">Pilih Bulan:</label>
-      <select onchange="renderMonthlyData(this.value)">${opts}</select>
-      <span style="font-size:.8rem;color:#64748b">${me.length} pemeriksaan</span></div>
-    <div class="grid-3" style="margin-bottom:18px">
-      <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">📋</div><div class="stat-info"><h3>Total Periksa</h3><div class="val">${me.length}</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🩺</div><div class="stat-info"><h3>Rata-rata Sistolik</h3><div class="val ${avgS ? vCls(avgS,140,120) : ''}">${avgS || '-'}</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#dbeafe">💙</div><div class="stat-info"><h3>Rata-rata Diastolik</h3><div class="val ${avgD ? vCls(avgD,90,80) : ''}">${avgD || '-'}</div></div></div>
-    </div>
-    <div class="grid-2" style="margin-bottom:18px">
-      <div class="panel"><div class="panel-head"><h2>📊 Tren Sistolik 6 Bulan Terakhir</h2></div>
-        <div class="panel-body"><div class="chart-box"><canvas id="mTrendChart"></canvas></div></div></div>
-      <div class="panel"><div class="panel-head"><h2>🗂 Distribusi Kategori Bulan Ini</h2></div>
-        <div class="panel-body"><div class="chart-box"><canvas id="mCatChart"></canvas></div></div></div>
-    </div>
-    <div class="panel"><div class="panel-head"><h2>📋 Detail Pemeriksaan — ${monthLabel(mk)}</h2><button class="btn btn-pdf btn-sm" onclick="exportPDF()">🖨️ PDF</button></div>
-      <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Trend</th><th>Kategori</th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="6" class="empty">Tidak ada pemeriksaan bulan ini</td></tr>'}</tbody></table></div></div>`;
-
-  requestAnimationFrame(() => {
-    const trendChart = document.getElementById('mTrendChart');
-    const catChart = document.getElementById('mCatChart');
-
-    if(trendChart){
-      destroyChart('mTrendChart');
-
-      new Chart(trendChart, {
-        type: 'bar',
-        data: {
-          labels: last6.map(m => monthLabel(m)),
-          datasets: [{
-            label: 'Rata-rata Sistolik',
-            data: l6Avgs,
-            backgroundColor: l6Avgs.map(v => {
-              if(v == null) return 'rgba(148,163,184,.45)';
-              return v >= 140 ? 'rgba(220,38,38,.7)' : v >= 130 ? 'rgba(202,138,4,.7)' : 'rgba(22,163,74,.7)';
-            }),
-            borderRadius: 6
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { min: 80, max: 200, ticks: { callback: v => v + ' mmHg' } },
-            x: { grid: { display: false } }
-          }
-        }
-      });
-    }
-
-    if(catChart){
-      destroyChart('mCatChart');
-
-      const active = catDefs.filter(c => catCount[c.key] > 0);
-
-      new Chart(catChart, {
-        type: 'pie',
-        data: {
-          labels: active.map(c => c.label),
-          datasets: [{
-            data: active.map(c => catCount[c.key]),
-            backgroundColor: active.map(c => c.color),
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'right',
-              labels: { font: { size: 10 } }
-            }
-          }
-        }
-      });
-    }
-  });
-}
-
-// ══ FOLLOW-UP ═════════════════════════════
-function renderFollowups(){
-  const opts = patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-
-  const list = followups.map(f => {
-    const statusLabel = f.status === 'done' ? 'Selesai' : 'Menunggu';
-    const statusClass = f.status === 'done' ? 'b-done' : 'b-pending';
-    const doneBtn = f.status === 'pending'
-      ? `<button class="btn btn-success btn-sm" onclick="doneFollowup(${f.id})">✅</button>`
-      : '';
-
-    return `<div class="fu-card ${f.status}"><div><div class="fu-name">${f.patientName}</div><div class="fu-reason">${f.reason}</div><div class="fu-date">📅 Jadwal: ${fmt(f.dueDate)}</div></div>
-    <div class="fu-actions"><span class="badge ${statusClass}">${statusLabel}</span>
-    ${doneBtn}
-    <button class="btn btn-danger btn-sm" onclick="delFollowup(${f.id})">🗑</button></div></div>`;
-  }).join('');
-
-  const pageFollowup = document.getElementById('page-followup');
-  if(!pageFollowup) return;
-
-  pageFollowup.innerHTML = `
-    <div class="panel"><div class="panel-head"><h2>➕ Tambah Follow-Up</h2></div><div class="panel-body">
-      <div class="form-grid">
-        <div class="fg"><label>Pekerja</label><select id="fPid">${opts}</select></div>
-        <div class="fg"><label>Alasan Follow-Up</label><input id="fReason" placeholder="Keterangan..."></div>
-        <div class="fg"><label>Tanggal Follow-Up</label><input id="fDate" type="date"></div>
-      </div>
-      <button class="btn btn-primary" onclick="addFollowup()">💾 Simpan Follow-Up</button>
-    </div></div>
-    <div class="panel"><div class="panel-head"><h2>🗂 Daftar Follow-Up</h2><span style="font-size:.75rem;color:#f59e0b">${followups.filter(f => f.status === 'pending').length} menunggu</span></div>
-      <div class="panel-body">${followups.length ? list : '<div class="empty">🎉 Tidak ada follow-up</div>'}</div></div>`;
-}
-
-function addFollowup(){
-  const fPid = document.getElementById('fPid');
-  const fReason = document.getElementById('fReason');
-  const fDate = document.getElementById('fDate');
-
-  if(!fPid || !fReason || !fDate) return;
-
-  const pid = +fPid.value;
-  const reason = fReason.value.trim();
-  const dueDate = fDate.value;
-
-  if(!pid || !reason || !dueDate) return alert('Lengkapi semua data!');
-
-  const p = patients.find(x => x.id === pid);
-
-  followups.push({
-    id: nextFid++,
-    patientId: pid,
-    patientName: p ? p.name : '?',
-    reason,
-    dueDate,
-    status: 'pending'
-  });
-
-  save();
-  renderFollowups();
-  renderStats();
-
-  if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
-}
-
-function doneFollowup(id){
-  const f = followups.find(x => x.id === id);
-
-  if(f) f.status = 'done';
-
-  save();
-  renderFollowups();
-  renderStats();
-
-  if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
-}
-
-function delFollowup(id){
-  followups = followups.filter(f => f.id !== id);
-
-  save();
-  renderFollowups();
-  renderStats();
-
-  if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
-}
-
-// ══ KIRIM WA ══════════════════════════════
-function kirimWA(pid){
-  const p = patients.find(x => x.id === pid);
-
-  if(!p) return;
-
-  const phone = typeof normalizePhone === 'function'
-    ? normalizePhone(p.phone)
-    : String(p.phone || '').replace(/\D/g, '');
-
-  if(!phone){
-    alert('Pekerja ini belum memiliki nomor HP/WhatsApp.\nSilakan update nomor di halaman Data Pekerja terlebih dahulu.');
-    return;
-  }
-
-  const pex = pExams(pid);
-
-  if(!pex.length){
-    alert('Belum ada data pemeriksaan untuk pekerja ini.');
-    return;
-  }
-
-  const last = pex[pex.length - 1];
-  const st = getStatus(last.systolic, last.diastolic);
-  const prev = pex.length > 1 ? pex[pex.length - 2] : null;
-  const diff = prev ? (last.systolic - prev.systolic) : null;
-
-  const trendNote =
-    diff === null
-      ? ''
-      : diff < 0
-        ? `Turun ${Math.abs(diff)} mmHg dari pemeriksaan sebelumnya. `
-        : diff > 0
-          ? `Naik ${diff} mmHg dari pemeriksaan sebelumnya. `
-          : 'Tekanan darah stabil dibanding pemeriksaan sebelumnya. ';
-
-  const riwayat = pex.slice(-5).map(e => {
-    return `  • ${e.examDate}: ${e.systolic}/${e.diastolic} mmHg (${getStatus(e.systolic,e.diastolic).label})`;
-  }).join('\n');
-
-  const jadwalMap = {
-    opt: '12 bulan',
-    nor: '6–12 bulan',
-    pre: '3–6 bulan',
-    ht1: '1–3 bulan',
-    ht2: '2–4 minggu',
-    ht3: 'SEGERA ke IGD/RS',
-    iso: '1–2 bulan'
-  };
-
-  const jadwal = jadwalMap[st.key] || '-';
-  const pulseText = last.pulse == null || last.pulse === '' ? '-' : last.pulse;
-
-  const pesan =
-`🩺 *Laporan Tekanan Darah*
-━━━━━━━━━━━━━━━━━━━━
-👤 *Pekerja:* ${p.name}
-🎂 *Usia:* ${calcAge(p.dob)} tahun
-📅 *Tgl Periksa:* ${fmt(last.examDate)}
-*Hasil Pemeriksaan Terakhir:*
-• Sistolik  : *${last.systolic} mmHg*
-• Diastolik : *${last.diastolic} mmHg*
-• Nadi      : ${pulseText} bpm
-• Kategori  : *${st.label}*
-${trendNote}
-*Riwayat 5 Pemeriksaan Terakhir:*
-${riwayat}
-*Rekomendasi:*
-${getRekomTeks(last.systolic,last.diastolic,prev?.systolic)}
-📅 *Jadwal Kontrol Berikutnya:* ${jadwal}
-━━━━━━━━━━━━━━━━━━━━
-_Berdasarkan KEPMENKES RI No. HK.01.07/MENKES/4634/2021_
-_Powered by pausbiru7_`;
-
-  const url = `https://wa.me/${phone}?text=${encodeURIComponent(pesan)}`;
-  window.open(url, '_blank', 'noopener,noreferrer');
-}
-
-function getRekomTeks(s, d, prevS){
-  const st = getStatus(s, d);
-
-  const trend =
-    prevS != null
-      ? (s < prevS ? 'Tekanan darah menunjukkan perbaikan. ' : s > prevS ? 'Perhatian: tekanan darah meningkat. ' : '')
-      : '';
-
- const map = {
-    opt: `${trend}Tekanan darah optimal. Pertahankan gaya hidup sehat, olahraga teratur, diet rendah garam.`,
-    nor: `${trend}Tekanan darah normal. Lanjutkan pola hidup sehat, batasi garam <5g/hari.`,
-    pre: `${trend}Tekanan darah di batas normal-tinggi. Segera modifikasi gaya hidup: kurangi garam, olahraga rutin, turunkan berat badan jika perlu.`,
-    ht1: `${trend}Hipertensi Derajat 1. Diperlukan evaluasi dokter dan modifikasi gaya hidup intensif. Pantau tekanan darah mandiri setiap hari.`,
-    ht2: `${trend}Hipertensi Derajat 2. Wajib terapi antihipertensi. Segera konsultasi dokter spesialis penyakit dalam.`,
-    ht3: `${trend}⚠️ Hipertensi Derajat 3 — SEGERA ke IGD/RS terdekat! Risiko komplikasi organ akut.`,
-    iso: `${trend}HT Sistolik Terisolasi. Diperlukan evaluasi dokter, pantau risiko kardiovaskular.`,
-    low: `${trend}Hipotensi (Darah Rendah). Perbanyak minum air, hindari gerakan tiba-tiba. Jika pusing/lemas berlanjut, segera istirahat & konsultasi ke dokter.`
-  };
-
-  return map[st.key] || '-';
-}// ══════════════════════════════════════════
-// 🔐 LOGIN PIN
-// ══════════════════════════════════════════
-const DEFAULT_PIN = '123456';
-let pinInput = '';
-
-function getPin(){
-  return localStorage.getItem('bpm_pin') || DEFAULT_PIN;
-}
-
-function pinPress(digit){
-  if(!/^\d$/.test(String(digit))) return;
-  if(pinInput.length >= 6) return;
-
-  pinInput += String(digit);
-  updatePinDots();
-
-  if(pinInput.length === 6){
-    setTimeout(checkPin, 150);
-  }
-}
-
-function pinDelete(){
-  pinInput = pinInput.slice(0, -1);
-  updatePinDots();
-}
-
-function pinClear(){
-  pinInput = '';
-  updatePinDots();
-}
-
-function updatePinDots(err = false){
-  for(let i = 0; i < 6; i++){
-    const dot = document.getElementById('dot' + i);
-    if(!dot) continue;
-
-    dot.className = 'pin-dot' + (i < pinInput.length ? ' filled' : '') + (err ? ' error' : '');
-  }
-}
-
-function checkPin(){
-  const loginOverlay = document.getElementById('loginOverlay');
-  const loginErr = document.getElementById('loginErr');
-
-  if(pinInput === getPin()){
-    if(loginOverlay) loginOverlay.style.display = 'none';
-    if(loginErr) loginErr.textContent = '';
-  } else {
-    updatePinDots(true);
-
-    if(loginErr) loginErr.textContent = 'PIN salah! Coba lagi.';
-
-    setTimeout(() => {
-      pinInput = '';
-      updatePinDots();
-      const err = document.getElementById('loginErr');
-      if(err) err.textContent = '';
-    }, 800);
-  }
-}
-
-function doLogout(){
-  if(!confirm('Keluar dari BP Monitor?')) return;
-
-  pinInput = '';
-  updatePinDots();
-
-  const loginOverlay = document.getElementById('loginOverlay');
-  if(loginOverlay) loginOverlay.style.display = 'flex';
-}
-
-function doChangePin(){
-  const oldPin = document.getElementById('oldPin');
-  const newPin = document.getElementById('newPin');
-  const confirmPin = document.getElementById('confirmPin');
-  const err = document.getElementById('changePinErr');
-  const modal = document.getElementById('changePinModal');
-
-  if(!oldPin || !newPin || !confirmPin || !err || !modal) return;
-
-  const old = oldPin.value;
-  const nw = newPin.value;
-  const cf = confirmPin.value;
-
-  if(old !== getPin()){
-    err.textContent = 'PIN lama salah!';
-    return;
-  }
-
-  if(nw.length !== 6){
-    err.textContent = 'PIN baru harus 6 digit!';
-    return;
-  }
-
-  if(!/^\d+$/.test(nw)){
-    err.textContent = 'PIN hanya boleh angka!';
-    return;
-  }
-
-  if(nw !== cf){
-    err.textContent = 'Konfirmasi PIN tidak cocok!';
-    return;
-  }
-
-  localStorage.setItem('bpm_pin', nw);
-
-  err.textContent = '';
-  oldPin.value = '';
-  newPin.value = '';
-  confirmPin.value = '';
-  modal.style.display = 'none';
-
-  alert('✅ PIN berhasil diubah!');
-}
-// ══════════════════════════════════════════
-// 🔔 REMINDER BANNER (H-7)
-// ══════════════════════════════════════════
-async function loadAndShowReminders(){
-  const container = document.getElementById('reminderBanner');
-  if(!container) return;
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const reminders = followups
-    .filter(f => {
-      if(f.status === 'done') return false;
-      if(!f.dueDate) return false;
-
-      const due = new Date(f.dueDate);
-      if(Number.isNaN(due.getTime())) return false;
-
-      due.setHours(0, 0, 0, 0);
-
-      const diff = Math.round((due - today) / (1000 * 60 * 60 * 24));
-
-      return diff >= 0 && diff <= 7;
-    })
-    .map(f => {
-      const due = new Date(f.dueDate);
-      due.setHours(0, 0, 0, 0);
-
-      const diff = Math.round((due - today) / (1000 * 60 * 60 * 24));
-      const p = patients.find(x => String(x.id) === String(f.patientId)) || {};
-      const phone = typeof normalizePhone === 'function'
-        ? normalizePhone(p.phone || '')
-        : String(p.phone || '').replace(/\D/g, '');
-
-      return {
-        ...f,
-        daysLeft: diff,
-        phone
-      };
-    })
-    .sort((a, b) => a.daysLeft - b.daysLeft);
-
-  if(!reminders.length){
-    container.innerHTML = '';
-    return;
-  }
-
-  const items = reminders.map(r => {
-    const daysCls = r.daysLeft === 0 ? 'days-today' : r.daysLeft <= 3 ? 'days-soon' : 'days-ok';
-    const daysText = r.daysLeft === 0 ? 'Hari ini!' : r.daysLeft === 1 ? 'Besok!' : 'H-' + r.daysLeft;
-
-    const reminderText = `🔔 *Reminder Follow-Up*
-
-Yth. ${r.patientName},
-Anda memiliki jadwal kontrol tekanan darah pada *${fmt(r.dueDate)}*.
-Alasan: ${r.reason}
-
-Mohon hadir tepat waktu. Terima kasih.
-
-_BP Monitor_`;
-
-    const waBtn = r.phone
-      ? `<a href="https://wa.me/${r.phone}?text=${encodeURIComponent(reminderText)}" target="_blank" rel="noopener noreferrer" class="btn btn-sm" style="background:#25d366;color:#fff;flex-shrink:0">📲 WA</a>`
-      : '';
-
-    return `<div class="reminder-item">
-      <div>
-        <div style="font-weight:700;font-size:.85rem">${r.patientName}</div>
-        <div style="font-size:.75rem;color:#64748b">${r.reason} · 📅 ${fmt(r.dueDate)}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span class="reminder-days ${daysCls}">${daysText}</span>
-        ${waBtn}
-      </div>
-    </div>`;
-  }).join('');
-
-  container.innerHTML = `
-    <div class="reminder-banner">
-      <div class="reminder-banner-head">
-        <h3>🔔 Reminder Follow-Up — ${reminders.length} pekerja dalam 7 hari ke depan</h3>
-        <button onclick="this.closest('.reminder-banner').style.display='none'" style="background:none;border:none;cursor:pointer;color:#92400e;font-size:1.1rem">✕</button>
-      </div>
-      ${items}
-    </div>`;
-}
-
-// ══════════════════════════════════════════
-// 🔍 SEARCH & FILTER HELPERS
-// ══════════════════════════════════════════
-function filterPatients(query, kategori){
-  return patients.filter(p=>{
-    const le = lastExam(p.id);
-    const matchName = !query || p.name.toLowerCase().includes(query.toLowerCase());
-    const matchKat  = !kategori || (le && getStatus(le.systolic,le.diastolic).key===kategori);
-    return matchName && matchKat;
-  });
-}
-function filterExams(query, kategori){
-  return [...exams]
-    .sort((a,b)=>b.examDate.localeCompare(a.examDate))
-    .filter(e=>{
-      const p = patients.find(x=>x.id===e.patientId);
-      const matchName = !query || (p && p.name.toLowerCase().includes(query.toLowerCase()));
-      const matchKat  = !kategori || getStatus(e.systolic,e.diastolic).key===kategori;
-      return matchName && matchKat;
-    });
-}
-const katOpts = `<option value="">Semua Kategori</option>
-  <option value="opt">Optimal</option>
-  <option value="nor">Normal</option>
-  <option value="pre">Normal-Tinggi</option>
-  <option value="ht1">Hipertensi Derajat 1</option>
-  <option value="ht2">Hipertensi Derajat 2</option>
-  <option value="ht3">Hipertensi Derajat 3</option>
-  <option value="iso">HT Sistolik Terisolasi</option>
-  <option value="low">Hipotensi (Darah Rendah)</option>`;
-// ══════════════════════════════════════════
-// ⚙️ KONFIGURASI — GANTI URL DI BAWAH INI
-// Setelah deploy Apps Script, paste URL-nya di sini
-// ══════════════════════════════════════════
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwEgEuZFusctV7hmG0yNobQzJ2JlUR2lSy5XYmkpfro4VvT1nwt8ChqR8_2f9ckAEOl/exec';
-
-// ── Sync status UI ────────────────────────
-function setSyncStatus(state, msg){
-  const badge = document.getElementById('syncBadge');
-  const icon = document.getElementById('syncIcon');
-  const text = document.getElementById('syncText');
-
-  if(!badge || !icon || !text) return;
-
-  badge.className = 'sync-badge';
-
-  if(state === 'loading'){
-    badge.classList.add('sync-loading');
-    icon.innerHTML = '<span class="spin">🔄</span>';
-    text.textContent = msg || 'Menyimpan...';
-    return;
-  }
-
-  if(state === 'ok'){
-    badge.classList.add('sync-ok');
-    icon.textContent = '✅';
-    text.textContent = msg || 'Tersimpan';
-    return;
-  }
-
-  if(state === 'err'){
-    badge.classList.add('sync-err');
-    icon.textContent = '❌';
-    text.textContent = msg || 'Gagal sync';
-    return;
-  }
-
-  if(state === 'local'){
-    badge.classList.add('sync-local');
-    icon.textContent = '☁️';
-    text.textContent = msg || 'Lokal';
-    return;
-  }
-
-  badge.classList.add('sync-local');
-  icon.textContent = '☁️';
-  text.textContent = msg || 'Lokal';
-}
-
-// ── Cek apakah URL sudah dikonfigurasi ────
-function isConfigured(){
-  return Boolean(SCRIPT_URL && SCRIPT_URL !== 'PASTE_WEB_APP_URL_DISINI');
-}
-
-// ── Simpan ke localStorage (selalu) ───────
-function saveLocal(){
-  localStorage.setItem('bpm_patients', JSON.stringify(patients));
-  localStorage.setItem('bpm_exams', JSON.stringify(exams));
-  localStorage.setItem('bpm_followups', JSON.stringify(followups));
-}
-
-// ── Override fungsi save() ─────────────────
-function save(){
-  saveLocal();
-
-  if(isConfigured()){
-    syncToSheets(false);
-  } else {
-    setSyncStatus('local', 'Lokal saja');
-  }
-}
-
-// ── Kirim data ke Google Sheets ───────────
-// Catatan: mode no-cors tidak bisa membaca response dari Apps Script.
-// Karena itu, auto-sync hanya menandai "terkirim", sedangkan tombol manual sync akan verifikasi via GET.
-function syncToSheets(verify = false){
-  if(!isConfigured()){
-    setSyncStatus('local', 'Mode Lokal');
-    return Promise.resolve(false);
-  }
-
-  setSyncStatus('loading', verify ? 'Sync & verifikasi...' : 'Mengirim...');
-
- return fetch(SCRIPT_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      action: 'sync_all',
-      patients,
-      exams,
-      followups,
-      alcoholExams // ── TAMBAHKAN BARIS INI ──
-    })
-  })
-    .then(async () => {
-      if(!verify){
-        setSyncStatus('ok', 'Terkirim');
-        setTimeout(() => setSyncStatus('local', 'Belum diverifikasi'), 1800);
-        return true;
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const verified = await verifySheetsData();
-
-      if(verified){
-        setSyncStatus('ok', 'Google Sheets ✓');
-        return true;
-      }
-
-      setSyncStatus('err', 'Gagal verifikasi');
-      return false;
-    })
-    .catch(err => {
-      console.error('Sync error:', err);
-      setSyncStatus('err', 'Gagal — cek URL');
-      return false;
-    });
-}
-
-// ── Ambil JSON mentah dari Google Sheets ───
-async function fetchAllFromSheets(){
-  const res = await fetch(`${SCRIPT_URL}?action=all&t=${Date.now()}`);
-
-  if(!res.ok){
-    throw new Error('HTTP ' + res.status);
-  }
-
-  const json = await res.json();
-
-  if(!json.success){
-    throw new Error(json.error || 'Response gagal');
-  }
-
-  return json;
-}
-
-// ── Normalisasi data dari Google Sheets ────
-function normalizeSheetsPayload(json){
-  const nextPatients = (json.patients || []).map(p => ({
-    ...p,
-    id: +p.id,
-    phone: p.phone ? String(p.phone) : ''
-  }));
-
-  const nextExams = (json.exams || []).map(e => {
-    const pulseRaw = e.pulse;
-
-    return {
-      ...e,
-      id: +e.id,
-      patientId: +e.patientId,
-      systolic: +e.systolic,
-      diastolic: +e.diastolic,
-      pulse: pulseRaw === '' || pulseRaw == null ? null : +pulseRaw,
-      examDate: e.examDate ? String(e.examDate).slice(0, 10) : ''
-    };
-  });
-
-  const nextFollowups = (json.followups || []).map(f => ({
-    ...f,
-    id: +f.id,
-    patientId: +f.patientId,
-    dueDate: f.dueDate ? String(f.dueDate).slice(0, 10) : '',
-    status: f.status || 'pending'
-  }));
-
-  return {
-    patients: nextPatients,
-    exams: nextExams,
-    followups: nextFollowups
-  };
-}
-
-// ── Update counter ID setelah load ─────────
-function refreshIdCounters(){
-  nextPid = patients.length ? Math.max(...patients.map(p => +p.id)) + 1 : 1;
-  nextEid = exams.length ? Math.max(...exams.map(e => +e.id)) + 1 : 1;
-  nextFid = followups.length ? Math.max(...followups.map(f => +f.id)) + 1 : 1;
-}
-
-// ── Normalisasi data dari Google Sheets ────
-function normalizeSheetsPayload(json){
-  const nextPatients = (json.patients || []).map(p => ({
-    ...p,
-    id: +p.id,
-    phone: p.phone ? String(p.phone) : ''
-  }));
-
-  const nextExams = (json.exams || []).map(e => {
-    const pulseRaw = e.pulse;
-    return {
-      ...e,
-      id: +e.id,
-      patientId: +e.patientId,
-      systolic: +e.systolic,
-      diastolic: +e.diastolic,
-      pulse: pulseRaw === '' || pulseRaw == null ? null : +pulseRaw,
-      examDate: e.examDate ? String(e.examDate).slice(0, 10) : ''
-    };
-  });
-
-  const nextFollowups = (json.followups || []).map(f => ({
-    ...f,
-    id: +f.id,
-    patientId: +f.patientId,
-    dueDate: f.dueDate ? String(f.dueDate).slice(0, 10) : '',
-    status: f.status || 'pending'
-  }));
-
-  // ── Penambahan untuk Data Tes Alkohol ──
-  const nextAlcohol = (json.alcoholExams || []).map(a => ({
-    ...a,
-    id: +a.id,
-    patientId: +a.patientId,
-    examDate: a.examDate ? String(a.examDate).slice(0, 10) : ''
-  }));
-
-  return {
-    patients: nextPatients,
-    exams: nextExams,
-    followups: nextFollowups,
-    alcoholExams: nextAlcohol // ── Dikembalikan ke lokal
-  };
-}
-
-// ── Verifikasi data sheet tanpa menimpa lokal ─
-async function verifySheetsData(){
-  try {
-    const json = await fetchAllFromSheets();
-    const remote = normalizeSheetsPayload(json);
-
-    const samePatientCount = remote.patients.length === patients.length;
-    const sameExamCount = remote.exams.length === exams.length;
-    const sameFollowupCount = remote.followups.length === followups.length;
-    const sameAlcoholCount = (remote.alcoholExams || []).length === alcoholExams.length; // ── Cek jumlah data alkohol
-
-    const localLastExamId = exams.length ? Math.max(...exams.map(e => +e.id)) : 0;
-    const remoteLastExamId = remote.exams.length ? Math.max(...remote.exams.map(e => +e.id)) : 0;
-
-    const localLastPatientId = patients.length ? Math.max(...patients.map(p => +p.id)) : 0;
-    const remoteLastPatientId = remote.patients.length ? Math.max(...remote.patients.map(p => +p.id)) : 0;
-
-    const localLastFollowupId = followups.length ? Math.max(...followups.map(f => +f.id)) : 0;
-    const remoteLastFollowupId = remote.followups.length ? Math.max(...remote.followups.map(f => +f.id)) : 0;
-
-    const localLastAlcoholId = alcoholExams.length ? Math.max(...alcoholExams.map(a => +a.id)) : 0;
-    const remoteLastAlcoholId = remote.alcoholExams.length ? Math.max(...remote.alcoholExams.map(a => +a.id)) : 0; // ── Cek ID terakhir alkohol
-
-    return (
-      samePatientCount &&
-      sameExamCount &&
-      sameFollowupCount &&
-      sameAlcoholCount && // ── Validasi tambahan alkohol
-      localLastExamId === remoteLastExamId &&
-      localLastPatientId === remoteLastPatientId &&
-      localLastFollowupId === remoteLastFollowupId &&
-      localLastAlcoholId === remoteLastAlcoholId // ── Validasi tambahan alkohol
-    );
-  } catch(err){
-    console.error('Verify error:', err);
-    return false;
-  }
-}
-
-// ── Ambil data dari Google Sheets saat load ─
-async function loadFromSheets(){
-  if(!isConfigured()){
-    setSyncStatus('local', 'Mode Lokal');
-    return false;
-  }
-
-  setSyncStatus('loading', 'Memuat data...');
-
-  try {
-    const json = await fetchAllFromSheets();
-    const normalized = normalizeSheetsPayload(json);
-
-    patients = normalized.patients;
-    exams = normalized.exams;
-    followups = normalized.followups;
-    alcoholExams = normalized.alcoholExams; // ── Ambil dari sheet dan simpan ke variabel lokal
-
-    refreshIdCounters();
-    saveLocal();
-
-    setSyncStatus('ok', 'Google Sheets ✓');
-    return true;
-  } catch(err){
-    console.error('Load error:', err);
-    setSyncStatus('err', 'Pakai data lokal');
-    return false;
-  }
-}
-
-// ── Manual sync tombol 🔄 ──────────────────
-function manualSync(){
-  if(!isConfigured()){
-    alert('⚙️ URL Apps Script belum dikonfigurasi.\n\nBuka file index.html, cari:\n  const SCRIPT_URL = \'PASTE_WEB_APP_URL_DISINI\'\n\nGanti dengan URL Web App dari Google Apps Script.');
-    return;
-  }
-
-  syncToSheets(true);
-}
-
-let bpWorkerScanner = null;
-
-function initBpWorkerScanner() {
-  const container = document.getElementById('scanner-bp-container');
-  if (container) container.style.display = 'block';
-
-  // Beri jeda sedikit agar elemen DOM container benar-benar siap render
-  setTimeout(() => {
-    const scannerEl = document.getElementById('scanner-bp-worker');
-    if (!scannerEl) return;
-    if (bpWorkerScanner) { bpWorkerScanner.stop().catch(() => {}); bpWorkerScanner = null; }
-
-    bpWorkerScanner = new Html5Qrcode('scanner-bp-worker');
-    bpWorkerScanner.start(
-      { facingMode: 'environment' },
-      { fps: 10, qrbox: { width: 280, height: 130 } },
-      (decodedText) => {
-        const scannedNik = decodedText.trim();
-        const matchedPatient = patients.find(p => String(p.nik).trim() === scannedNik || String(p.id).trim() === scannedNik);
-        
-        if (matchedPatient) {
-          const selectEl = document.getElementById('ePid');
-          if (selectEl) {
-            selectEl.value = matchedPatient.id;
-            fillPatientInfo();
-          }
-          stopBpWorkerScanner();
-          if (container) container.style.display = 'none';
-          if (typeof showToast === 'function') {
-            showToast(`✅ Pekerja ditemukan: ${matchedPatient.name}`, 'success');
-          } else {
-            alert(`✅ Pekerja ditemukan: ${matchedPatient.name}`);
-          }
-        } else {
-          if (typeof showToast === 'function') {
-            showToast(`⚠️ QR Code terbaca ("${scannedNik}"), tapi data pekerja tidak terdaftar.`, 'error');
-          } else {
-            alert(`⚠️ QR Code terbaca ("${scannedNik}"), tapi data pekerja tidak terdaftar.`);
-          }
-        }
-      },
-      () => {}
-    ).catch(err => {
-      console.error('BP Scanner error:', err);
-      scannerEl.innerHTML = `<div style="padding:16px;text-align:center;color:#dc3545;background:#f8d7da;border-radius:8px;">❌ Gagal akses kamera<br><small>${err}</small></div>`;
-    });
-  }, 100);
-}
-
-function stopBpWorkerScanner() {
-  if (bpWorkerScanner) {
-    bpWorkerScanner.stop().catch(() => {});
-    bpWorkerScanner = null;
-  }
-}
-
-function toggleBpScanner() {
-  const container = document.getElementById('scanner-bp-container');
-  if (container && container.style.display === 'none') {
-    initBpWorkerScanner();
-  } else {
-    stopBpWorkerScanner();
-    if (container) container.style.display = 'none';
-  }
-}
-
-// ══ INIT ══════════════════════════════════
-(async () => {
-  await loadFromSheets();
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('user-badge').style.display = 'block';
+  showToast('Selamat datang, ' + user + '!', 'success');
+  renderWorkers();
   renderDashboard();
-  loadAndShowReminders();
-})();
+}
+function doLogout(){
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('user-badge').style.display = 'none';
+}
 
-// ══════════════════════════════════════════
-// ⌨️ KONTROL KEYBOARD UNTUK LOGIN PIN
-// ══════════════════════════════════════════
-document.addEventListener('keydown', function(event) {
-  const loginOverlay = document.getElementById('loginOverlay');
-  
-  if (loginOverlay && window.getComputedStyle(loginOverlay).display !== 'none') {
-    const key = event.key;
-
-    if (/^[0-9]$/.test(key)) {
-      pinPress(key);
-    } 
-    else if (key === 'Backspace') {
-      pinDelete();
-    }
-    else if (key === 'Escape' || key === 'Delete') {
-      pinClear();
-    }
-  }
+document.addEventListener('DOMContentLoaded', () => {
+  renderWorkers();
+  renderDashboard();
 });
-
-// ============================================================
-// 🍷 MODUL TES ALKOHOL (DITEMPATKAN DI SINI)
-// ============================================================
-let scanActiveAlcohol = false;
-
-function renderAlcoholPage() {
-  const pageAlcohol = document.getElementById('page-alcohol');
-  if(!pageAlcohol) return;
-
-  pageAlcohol.innerHTML = `
-    <div class="panel">
-      <div class="panel-head">
-        <h2>🍷 Pemeriksaan Alkohol (BAC)</h2>
-      </div>
-      <div class="panel-body">
-        <div style="margin-bottom:15px; display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn btn-primary btn-sm" onclick="toggleAlcoholScanner()">
-            ${scanActiveAlcohol ? '⏹ Matikan Kamera' : '📷 Scan QR / NIK Pekerja'}
-          </button>
-        </div>
-
-        <div id="alcoholScannerContainer" style="display:${scanActiveAlcohol ? 'block' : 'none'}; margin-bottom:15px; text-align:center;">
-          <div id="alcohol-reader" style="width:100%; max-width:400px; margin:0 auto;"></div>
-          <p style="font-size:.8rem; color:#64748b; margin-top:5px;">Arahkan kamera ke QR Code atau NIK Pekerja</p>
-        </div>
-
-       <div class="form-grid">
-          <div class="fg">
-            <label>Cari / Pilih Pekerja (NIK / Nama)</label>
-            <select id="alcPatientId">
-              <option value="">-- Pilih Pekerja --</option>
-              ${patients.map(p => `<option value="${p.id}">[${p.nik || p.id}] ${p.name}</option>`).join('')}
-            </select>
-          </div>
-          <div class="fg">
-            <label>Nilai BAC (Contoh: 0.00)</label>
-            <input id="alcLevel" type="text" placeholder="Contoh: 0.00" oninput="autoDetectAlcoholStatus()">
-          </div>
-          <div class="fg">
-            <label>Distribusi (Otomatis)</label>
-            <input id="alcStatus" type="text" readonly value="Pass" style="font-weight:700; background:#f8fafc;">
-          </div>
-          <div class="fg">
-            <label>Tanggal Pemeriksaan</label>
-            <input id="alcDate" type="date" value="${new Date().toISOString().slice(0,10)}">
-          </div>
-        </div>
-
-        <div style="margin-top:15px;">
-          <button class="btn btn-primary" onclick="saveAlcoholExam()">💾 Simpan Pemeriksaan Alkohol</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-head">
-        <h2>📋 Riwayat Pemeriksaan Alkohol</h2>
-        <span style="font-size:.75rem;color:#64748b">${alcoholExams.length} data tercatat</span>
-      </div>
-      <div style="overflow-x:auto">
-        <table>
-          <thead>
-            <tr>
-              <th>Tanggal</th>
-              <th>No. ID / NIK</th>
-              <th>Nama Pekerja</th>
-              <th>Distribusi</th>
-              <th>Nilai BAC</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${renderAlcoholRows()}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
-
-  if (scanActiveAlcohol) {
-    initAlcoholScanner();
-  }
-}
-
-function renderAlcoholRows() {
-  if (alcoholExams.length === 0) {
-    return '<tr><td colspan="6" class="empty">Belum ada riwayat pemeriksaan alkohol</td></tr>';
-  }
-  const sorted = [...alcoholExams].sort((a, b) => new Date(b.examDate) - new Date(a.examDate));
-  return sorted.map(e => {
-    const pat = patients.find(p => String(p.id) === String(e.patientId)) || {};
-    const badgeCls = e.status === 'Pass' ? 'b-nor' : 'b-ht2';
-    return `
-      <tr>
-        <td>${e.examDate || '-'}</td>
-        <td><code>${escapeHtml(pat.nik || pat.id || '-')}</code></td>
-        <td><strong>${escapeHtml(pat.name || e.patientName || 'Tidak dikenal')}</strong></td>
-        <td><span class="badge ${badgeCls}">${escapeHtml(e.status)}</span></td>
-        <td>${escapeHtml(e.alcoholLevel || '-')}</td>
-        <td>
-          <button class="btn btn-danger btn-sm" onclick="delAlcoholExam(${e.id})" title="Hapus">🗑️</button>
-        </td>
-      </tr>
-    `;
-  }).join('');
-}
-
-function saveAlcoholExam() {
-  const patientId = document.getElementById('alcPatientId').value;
-  const status = document.getElementById('alcStatus').value;
-  const alcoholLevel = document.getElementById('alcLevel').value.trim();
-  const examDate = document.getElementById('alcDate').value;
-
-  if (!patientId || !examDate) {
-    return alert('Pilih pekerja dan tanggal pemeriksaan terlebih dahulu!');
-  }
-
-  const pat = patients.find(p => String(p.id) === String(patientId));
-  const newId = nextAid++;
-
-  alcoholExams.push({
-    id: newId,
-    patientId: Number(patientId),
-    patientName: pat ? pat.name : '',
-    status: status,
-    alcoholLevel: alcoholLevel,
-    examDate: examDate
-  });
-
-  save();
-  renderAlcoholPage();
-  alert('Pemeriksaan alkohol berhasil disimpan!');
-}
-
-function delAlcoholExam(id) {
-  if (!confirm('Hapus data pemeriksaan alkohol ini?')) return;
-  alcoholExams = alcoholExams.filter(e => String(e.id) !== String(id));
-  save();
-  renderAlcoholPage();
-}
-
-function toggleAlcoholScanner() {
-  scanActiveAlcohol = !scanActiveAlcohol;
-  renderAlcoholPage();
-}
-
-let html5QrCodeAlcohol = null;
-function initAlcoholScanner() {
-  if (typeof Html5Qrcode === 'undefined') return;
-  setTimeout(() => {
-    if (!html5QrCodeAlcohol) {
-      html5QrCodeAlcohol = new Html5Qrcode("alcohol-reader");
-    }
-    html5QrCodeAlcohol.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: { width: 250, height: 150 } },
-      (decodedText) => {
-        handleAlcoholScanResult(decodedText.trim());
-      },
-      (errorMessage) => {}
-    ).catch(err => {
-      console.error("Gagal membuka kamera:", err);
-    });
-  }, 200);
-}
-
-function handleAlcoholScanResult(codeText) {
-  const found = patients.find(p => String(p.nik).trim() === codeText || String(p.id) === codeText);
-  if (found) {
-    const selectEl = document.getElementById('alcPatientId');
-    if (selectEl) {
-      selectEl.value = found.id;
-      if (html5QrCodeAlcohol && scanActiveAlcohol) {
-        html5QrCodeAlcohol.stop().then(() => {
-          scanActiveAlcohol = false;
-          renderAlcoholPage();
-        }).catch(() => {
-          scanActiveAlcohol = false;
-          renderAlcoholPage();
-        });
-      }
-      alert(`Pekerja dikenali: ${found.name}`);
-    }
-  } else {
-    alert(`⚠️ QR Code / NIK "${codeText}" tidak terdaftar di database pekerja!`);
-  }
-}
-// ============================================================
-
 </script>
 </body>
 </html>
