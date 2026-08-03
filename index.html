@@ -744,8 +744,8 @@ function renderDashboard(){
       </div>
       
       <div class="panel">
-        <div class="panel-head"><h2>🍷 Hasil Tes Alkohol Terbaru</h2></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Nilai BAC</th><th>Status</th></tr></thead><tbody>${alcRows || '<tr><td colspan="4" class="empty">Belum ada data tes alkohol</td></tr>'}</tbody></table></div>
+        <div class="panel-head"><h2>🍷 Pemeriksaan Alkohol Terbaru</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Nilai BAC</th><th>Distribusi</th></tr></thead><tbody>${alcRows || '<tr><td colspan="4" class="empty">Belum ada data pemeriksaan alkohol</td></tr>'}</tbody></table></div>
       </div>
     </div>
 
@@ -757,7 +757,7 @@ function renderDashboard(){
       </div>
 
       <div class="panel">
-        <div class="panel-head"><h2>🥧 Status Tes Alkohol (Pass vs Fail)</h2></div>
+        <div class="panel-head"><h2>🥧 Distribusi Tes Alkohol (Pass vs Fail)</h2></div>
         <div class="panel-body">
           <div style="display:flex; justify-content:center; gap:10px; margin-bottom:10px;">
             <span class="badge b-nor" style="font-size:.85rem">Pass: ${passPct}%</span> 
@@ -776,8 +776,8 @@ function renderDashboard(){
       </div>
 
       <div class="panel">
-        <div class="panel-head"><h2>📖 Klasifikasi Tes Alkohol (BAC)</h2></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Status</th><th>Nilai BAC</th><th>Keterangan</th></tr></thead><tbody>
+        <div class="panel-head"><h2>📖 Klasifikasi Distribusi Alkohol (BAC)</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Distribusi</th><th>Nilai BAC</th><th>Keterangan</th></tr></thead><tbody>
           <tr><td><span class="badge b-nor">Pass</span></td><td>0.00</td><td>Aman / Layak Kerja</td></tr>
           <tr><td><span class="badge b-ht2">Fail</span></td><td>&gt; 0.00</td><td>Tidak Layak Kerja (Tindakan Diperlukan)</td></tr>
         </tbody></table></div>
@@ -811,29 +811,8 @@ function renderDashboard(){
       destroyChart('dashTrendChart');
       new Chart(trendCanvas, {
         type: 'line',
-        data: {
-          labels: months.map(m => monthLabel(m)),
-          datasets: [{
-            label: 'Rata-rata Sistolik',
-            data: avgByMonth,
-            borderColor: '#2563eb',
-            backgroundColor: 'rgba(37,99,235,.1)',
-            fill: true,
-            tension: .4,
-            pointRadius: 5,
-            pointBackgroundColor: '#2563eb',
-            spanGaps: true
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { min: 80, max: 200, ticks: { callback: v => v + ' mmHg' } },
-            x: { grid: { display: false } }
-          }
-        }
+        data: { labels: months.map(m => monthLabel(m)), datasets: [{ label: 'Rata-rata Sistolik', data: avgByMonth, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.1)', fill: true, tension: .4, pointRadius: 5, pointBackgroundColor: '#2563eb', spanGaps: true }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 80, max: 200, ticks: { callback: v => v + ' mmHg' } }, x: { grid: { display: false } } } }
       });
     }
 
@@ -842,23 +821,14 @@ function renderDashboard(){
     if(pieCanvas){
       destroyChart('dashPieChart');
       const catDefs = [
-        {key:'opt', label:'Optimal', color:'#0891b2'},
-        {key:'nor', label:'Normal', color:'#16a34a'},
-        {key:'pre', label:'Normal-Tinggi', color:'#ca8a04'},
-        {key:'ht1', label:'HT Derajat 1', color:'#ea580c'},
-        {key:'ht2', label:'HT Derajat 2', color:'#dc2626'},
-        {key:'ht3', label:'HT Derajat 3', color:'#7c3aed'},
-        {key:'iso', label:'HT Sistolik Terisolasi', color:'#2563eb'},
-        {key:'low', label:'Hipotensi', color:'#0369a1'}
+        {key:'opt', label:'Optimal', color:'#0891b2'}, {key:'nor', label:'Normal', color:'#16a34a'}, {key:'pre', label:'Normal-Tinggi', color:'#ca8a04'},
+        {key:'ht1', label:'HT Derajat 1', color:'#ea580c'}, {key:'ht2', label:'HT Derajat 2', color:'#dc2626'}, {key:'ht3', label:'HT Derajat 3', color:'#7c3aed'},
+        {key:'iso', label:'HT Sistolik Terisolasi', color:'#2563eb'}, {key:'low', label:'Hipotensi', color:'#0369a1'}
       ];
-
       const active = catDefs.filter(c => catCount[c.key] > 0);
       new Chart(pieCanvas, {
         type: 'doughnut',
-        data: {
-          labels: active.map(c => c.label),
-          datasets: [{ data: active.map(c => catCount[c.key]), backgroundColor: active.map(c => c.color), borderWidth: 2 }]
-        },
+        data: { labels: active.map(c => c.label), datasets: [{ data: active.map(c => catCount[c.key]), backgroundColor: active.map(c => c.color), borderWidth: 2 }] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } } }
       });
     }
@@ -870,19 +840,8 @@ function renderDashboard(){
       if (totalAlc > 0) {
         new Chart(alcPieCanvas, {
           type: 'doughnut',
-          data: {
-            labels: ['Pass (Aman)', 'Fail (Tidak Layak)'],
-            datasets: [{
-              data: [alcPass, alcFail],
-              backgroundColor: ['#16a34a', '#dc2626'],
-              borderWidth: 2
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }
-          }
+          data: { labels: ['Pass (Aman)', 'Fail (Tidak Layak)'], datasets: [{ data: [alcPass, alcFail], backgroundColor: ['#16a34a', '#dc2626'], borderWidth: 2 }] },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } }
         });
       } else {
         const ctx = alcPieCanvas.getContext('2d');
@@ -2644,7 +2603,7 @@ function renderAlcoholPage() {
   pageAlcohol.innerHTML = `
     <div class="panel">
       <div class="panel-head">
-        <h2>🍷 Pemeriksaan Tes Alkohol (BAC)</h2>
+        <h2>🍷 Pemeriksaan Alkohol (BAC)</h2>
       </div>
       <div class="panel-body">
         <div style="margin-bottom:15px; display:flex; gap:8px; flex-wrap:wrap;">
@@ -2671,7 +2630,7 @@ function renderAlcoholPage() {
             <input id="alcLevel" type="text" placeholder="Contoh: 0.00" oninput="autoDetectAlcoholStatus()">
           </div>
           <div class="fg">
-            <label>Hasil Tes / Status Alkohol (Otomatis)</label>
+            <label>Distribusi (Otomatis)</label>
             <input id="alcStatus" type="text" readonly value="Pass" style="font-weight:700; background:#f8fafc;">
           </div>
           <div class="fg">
@@ -2681,14 +2640,14 @@ function renderAlcoholPage() {
         </div>
 
         <div style="margin-top:15px;">
-          <button class="btn btn-primary" onclick="saveAlcoholExam()">💾 Simpan Hasil Tes Alkohol</button>
+          <button class="btn btn-primary" onclick="saveAlcoholExam()">💾 Simpan Pemeriksaan Alkohol</button>
         </div>
       </div>
     </div>
 
     <div class="panel">
       <div class="panel-head">
-        <h2>📋 Riwayat Tes Alkohol</h2>
+        <h2>📋 Riwayat Pemeriksaan Alkohol</h2>
         <span style="font-size:.75rem;color:#64748b">${alcoholExams.length} data tercatat</span>
       </div>
       <div style="overflow-x:auto">
@@ -2698,7 +2657,7 @@ function renderAlcoholPage() {
               <th>Tanggal</th>
               <th>No. ID / NIK</th>
               <th>Nama Pekerja</th>
-              <th>Hasil / Status</th>
+              <th>Distribusi</th>
               <th>Nilai BAC</th>
               <th>Aksi</th>
             </tr>
@@ -2716,33 +2675,13 @@ function renderAlcoholPage() {
   }
 }
 
-// Otomatisasi Status Pass / Fail Berdasarkan Nilai BAC
-function autoDetectAlcoholStatus() {
-  const levelInput = document.getElementById('alcLevel');
-  const statusInput = document.getElementById('alcStatus');
-  
-  if (!levelInput || !statusInput) return;
-
-  const valStr = levelInput.value.trim().replace(',', '.');
-  const valNum = parseFloat(valStr);
-
-  if (valStr === '' || isNaN(valNum) || valNum === 0) {
-    statusInput.value = 'Pass';
-    statusInput.style.color = '#16a34a'; // Warna hijau untuk Pass
-  } else if (valNum > 0) {
-    statusInput.value = 'Fail';
-    statusInput.style.color = '#dc2626'; // Warna merah untuk Fail
-  }
-}
-
 function renderAlcoholRows() {
   if (alcoholExams.length === 0) {
-    return '<tr><td colspan="6" class="empty">Belum ada riwayat tes alkohol</td></tr>';
+    return '<tr><td colspan="6" class="empty">Belum ada riwayat pemeriksaan alkohol</td></tr>';
   }
   const sorted = [...alcoholExams].sort((a, b) => new Date(b.examDate) - new Date(a.examDate));
   return sorted.map(e => {
     const pat = patients.find(p => String(p.id) === String(e.patientId)) || {};
-    // Pass berwarna hijau (b-nor), Fail berwarna merah (b-ht2)
     const badgeCls = e.status === 'Pass' ? 'b-nor' : 'b-ht2';
     return `
       <tr>
@@ -2783,7 +2722,7 @@ function saveAlcoholExam() {
 
   save();
   renderAlcoholPage();
-  alert('Hasil tes alkohol berhasil disimpan!');
+  alert('Pemeriksaan alkohol berhasil disimpan!');
 }
 
 function delAlcoholExam(id) {
