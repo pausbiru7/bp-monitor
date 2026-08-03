@@ -1097,16 +1097,29 @@ function filterPatients(query, kategori){
     return matchName && matchKat;
   });
 }
-  function renderPatients(){
+// ══ MASTER PEKERJA ═════════════════════════
+function renderPatients(){
+  // Jembatan pengaman: jika variabel patients kosong, ambil dari workers (atau sebaliknya)
+  if((typeof patients === 'undefined' || !patients.length) && typeof workers !== 'undefined' && workers.length){
+    window.patients = workers.map(w => ({
+      id: w.id,
+      nik: w.nik || w.id,
+      name: w.name || w.nama,
+      dob: w.dob || '',
+      gender: w.gender || 'L',
+      phone: w.phone || ''
+    }));
+  }
+
   const qP = document.getElementById('patSearch')?.value || '';
   const kP = document.getElementById('patKat')?.value || '';
   const filtered = filterPatients(qP, kP);
   const editing = getEditingPatient();
 
   const rows = filtered.map(p => {
-    const le = lastExam(p.id);
+    const le = lastExam ? lastExam(p.id) : null;
     const st = le ? getStatus(le.systolic, le.diastolic) : null;
-    const examsCount = pExams(p.id).length;
+    const examsCount = typeof pExams === 'function' ? pExams(p.id).length : 0;
     const safeName = escapeHtml(p.name || '');
     const safeDob = p.dob ? fmt(p.dob) : '-';
     const safePhone = escapeHtml(p.phone || '');
@@ -1123,7 +1136,7 @@ function filterPatients(query, kategori){
         <td><code>${safeNik}</code></td>
         <td><strong>${safeName}</strong></td>
         <td>${safeDob}</td>
-        <td>${p.dob ? calcAge(p.dob) + ' th' : '-'}</td>
+        <td>${p.dob && typeof calcAge === 'function' ? calcAge(p.dob) + ' th' : '-'}</td>
         <td>${p.gender === 'L' ? 'L' : 'P'}</td>
         <td>${phoneHtml}</td>
         <td>${examsCount} kali</td>
@@ -1165,7 +1178,7 @@ function filterPatients(query, kategori){
           <div class="fg"><label>No. HP / WhatsApp</label><input id="pPhone" type="tel" placeholder="628xxxxxxxxxx" oninput="formatPhone()" value="${escapeHtml(editing?.phone || '')}"></div>
         </div>
         
-        <!-- AREA LIVE PREVIEW QR CODE (GAYA MARISSA STORE) -->
+        <!-- AREA LIVE PREVIEW QR CODE -->
         <div class="barcode-box" id="w-barcode-box" style="display:none; text-align:center; margin-top:14px; background:#fafafa; border-radius:12px; border:2px dashed #ddd; padding:20px;">
           <div style="background:#fff; padding:12px; border:1px solid #e2e8f0; border-radius:12px; display:inline-block; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
             <img id="w-barcode-img" src="" alt="QR Code Pekerja" style="width:180px; height:180px; object-fit:contain;" />
@@ -1192,7 +1205,7 @@ function filterPatients(query, kategori){
       <div class="panel-body" style="padding-bottom:0">
         <div class="search-bar">
          <input id="patSearch" placeholder="🔍 Cari nama pekerja..." value="${escapeHtml(qP)}" oninput="filterAndRenderTable()">
-          <select id="patKat" onchange="renderPatients()">${katOpts.replace(`value="${kP}"`, `value="${kP}" selected`)}</select>
+          <select id="patKat" onchange="renderPatients()">${typeof katOpts !== 'undefined' ? katOpts.replace(`value="${kP}"`, `value="${kP}" selected`) : ''}</select>
           <button class="btn btn-outline btn-sm" onclick="document.getElementById('patSearch').value='';document.getElementById('patKat').value='';renderPatients()">✕ Reset</button>
         </div>
       </div>
@@ -1201,15 +1214,15 @@ function filterPatients(query, kategori){
           <thead>
             <tr><th>No. ID</th><th>Nama</th><th>Tgl Lahir</th><th>Usia</th><th>JK</th><th>No. HP</th><th>Jml Periksa</th><th>Terakhir S/D</th><th>Kategori</th><th>Aksi</th></tr>
           </thead>
-          <tbody>${rows || '<tr><td colspan="10" class="empty">Tidak ada data yang sesuai</td></tr>'}</tbody>
+          <tbody>${rows || '<tr><td colspan="10" class="empty">Tidak ada data pekerja yang tersimpan</td></tr>'}</tbody>
         </table>
       </div>
     </div>
   `;
   
-  autoAge();
-  formatPhone();
-  generateFormBarcode();
+  if(typeof autoAge === 'function') autoAge();
+  if(typeof formatPhone === 'function') formatPhone();
+  if(typeof generateFormBarcode === 'function') generateFormBarcode();
 }
 
 // ── FUNGSI LIVE PREVIEW QR CODE (GAYA MARISSA STORE) ──
