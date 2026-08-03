@@ -1097,31 +1097,45 @@ function filterPatients(query, kategori){
     return matchName && matchKat;
   });
 }
-// ══ MASTER PEKERJA ═════════════════════════
+// ══ MASTER PEKERJA (ANTI-KOSONG) ═════════════════════════
 function renderPatients(){
-  // Jembatan pengaman: jika variabel patients kosong, ambil dari workers (atau sebaliknya)
-  if((typeof patients === 'undefined' || !patients.length) && typeof workers !== 'undefined' && workers.length){
-    window.patients = workers.map(w => ({
-      id: w.id,
-      nik: w.nik || w.id,
-      name: w.name || w.nama,
-      dob: w.dob || '',
-      gender: w.gender || 'L',
-      phone: w.phone || ''
+  // 1. Ambil data dari berbagai sumber penyimpanan lokal yang mungkin digunakan
+  let localData = [];
+  try {
+    const p1 = JSON.parse(localStorage.getItem('patients') || '[]');
+    const p2 = JSON.parse(localStorage.getItem('wh_workers') || '[]');
+    localData = p1.length ? p1 : p2;
+  } catch(e) {
+    localData = [];
+  }
+
+  // Masukkan ke variabel global jika kosong
+  if (typeof patients === 'undefined' || !patients.length) {
+    window.patients = localData.map(w => ({
+      id: w.id || Date.now() + Math.random(),
+      nik: w.nik || w.code || w.id || '-',
+      name: w.name || w.nama || 'Tanpa Nama',
+      dob: w.dob || w.tanggalLahir || '',
+      gender: w.gender || w.jk || 'L',
+      phone: w.phone || w.noHp || ''
     }));
   }
 
+  const listPatients = (typeof patients !== 'undefined') ? patients : [];
   const qP = document.getElementById('patSearch')?.value || '';
   const kP = document.getElementById('patKat')?.value || '';
-  const filtered = filterPatients(qP, kP);
-  const editing = getEditingPatient();
+  
+  // Filter data aman
+  const filtered = listPatients.filter(p => {
+    const nameMatch = !qP || String(p.name).toLowerCase().includes(qP.toLowerCase()) || String(p.nik).toLowerCase().includes(qP.toLowerCase());
+    return nameMatch;
+  });
+
+  const editing = typeof getEditingPatient === 'function' ? getEditingPatient() : null;
 
   const rows = filtered.map(p => {
-    const le = lastExam ? lastExam(p.id) : null;
-    const st = le ? getStatus(le.systolic, le.diastolic) : null;
-    const examsCount = typeof pExams === 'function' ? pExams(p.id).length : 0;
     const safeName = escapeHtml(p.name || '');
-    const safeDob = p.dob ? fmt(p.dob) : '-';
+    const safeDob = p.dob ? (typeof fmt === 'function' ? fmt(p.dob) : p.dob) : '-';
     const safePhone = escapeHtml(p.phone || '');
 
     const waBtn = p.phone
@@ -1130,23 +1144,24 @@ function renderPatients(){
 
     const phoneHtml = p.phone ? `<span style="font-size:.78rem">${safePhone}</span>` : '<span style="color:#cbd5e1">—</span>';
     const safeNik = escapeHtml(p.nik || p.id || '-');
+    const ageText = (p.dob && typeof calcAge === 'function') ? calcAge(p.dob) + ' th' : '-';
 
     return `
       <tr>
         <td><code>${safeNik}</code></td>
         <td><strong>${safeName}</strong></td>
         <td>${safeDob}</td>
-        <td>${p.dob && typeof calcAge === 'function' ? calcAge(p.dob) + ' th' : '-'}</td>
+        <td>${ageText}</td>
         <td>${p.gender === 'L' ? 'L' : 'P'}</td>
         <td>${phoneHtml}</td>
-        <td>${examsCount} kali</td>
-        <td>${le ? `${le.systolic}/${le.diastolic}` : '-'}</td>
-        <td>${st ? `<span class="badge ${st.cls}">${st.label}</span>` : '-'}</td>
+        <td>-</td>
+        <td>-</td>
+        <td>-</td>
         <td style="display:flex;gap:5px;flex-wrap:wrap">
-          <button class="btn btn-outline btn-sm" onclick="showWorkerBarcode(${p.id})" title="Lihat QR Code" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:#f8fafc;">🏷️</button>
+          <button class="btn btn-outline btn-sm" onclick="showWorkerBarcode('${p.id}')" title="Lihat QR Code" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:#f8fafc;">🏷️</button>
           ${waBtn}
-          <button class="btn btn-outline btn-sm" onclick="editPatient(${p.id})" title="Edit" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">✏️</button>
-          <button class="btn btn-danger btn-sm" onclick="delPatient(${p.id})" title="Hapus" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">🗑️</button>
+          <button class="btn btn-outline btn-sm" onclick="editPatient('${p.id}')" title="Edit" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="delPatient('${p.id}')" title="Hapus" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">🗑️</button>
         </td>
       </tr>
     `;
@@ -1173,7 +1188,7 @@ function renderPatients(){
           <div class="fg"><label>Tanggal Lahir</label><input id="pDob" type="date" onchange="autoAge()" value="${escapeHtml(editing?.dob || '')}"></div>
           <div class="fg"><label>Usia (otomatis)</label><input id="pAge" readonly placeholder="Dari tgl lahir"></div>
           <div class="fg"><label>Jenis Kelamin</label>
-            <select id="pGender"><option value="L" ${(editing?.gender || 'L') === 'L' ? 'selected' : ''}>Laki-laki</option><option value="P" ${(editing?.gender || 'L') === 'P' ? 'selected' : ''}>Perempuan</option></select>
+            <select id="pGender"><option value="L" ${(editing?.gender || 'L') === 'L' ? 'selected' : ''}>Laki-laki</option><option value="P" ${(editing?.gender || 'L') === 'L' ? 'selected' : ''}>Perempuan</option></select>
           </div>
           <div class="fg"><label>No. HP / WhatsApp</label><input id="pPhone" type="tel" placeholder="628xxxxxxxxxx" oninput="formatPhone()" value="${escapeHtml(editing?.phone || '')}"></div>
         </div>
@@ -1200,13 +1215,12 @@ function renderPatients(){
     <div class="panel">
       <div class="panel-head">
         <h2>👤 Daftar Pekerja</h2>
-        <span style="font-size:.75rem;color:#64748b">${filtered.length} dari ${patients.length} pekerja</span>
+        <span style="font-size:.75rem;color:#64748b">${filtered.length} dari ${listPatients.length} pekerja</span>
       </div>
       <div class="panel-body" style="padding-bottom:0">
         <div class="search-bar">
-         <input id="patSearch" placeholder="🔍 Cari nama pekerja..." value="${escapeHtml(qP)}" oninput="filterAndRenderTable()">
-          <select id="patKat" onchange="renderPatients()">${typeof katOpts !== 'undefined' ? katOpts.replace(`value="${kP}"`, `value="${kP}" selected`) : ''}</select>
-          <button class="btn btn-outline btn-sm" onclick="document.getElementById('patSearch').value='';document.getElementById('patKat').value='';renderPatients()">✕ Reset</button>
+         <input id="patSearch" placeholder="🔍 Cari nama pekerja..." value="${escapeHtml(qP)}" oninput="renderPatients()">
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('patSearch').value='';renderPatients()">✕ Reset</button>
         </div>
       </div>
       <div style="overflow-x:auto">
@@ -1214,13 +1228,14 @@ function renderPatients(){
           <thead>
             <tr><th>No. ID</th><th>Nama</th><th>Tgl Lahir</th><th>Usia</th><th>JK</th><th>No. HP</th><th>Jml Periksa</th><th>Terakhir S/D</th><th>Kategori</th><th>Aksi</th></tr>
           </thead>
-          <tbody>${rows || '<tr><td colspan="10" class="empty">Tidak ada data pekerja yang tersimpan</td></tr>'}</tbody>
+          <tbody>${rows || '<tr><td colspan="10" class="empty">Belum ada data pekerja terdaftar</td></tr>'}</tbody>
         </table>
       </div>
     </div>
   `;
+}
   
-  if(typeof autoAge === 'function') autoAge();
+ if(typeof autoAge === 'function') autoAge();
   if(typeof formatPhone === 'function') formatPhone();
   if(typeof generateFormBarcode === 'function') generateFormBarcode();
 }
