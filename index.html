@@ -1540,7 +1540,7 @@ function renderProgress(){
 }
 
 function renderProgressDetail(pid){
-  const p = patients.find(x => x.id === pid);
+  const p = patients.find(x => String(x.id) === String(pid));
   if(!p) return;
 
   const sel = document.getElementById('progressPid');
@@ -1552,18 +1552,25 @@ function renderProgressDetail(pid){
 
   if(!container) return;
 
-  // 1. Ambil data tes alkohol milik pekerja ini
+  // 1. Ambil data tes alkohol dan pastikan konsisten (aman dari pergeseran format tanggal)
   let allAlcohol = [];
   try {
     allAlcohol = JSON.parse(localStorage.getItem('wh_alcohol') || localStorage.getItem('alcoholExams') || localStorage.getItem('alcohol') || '[]');
   } catch(e) { allAlcohol = []; }
 
-  const pAlcoholList = allAlcohol.filter(a => 
-    String(a.patientId || a.workerId || a.id_pekerja || a.nik) === String(p.id) || 
-    String(a.nik) === String(p.nik)
-  );
+  // Pencocokan multi-kriteria (id pekerja, nik, atau string kecocokan)
+  const pAlcoholList = allAlcohol.filter(a => {
+    const aId = String(a.patientId || a.workerId || a.id_pekerja || a.id || '');
+    const aNik = String(a.nik || '');
+    const pId = String(p.id);
+    const pNik = String(p.nik || '');
+    return (aId && aId === pId) || (aNik && aNik === pNik);
+  }).sort((a, b) => {
+    const dateA = new Date(a.date || a.tanggal || a.examDate || 0);
+    const dateB = new Date(b.date || b.tanggal || b.examDate || 0);
+    return dateA - dateB;
+  });
 
-  // Urutkan tes alkohol berdasarkan tanggal (jika ada) untuk mendapatkan data terakhir
   const lastAlc = pAlcoholList.length ? pAlcoholList[pAlcoholList.length - 1] : null;
 
   if(badge && pex.length){
@@ -1622,17 +1629,17 @@ function renderProgressDetail(pid){
     </tr>`;
   }).join('');
 
-  // Buat baris tabel riwayat alkohol
+  // Baris tabel riwayat alkohol
   const alcoholRows = pAlcoholList.length ? pAlcoholList.slice().reverse().map((alc, idx) => {
-    const isNeg = String(alc.result || alc.status || '').toLowerCase().includes('negatif') || Number(alc.value || 0) === 0;
+    const isNeg = String(alc.result || alc.status || alc.hasil || '').toLowerCase().includes('negatif') || Number(alc.value || alc.val || 0) === 0;
     const badgeColor = isNeg ? 'background:#d1fae5;color:#065f46;' : 'background:#fee2e2;color:#991b1b;';
-    const resText = alc.result || alc.status || (isNeg ? 'Negatif' : 'Positif');
-    const alcDate = alc.date || alc.tanggal || '-';
+    const resText = alc.result || alc.status || alc.hasil || (isNeg ? 'Negatif' : 'Positif');
+    const alcDate = alc.date || alc.tanggal || alc.examDate || '-';
     return `<tr>
       <td>#${pAlcoholList.length - idx}</td>
       <td>${fmt(alcDate)}</td>
       <td><span style="padding:3px 8px;border-radius:4px;font-size:0.75rem;font-weight:600;${badgeColor}">${resText}</span></td>
-      <td>${alc.notes || '-'}</td>
+      <td>${alc.notes || alc.catatan || '-'}</td>
     </tr>`;
   }).join('') : '<tr><td colspan="4" class="empty">Belum ada riwayat tes alkohol</td></tr>';
 
@@ -1641,19 +1648,19 @@ function renderProgressDetail(pid){
   let bacSubText = 'Belum pernah tes';
   let bacColor = '#64748b';
   if (lastAlc) {
-    const isNeg = String(lastAlc.result || lastAlc.status || '').toLowerCase().includes('negatif') || Number(lastAlc.value || 0) === 0;
-    bacValText = lastAlc.result || lastAlc.status || (isNeg ? 'Negatif' : 'Positif');
-    bacSubText = fmt(lastAlc.date || lastAlc.tanggal);
+    const isNeg = String(lastAlc.result || lastAlc.status || lastAlc.hasil || '').toLowerCase().includes('negatif') || Number(lastAlc.value || lastAlc.val || 0) === 0;
+    bacValText = lastAlc.result || lastAlc.status || lastAlc.hasil || (isNeg ? 'Negatif' : 'Positif');
+    bacSubText = fmt(lastAlc.date || lastAlc.tanggal || lastAlc.examDate);
     bacColor = isNeg ? '#059669' : '#dc2626';
   }
 
   container.innerHTML = `
-    <!-- INFO PEKERJA (4 Kolom: Nama, Tensi Terakhir, Terakhir BAC, Kategori) -->
+    <!-- INFO PEKERJA (Urutan: Nama, Tensi Terakhir, Kategori Saat Ini, Terakhir BAC Test) -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;margin-bottom:18px">
       <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">👤</div><div class="stat-info"><h3>Nama</h3><div class="val" style="font-size:1rem">${p.name}</div><div class="sub">${p.gender === 'L' ? 'Laki-laki' : 'Perempuan'} · ${calcAge(p.dob)} tahun</div></div></div>
       <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🩺</div><div class="stat-info"><h3>Terakhir (S/D)</h3><div class="val ${last ? vCls(last.systolic,140,120) : ''}" style="font-size:1.2rem">${last ? `${last.systolic}/${last.diastolic}` : '-'}</div><div class="sub">${last ? fmt(last.examDate) : '-'}</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#e0f2fe">🍺</div><div class="stat-info"><h3>Terakhir BAC Test</h3><div class="val" style="font-size:1.1rem;color:${bacColor}">${bacValText}</div><div class="sub">${bacSubText}</div></div></div>
       <div class="stat-card"><div class="stat-icon" style="background:${stLast ? stLast.color + '22' : '#f1f5f9'}">📊</div><div class="stat-info"><h3>Kategori Saat Ini</h3><div class="val" style="font-size:.95rem;color:${stLast ? stLast.color : '#64748b'}">${stLast ? stLast.label : '-'}</div><div class="sub">${pex.length} pemeriksaan</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#e0f2fe">🍺</div><div class="stat-info"><h3>Terakhir BAC Test</h3><div class="val" style="font-size:1.1rem;color:${bacColor}">${bacValText}</div><div class="sub">${bacSubText}</div></div></div>
     </div>
 
     <!-- RIWAYAT CHIPS (Tensi) -->
