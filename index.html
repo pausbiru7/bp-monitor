@@ -506,14 +506,14 @@ function calcAge(dob){
 
 function fmt(d){
   if(!d) return '-';
-
+  
+  // Ambil hanya bagian tanggal (YYYY-MM-DD) dan abaikan jam/zona waktu
   const raw = String(d).trim();
   const s = raw.includes('T') ? raw.slice(0, 10) : raw;
   const p = s.split('-');
 
   if(p.length !== 3) return raw;
 
-  // Array manual untuk menjamin konsistensi format tanggal di semua perangkat (anti-mundur)
   const bulanNama = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
   const thn = p[0];
   const blnIdx = parseInt(p[1], 10) - 1;
@@ -521,6 +521,7 @@ function fmt(d){
 
   if(blnIdx < 0 || blnIdx > 11) return raw;
 
+  // Langsung gabungkan tanpa objek Date() agar anti-mundur zona waktu
   return `${tgl} ${bulanNama[blnIdx]} ${thn}`;
 }
 
@@ -1557,7 +1558,7 @@ function renderProgressDetail(pid){
 
   if(!container) return;
 
- // Ambil data tes alkohol dari localStorage
+// Ambil data tes alkohol dari localStorage
   let allAlcohol = [];
   try {
     allAlcohol = JSON.parse(
@@ -1568,11 +1569,14 @@ function renderProgressDetail(pid){
   } catch(e) { allAlcohol = []; }
 
   const pNikStr = String(p.nik || '').trim();
+  const pIdStr = String(pid).trim();
 
-  // Pencocokan murni berdasarkan NIK (yang sebelumnya patientId)
+  // Pencocokan fleksibel berbasis NIK (dan cadangan patientId)
   const pAlcoholList = allAlcohol.filter(a => {
-    const aNik = String(a.nik || a.patientId || a.workerId || a.id_pekerja || '').trim();
-    return pNikStr && aNik === pNikStr;
+    const aNik = String(a.nik || '').trim();
+    const aPatientId = String(a.patientId || a.workerId || a.id_pekerja || a.id || '').trim();
+    
+    return (pNikStr && aNik === pNikStr) || (pIdStr && aPatientId === pIdStr);
   }).sort((a, b) => {
     const dateA = String(a.date || a.tanggal || a.examDate || '');
     const dateB = String(b.date || b.tanggal || b.examDate || '');
