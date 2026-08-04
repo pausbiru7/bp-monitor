@@ -1558,7 +1558,7 @@ function renderProgressDetail(pid){
 
   if(!container) return;
 
-// Ambil data tes alkohol dari localStorage
+// 1. Ambil data tes alkohol dari localStorage
   let allAlcohol = [];
   try {
     allAlcohol = JSON.parse(
@@ -1568,15 +1568,22 @@ function renderProgressDetail(pid){
     );
   } catch(e) { allAlcohol = []; }
 
-  const pNikStr = String(p.nik || '').trim();
   const pIdStr = String(pid).trim();
+  const pNikStr = String(p.nik || '').trim();
+  const pNameStr = String(p.name || '').trim().toLowerCase();
 
-  // Pencocokan fleksibel berbasis NIK (dan cadangan patientId)
+  // 2. Pencocokan cerdas: cocok dengan patientId (ID baris), NIK, atau Nama Pekerja
   const pAlcoholList = allAlcohol.filter(a => {
-    const aNik = String(a.nik || '').trim();
     const aPatientId = String(a.patientId || a.workerId || a.id_pekerja || a.id || '').trim();
+    const aNik = String(a.nik || '').trim();
+    const aName = String(a.patientName || a.name || a.nama || '').trim().toLowerCase();
     
-    return (pNikStr && aNik === pNikStr) || (pIdStr && aPatientId === pIdStr);
+    return (
+      (pIdStr && aPatientId === pIdStr) || 
+      (pNikStr && aNik === pNikStr) ||
+      (pNikStr && aPatientId === pNikStr) ||
+      (pNameStr && aName && aName === pNameStr)
+    );
   }).sort((a, b) => {
     const dateA = String(a.date || a.tanggal || a.examDate || '');
     const dateB = String(b.date || b.tanggal || b.examDate || '');
@@ -1584,7 +1591,6 @@ function renderProgressDetail(pid){
   });
 
   const lastAlc = pAlcoholList.length ? pAlcoholList[pAlcoholList.length - 1] : null;
-
   if(badge && pex.length){
     const last = pex[pex.length - 1];
     const st = getStatus(last.systolic, last.diastolic);
