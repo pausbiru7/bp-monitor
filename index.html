@@ -504,25 +504,28 @@ function calcAge(dob){
   return a;
 }
 
+// ══ HELPER FORMAT TANGGAL ANTI-MUNDUR ═════════════════════════════
 function fmt(d){
   if(!d) return '-';
   
-  // Ambil hanya bagian tanggal (YYYY-MM-DD) dan abaikan jam/zona waktu
+  // Ubah ke string dan ambil persis 10 karakter pertama (YYYY-MM-DD)
   const raw = String(d).trim();
   const s = raw.includes('T') ? raw.slice(0, 10) : raw;
   const p = s.split('-');
 
+  // Jika format tidak sesuai YYYY-MM-DD, kembalikan apa adanya
   if(p.length !== 3) return raw;
 
-  const bulanNama = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
   const thn = p[0];
-  const blnIdx = parseInt(p[1], 10) - 1;
+  const blnNum = parseInt(p[1], 10);
   const tgl = p[2];
 
-  if(blnIdx < 0 || blnIdx > 11) return raw;
+  const bulanNama = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  
+  if(blnNum < 1 || blnNum > 12) return raw;
 
-  // Langsung gabungkan tanpa objek Date() agar anti-mundur zona waktu
-  return `${tgl} ${bulanNama[blnIdx]} ${thn}`;
+  // Format akhir: DD Mmm YYYY (Contoh: 21 Apr 2026) - Dijamin tidak akan pernah mundur!
+  return `${tgl} ${bulanNama[blnNum]} ${thn}`;
 }
 
 function monthKey(d){
