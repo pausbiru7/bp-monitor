@@ -485,25 +485,52 @@ function getRekomendasi(s, d, prevS, pex){
 
   return `<div class="rekom-box ${st.key}"><div class="rekom-title">${r.icon} ${r.judul}</div><div>${r.isi}</div><div style="margin-top:6px;font-weight:600;font-size:.78rem">📅 ${r.jadwal}</div></div>`;
 }
-// ══ HELPERS (DIPERBAIKI AGAR TANGGAL STABIL & TIDAK MUNDUR) ═════════════════════════
+// ══ HELPER TANGGAL & USIA ANTI-MUNDUR ═════════════════════════════
+
+// 1. Format khusus tanggal lahir (Anti-mundur zona waktu)
+function fmtDob(d){
+  if(!d) return '-';
+  const raw = String(d).trim();
+  const s = raw.includes('T') ? raw.slice(0, 10) : raw;
+  const p = s.split('-');
+
+  if(p.length !== 3) return raw;
+
+  const thn = p[0];
+  const blnNum = parseInt(p[1], 10);
+  const tgl = p[2];
+  const bulanNama = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+  if(blnNum < 1 || blnNum > 12) return raw;
+
+  return `${tgl} ${bulanNama[blnNum]} ${thn}`;
+}
+
+// 2. Perhitungan usia yang akurat berdasarkan string mentah (anti-mundur)
 function calcAge(dob){
   if(!dob) return '-';
+  const raw = String(dob).trim();
+  const s = raw.includes('T') ? raw.slice(0, 10) : raw;
+  const p = s.split('-');
 
-  const b = new Date(dob);
+  if(p.length !== 3) return '-';
+
+  const bYear = parseInt(p[0], 10);
+  const bMonth = parseInt(p[1], 10) - 1;
+  const bDay = parseInt(p[2], 10);
+
   const t = new Date();
-
-  let a = t.getFullYear() - b.getFullYear();
+  let a = t.getFullYear() - bYear;
 
   if(
-    t.getMonth() < b.getMonth() ||
-    (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())
+    t.getMonth() < bMonth ||
+    (t.getMonth() === bMonth && t.getDate() < bDay)
   ){
     a--;
   }
 
   return a;
 }
-
 // ══ HELPER FORMAT TANGGAL ANTI-MUNDUR ═════════════════════════════
 function fmt(d){
   if(!d) return '-';
