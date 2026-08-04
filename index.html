@@ -1557,19 +1557,22 @@ function renderProgressDetail(pid){
 
   if(!container) return;
 
-  // 1. Ambil data tes alkohol dengan pencocokan ID yang lebih fleksibel
+ // Ambil data tes alkohol dari localStorage
   let allAlcohol = [];
   try {
-    allAlcohol = JSON.parse(localStorage.getItem('wh_alcohol') || localStorage.getItem('alcoholExams') || localStorage.getItem('alcohol') || '[]');
+    allAlcohol = JSON.parse(
+      localStorage.getItem('wh_alcohol') || 
+      localStorage.getItem('alcoholExams') || 
+      localStorage.getItem('alcohol') || '[]'
+    );
   } catch(e) { allAlcohol = []; }
 
-  const pIdStr = String(p.id);
   const pNikStr = String(p.nik || '').trim();
 
+  // Pencocokan murni berdasarkan NIK (yang sebelumnya patientId)
   const pAlcoholList = allAlcohol.filter(a => {
-    const aId = String(a.patientId || a.workerId || a.id_pekerja || a.id || '').trim();
-    const aNik = String(a.nik || '').trim();
-    return (aId && aId === pIdStr) || (aNik && aNik === pNikStr);
+    const aNik = String(a.nik || a.patientId || a.workerId || a.id_pekerja || '').trim();
+    return pNikStr && aNik === pNikStr;
   }).sort((a, b) => {
     const dateA = String(a.date || a.tanggal || a.examDate || '');
     const dateB = String(b.date || b.tanggal || b.examDate || '');
