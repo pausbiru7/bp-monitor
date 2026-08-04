@@ -1563,6 +1563,9 @@ function renderProgressDetail(pid){
     String(a.nik) === String(p.nik)
   );
 
+  // Urutkan tes alkohol berdasarkan tanggal (jika ada) untuk mendapatkan data terakhir
+  const lastAlc = pAlcoholList.length ? pAlcoholList[pAlcoholList.length - 1] : null;
+
   if(badge && pex.length){
     const last = pex[pex.length - 1];
     const st = getStatus(last.systolic, last.diastolic);
@@ -1576,7 +1579,8 @@ function renderProgressDetail(pid){
           ? `<span class="trend-dn">▼ Turun ${Math.abs(diff)} mmHg dari awal</span>`
           : `<span class="trend-up">▲ Naik ${diff} mmHg dari awal</span>`;
 
-    badge.innerHTML = `<span class="badge ${st.cls}">${st.label}</span>${diffHtml}<span style="font-size:.78rem;color:#64748b">${pex.length} pemeriksaan · ${pAlcoholList.length} tes alkohol</span>`;
+    const alcInfoBadge = pAlcoholList.length ? ` · ${pAlcoholList.length} tes alkohol` : '';
+    badge.innerHTML = `<span class="badge ${st.cls}">${st.label}</span>${diffHtml}<span style="font-size:.78rem;color:#64748b">${pex.length} pemeriksaan${alcInfoBadge}</span>`;
   } else if(badge){
     badge.innerHTML = '';
   }
@@ -1586,7 +1590,6 @@ function renderProgressDetail(pid){
     return;
   }
 
-  // Jika ada tensi, ambil data terakhir
   const last = pex.length ? pex[pex.length - 1] : null;
   const stLast = last ? getStatus(last.systolic, last.diastolic) : null;
   const prevS = pex.length > 1 ? pex[pex.length - 2].systolic : null;
@@ -1620,23 +1623,37 @@ function renderProgressDetail(pid){
   }).join('');
 
   // Buat baris tabel riwayat alkohol
-  const alcoholRows = pAlcoholList.length ? pAlcoholList.map((alc, idx) => {
+  const alcoholRows = pAlcoholList.length ? pAlcoholList.slice().reverse().map((alc, idx) => {
     const isNeg = String(alc.result || alc.status || '').toLowerCase().includes('negatif') || Number(alc.value || 0) === 0;
     const badgeColor = isNeg ? 'background:#d1fae5;color:#065f46;' : 'background:#fee2e2;color:#991b1b;';
+    const resText = alc.result || alc.status || (isNeg ? 'Negatif' : 'Positif');
+    const alcDate = alc.date || alc.tanggal || '-';
     return `<tr>
-      <td>#${idx + 1}</td>
-      <td>${alc.date || alc.tanggal || '-'}</td>
-      <td><span style="padding:3px 8px;border-radius:4px;font-size:0.75rem;font-weight:600;${badgeColor}">${alc.result || (isNeg ? 'Negatif' : 'Positif')}</span></td>
+      <td>#${pAlcoholList.length - idx}</td>
+      <td>${fmt(alcDate)}</td>
+      <td><span style="padding:3px 8px;border-radius:4px;font-size:0.75rem;font-weight:600;${badgeColor}">${resText}</span></td>
       <td>${alc.notes || '-'}</td>
     </tr>`;
   }).join('') : '<tr><td colspan="4" class="empty">Belum ada riwayat tes alkohol</td></tr>';
 
+  // Format Status Terakhir BAC Test
+  let bacValText = '-';
+  let bacSubText = 'Belum pernah tes';
+  let bacColor = '#64748b';
+  if (lastAlc) {
+    const isNeg = String(lastAlc.result || lastAlc.status || '').toLowerCase().includes('negatif') || Number(lastAlc.value || 0) === 0;
+    bacValText = lastAlc.result || lastAlc.status || (isNeg ? 'Negatif' : 'Positif');
+    bacSubText = fmt(lastAlc.date || lastAlc.tanggal);
+    bacColor = isNeg ? '#059669' : '#dc2626';
+  }
+
   container.innerHTML = `
-    <!-- INFO PEKERJA -->
-    <div class="grid-3" style="margin-bottom:18px">
+    <!-- INFO PEKERJA (4 Kolom: Nama, Tensi Terakhir, Terakhir BAC, Kategori) -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;margin-bottom:18px">
       <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">👤</div><div class="stat-info"><h3>Nama</h3><div class="val" style="font-size:1rem">${p.name}</div><div class="sub">${p.gender === 'L' ? 'Laki-laki' : 'Perempuan'} · ${calcAge(p.dob)} tahun</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🩺</div><div class="stat-info"><h3>Terakhir (S/D)</h3><div class="val ${last ? vCls(last.systolic,140,120) : ''}" style="font-size:1.3rem">${last ? `${last.systolic}/${last.diastolic}` : '-'}</div><div class="sub">${last ? fmt(last.examDate) : '-'}</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:${stLast ? stLast.color + '22' : '#f1f5f9'}">📊</div><div class="stat-info"><h3>Kategori Saat Ini</h3><div class="val" style="font-size:.95rem;color:${stLast ? stLast.color : '#64748b'}">${stLast ? stLast.label : '-'}</div><div class="sub">${pex.length} pemeriksaan · ${pAlcoholList.length} tes alkohol</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🩺</div><div class="stat-info"><h3>Terakhir (S/D)</h3><div class="val ${last ? vCls(last.systolic,140,120) : ''}" style="font-size:1.2rem">${last ? `${last.systolic}/${last.diastolic}` : '-'}</div><div class="sub">${last ? fmt(last.examDate) : '-'}</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#e0f2fe">🍺</div><div class="stat-info"><h3>Terakhir BAC Test</h3><div class="val" style="font-size:1.1rem;color:${bacColor}">${bacValText}</div><div class="sub">${bacSubText}</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:${stLast ? stLast.color + '22' : '#f1f5f9'}">📊</div><div class="stat-info"><h3>Kategori Saat Ini</h3><div class="val" style="font-size:.95rem;color:${stLast ? stLast.color : '#64748b'}">${stLast ? stLast.label : '-'}</div><div class="sub">${pex.length} pemeriksaan</div></div></div>
     </div>
 
     <!-- RIWAYAT CHIPS (Tensi) -->
@@ -1659,7 +1676,10 @@ function renderProgressDetail(pid){
     <div class="panel" style="margin-bottom:18px">
       <div class="panel-head">
         <h2>🍺 Riwayat Tes Alkohol (Alcohol Screening)</h2>
-        <span style="font-size:.75rem;color:#64748b">${pAlcoholList.length} data tersimpan</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-pdf btn-sm" onclick="exportPDF()">🖨️ Cetak PDF</button>
+          <button class="btn btn-sm" style="background:#25d366;color:#fff" onclick="kirimWA(${pid})">📲 Kirim ke WA</button>
+        </div>
       </div>
       <div style="overflow-x:auto">
         <table>
