@@ -1588,10 +1588,11 @@ function renderProgressDetail(pid){
 
   if(!container) return;
 
-// Ambil data tes alkohol dari localStorage
+// 1. Ambil data tes alkohol dari localStorage (termasuk 'bac_token')
   let allAlcohol = [];
   try {
     allAlcohol = JSON.parse(
+      localStorage.getItem('bac_token') || 
       localStorage.getItem('wh_alcohol') || 
       localStorage.getItem('alcoholExams') || 
       localStorage.getItem('alcohol') || '[]'
