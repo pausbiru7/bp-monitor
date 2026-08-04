@@ -1552,6 +1552,17 @@ function renderProgressDetail(pid){
 
   if(!container) return;
 
+  // 1. Ambil data tes alkohol milik pekerja ini
+  let allAlcohol = [];
+  try {
+    allAlcohol = JSON.parse(localStorage.getItem('wh_alcohol') || localStorage.getItem('alcoholExams') || localStorage.getItem('alcohol') || '[]');
+  } catch(e) { allAlcohol = []; }
+
+  const pAlcoholList = allAlcohol.filter(a => 
+    String(a.patientId || a.workerId || a.id_pekerja || a.nik) === String(p.id) || 
+    String(a.nik) === String(p.nik)
+  );
+
   if(badge && pex.length){
     const last = pex[pex.length - 1];
     const st = getStatus(last.systolic, last.diastolic);
@@ -1565,18 +1576,19 @@ function renderProgressDetail(pid){
           ? `<span class="trend-dn">▼ Turun ${Math.abs(diff)} mmHg dari awal</span>`
           : `<span class="trend-up">▲ Naik ${diff} mmHg dari awal</span>`;
 
-    badge.innerHTML = `<span class="badge ${st.cls}">${st.label}</span>${diffHtml}<span style="font-size:.78rem;color:#64748b">${pex.length} pemeriksaan</span>`;
+    badge.innerHTML = `<span class="badge ${st.cls}">${st.label}</span>${diffHtml}<span style="font-size:.78rem;color:#64748b">${pex.length} pemeriksaan · ${pAlcoholList.length} tes alkohol</span>`;
   } else if(badge){
     badge.innerHTML = '';
   }
 
-  if(!pex.length){
-    container.innerHTML = `<div class="panel"><div class="panel-body"><div class="empty">📋 ${p.name} belum memiliki data pemeriksaan</div></div></div>`;
+  if(!pex.length && !pAlcoholList.length){
+    container.innerHTML = `<div class="panel"><div class="panel-body"><div class="empty">📋 ${p.name} belum memiliki data pemeriksaan maupun tes alkohol</div></div></div>`;
     return;
   }
 
-  const last = pex[pex.length - 1];
-  const stLast = getStatus(last.systolic, last.diastolic);
+  // Jika ada tensi, ambil data terakhir
+  const last = pex.length ? pex[pex.length - 1] : null;
+  const stLast = last ? getStatus(last.systolic, last.diastolic) : null;
   const prevS = pex.length > 1 ? pex[pex.length - 2].systolic : null;
 
   const chips = pex.map((e, i, arr) => {
@@ -1607,26 +1619,60 @@ function renderProgressDetail(pid){
     </tr>`;
   }).join('');
 
+  // Buat baris tabel riwayat alkohol
+  const alcoholRows = pAlcoholList.length ? pAlcoholList.map((alc, idx) => {
+    const isNeg = String(alc.result || alc.status || '').toLowerCase().includes('negatif') || Number(alc.value || 0) === 0;
+    const badgeColor = isNeg ? 'background:#d1fae5;color:#065f46;' : 'background:#fee2e2;color:#991b1b;';
+    return `<tr>
+      <td>#${idx + 1}</td>
+      <td>${alc.date || alc.tanggal || '-'}</td>
+      <td><span style="padding:3px 8px;border-radius:4px;font-size:0.75rem;font-weight:600;${badgeColor}">${alc.result || (isNeg ? 'Negatif' : 'Positif')}</span></td>
+      <td>${alc.notes || '-'}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="4" class="empty">Belum ada riwayat tes alkohol</td></tr>';
+
   container.innerHTML = `
     <!-- INFO PEKERJA -->
     <div class="grid-3" style="margin-bottom:18px">
       <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">👤</div><div class="stat-info"><h3>Nama</h3><div class="val" style="font-size:1rem">${p.name}</div><div class="sub">${p.gender === 'L' ? 'Laki-laki' : 'Perempuan'} · ${calcAge(p.dob)} tahun</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🩺</div><div class="stat-info"><h3>Terakhir (S/D)</h3><div class="val ${vCls(last.systolic,140,120)}" style="font-size:1.3rem">${last.systolic}/${last.diastolic}</div><div class="sub">${fmt(last.examDate)}</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:${stLast.color}22">📊</div><div class="stat-info"><h3>Kategori Saat Ini</h3><div class="val" style="font-size:.95rem;color:${stLast.color}">${stLast.label}</div><div class="sub">${pex.length} total pemeriksaan</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🩺</div><div class="stat-info"><h3>Terakhir (S/D)</h3><div class="val ${last ? vCls(last.systolic,140,120) : ''}" style="font-size:1.3rem">${last ? `${last.systolic}/${last.diastolic}` : '-'}</div><div class="sub">${last ? fmt(last.examDate) : '-'}</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:${stLast ? stLast.color + '22' : '#f1f5f9'}">📊</div><div class="stat-info"><h3>Kategori Saat Ini</h3><div class="val" style="font-size:.95rem;color:${stLast ? stLast.color : '#64748b'}">${stLast ? stLast.label : '-'}</div><div class="sub">${pex.length} pemeriksaan · ${pAlcoholList.length} tes alkohol</div></div></div>
     </div>
-    <!-- RIWAYAT CHIPS -->
+
+    <!-- RIWAYAT CHIPS (Tensi) -->
+    ${pex.length ? `
     <div class="panel" style="margin-bottom:18px">
-      <div class="panel-head"><h2>📅 Semua Riwayat Pemeriksaan</h2><span style="font-size:.75rem;color:#64748b">${pex.length} data · terbaru di kanan</span></div>
+      <div class="panel-head"><h2>📅 Semua Riwayat Pemeriksaan Tensi</h2><span style="font-size:.75rem;color:#64748b">${pex.length} data · terbaru di kanan</span></div>
       <div class="panel-body"><div class="pc-exams" style="gap:8px">${chips}</div></div>
     </div>
+    ` : ''}
+
     <!-- CHART -->
+    ${pex.length ? `
     <div class="panel" style="margin-bottom:18px">
       <div class="panel-head"><h2>📈 Grafik Tren Tekanan Darah</h2></div>
       <div class="panel-body"><div class="chart-box" style="height:280px"><canvas id="progDetailChart"></canvas></div></div>
     </div>
-    <!-- TABEL DETAIL -->
+    ` : ''}
+
+    <!-- RIWAYAT TES ALKOHOL -->
     <div class="panel" style="margin-bottom:18px">
-      <div class="panel-head"><h2>📋 Tabel Riwayat Lengkap</h2>
+      <div class="panel-head">
+        <h2>🍺 Riwayat Tes Alkohol (Alcohol Screening)</h2>
+        <span style="font-size:.75rem;color:#64748b">${pAlcoholList.length} data tersimpan</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>No</th><th>Tanggal</th><th>Hasil Tes</th><th>Catatan</th></tr></thead>
+          <tbody>${alcoholRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TABEL DETAIL TENSI -->
+    ${pex.length ? `
+    <div class="panel" style="margin-bottom:18px">
+      <div class="panel-head"><h2>📋 Tabel Riwayat Lengkap Tensi</h2>
         <div style="display:flex;gap:8px">
           <button class="btn btn-pdf btn-sm" onclick="exportPDF()">🖨️ Cetak PDF</button>
           <button class="btn btn-sm" style="background:#25d366;color:#fff" onclick="kirimWA(${pid})">📲 Kirim ke WA</button>
@@ -1635,73 +1681,79 @@ function renderProgressDetail(pid){
       <div style="overflow-x:auto"><table><thead><tr><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Nadi</th><th>Trend S</th><th>Trend D</th><th>Kategori</th><th>Aksi</th></tr></thead>
       <tbody>${rows}</tbody></table></div>
     </div>
+    ` : ''}
+
     <!-- REKOMENDASI -->
+    ${last ? `
     <div class="panel">
       <div class="panel-head"><h2>💡 Rekomendasi Klinis (Pemeriksaan Terakhir)</h2></div>
       <div class="panel-body">${getRekomendasi(last.systolic,last.diastolic,prevS,pex)}</div>
-    </div>`;
+    </div>
+    ` : ''}`;
 
-  requestAnimationFrame(() => {
-    const chartEl = document.getElementById('progDetailChart');
-    if(!chartEl) return;
+  if (pex.length) {
+    requestAnimationFrame(() => {
+      const chartEl = document.getElementById('progDetailChart');
+      if(!chartEl) return;
 
-    destroyChart('progDetailChart');
+      destroyChart('progDetailChart');
 
-    new Chart(chartEl, {
-      type: 'line',
-      data: {
-        labels: pex.map(e => fmt(e.examDate)),
-        datasets: [
-          {
-            label: 'Sistolik',
-            data: pex.map(e => e.systolic),
-            borderColor: '#dc2626',
-            backgroundColor: 'rgba(220,38,38,.08)',
-            tension: .4,
-            fill: true,
-            pointRadius: 5,
-            pointHoverRadius: 7,
-            pointBackgroundColor: '#dc2626'
+      new Chart(chartEl, {
+        type: 'line',
+        data: {
+          labels: pex.map(e => fmt(e.examDate)),
+          datasets: [
+            {
+              label: 'Sistolik',
+              data: pex.map(e => e.systolic),
+              borderColor: '#dc2626',
+              backgroundColor: 'rgba(220,38,38,.08)',
+              tension: .4,
+              fill: true,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+              pointBackgroundColor: '#dc2626'
+            },
+            {
+              label: 'Diastolik',
+              data: pex.map(e => e.diastolic),
+              borderColor: '#2563eb',
+              backgroundColor: 'rgba(37,99,235,.08)',
+              tension: .4,
+              fill: true,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+              pointBackgroundColor: '#2563eb'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y} mmHg`
+              }
+            }
           },
-          {
-            label: 'Diastolik',
-            data: pex.map(e => e.diastolic),
-            borderColor: '#2563eb',
-            backgroundColor: 'rgba(37,99,235,.08)',
-            tension: .4,
-            fill: true,
-            pointRadius: 5,
-            pointHoverRadius: 7,
-            pointBackgroundColor: '#2563eb'
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'top' },
-          tooltip: {
-            callbacks: {
-              label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y} mmHg`
+          scales: {
+            y: {
+              min: 50,
+              max: 220,
+              ticks: { callback: v => v + ' mmHg' },
+              grid: { color: 'rgba(0,0,0,.05)' }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 10 } }
             }
           }
-        },
-        scales: {
-          y: {
-            min: 50,
-            max: 220,
-            ticks: { callback: v => v + ' mmHg' },
-            grid: { color: 'rgba(0,0,0,.05)' }
-          },
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 } }
-          }
         }
-      }
+      });
     });
-  });
+  }
 }
 
 function delExamProgress(eid, pid){
