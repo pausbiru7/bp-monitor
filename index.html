@@ -485,7 +485,7 @@ function getRekomendasi(s, d, prevS, pex){
 
   return `<div class="rekom-box ${st.key}"><div class="rekom-title">${r.icon} ${r.judul}</div><div>${r.isi}</div><div style="margin-top:6px;font-weight:600;font-size:.78rem">📅 ${r.jadwal}</div></div>`;
 }
-// ══ HELPERS ═══════════════════════════════
+// ══ HELPERS (DIPERBAIKI AGAR TANGGAL STABIL & TIDAK MUNDUR) ═════════════════════════
 function calcAge(dob){
   if(!dob) return '-';
 
@@ -507,17 +507,21 @@ function calcAge(dob){
 function fmt(d){
   if(!d) return '-';
 
-  const raw = String(d);
+  const raw = String(d).trim();
   const s = raw.includes('T') ? raw.slice(0, 10) : raw;
   const p = s.split('-');
 
   if(p.length !== 3) return raw;
 
-  return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString('id-ID', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  });
+  // Array manual untuk menjamin konsistensi format tanggal di semua perangkat (anti-mundur)
+  const bulanNama = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  const thn = p[0];
+  const blnIdx = parseInt(p[1], 10) - 1;
+  const tgl = p[2];
+
+  if(blnIdx < 0 || blnIdx > 11) return raw;
+
+  return `${tgl} ${bulanNama[blnIdx]} ${thn}`;
 }
 
 function monthKey(d){
@@ -528,11 +532,12 @@ function monthLabel(k){
   if(!k) return '';
 
   const [y, m] = String(k).split('-');
+  const bulanNama = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  const blnIdx = parseInt(m, 10) - 1;
 
-  return new Date(+y, +m - 1).toLocaleDateString('id-ID', {
-    month: 'short',
-    year: 'numeric'
-  });
+  if(blnIdx < 0 || blnIdx > 11) return k;
+
+  return `${bulanNama[blnIdx]} ${y}`;
 }
 
 function trendArrow(c, p){
@@ -547,14 +552,14 @@ function trendArrow(c, p){
 }
 
 function pName(pid){
-  const p = patients.find(x => x.id === pid);
+  const p = patients.find(x => String(x.id) === String(pid));
   return p ? p.name : '—';
 }
 
 function pExams(pid){
   return exams
-    .filter(e => e.patientId === pid)
-    .sort((a, b) => String(a.examDate).localeCompare(String(b.examDate)));
+    .filter(e => String(e.patientId || e.workerId || e.id_pekerja) === String(pid))
+    .sort((a, b) => String(a.examDate || a.date || a.tanggal || '').localeCompare(String(b.examDate || b.date || b.tanggal || '')));
 }
 
 function lastExam(pid){
@@ -1552,23 +1557,23 @@ function renderProgressDetail(pid){
 
   if(!container) return;
 
-  // 1. Ambil data tes alkohol dan pastikan konsisten (aman dari pergeseran format tanggal)
+  // 1. Ambil data tes alkohol dengan pencocokan ID yang lebih fleksibel
   let allAlcohol = [];
   try {
     allAlcohol = JSON.parse(localStorage.getItem('wh_alcohol') || localStorage.getItem('alcoholExams') || localStorage.getItem('alcohol') || '[]');
   } catch(e) { allAlcohol = []; }
 
-  // Pencocokan multi-kriteria (id pekerja, nik, atau string kecocokan)
+  const pIdStr = String(p.id);
+  const pNikStr = String(p.nik || '').trim();
+
   const pAlcoholList = allAlcohol.filter(a => {
-    const aId = String(a.patientId || a.workerId || a.id_pekerja || a.id || '');
-    const aNik = String(a.nik || '');
-    const pId = String(p.id);
-    const pNik = String(p.nik || '');
-    return (aId && aId === pId) || (aNik && aNik === pNik);
+    const aId = String(a.patientId || a.workerId || a.id_pekerja || a.id || '').trim();
+    const aNik = String(a.nik || '').trim();
+    return (aId && aId === pIdStr) || (aNik && aNik === pNikStr);
   }).sort((a, b) => {
-    const dateA = new Date(a.date || a.tanggal || a.examDate || 0);
-    const dateB = new Date(b.date || b.tanggal || b.examDate || 0);
-    return dateA - dateB;
+    const dateA = String(a.date || a.tanggal || a.examDate || '');
+    const dateB = String(b.date || b.tanggal || b.examDate || '');
+    return dateA.localeCompare(dateB);
   });
 
   const lastAlc = pAlcoholList.length ? pAlcoholList[pAlcoholList.length - 1] : null;
@@ -1629,7 +1634,6 @@ function renderProgressDetail(pid){
     </tr>`;
   }).join('');
 
-  // Baris tabel riwayat alkohol
   const alcoholRows = pAlcoholList.length ? pAlcoholList.slice().reverse().map((alc, idx) => {
     const isNeg = String(alc.result || alc.status || alc.hasil || '').toLowerCase().includes('negatif') || Number(alc.value || alc.val || 0) === 0;
     const badgeColor = isNeg ? 'background:#d1fae5;color:#065f46;' : 'background:#fee2e2;color:#991b1b;';
@@ -1643,7 +1647,6 @@ function renderProgressDetail(pid){
     </tr>`;
   }).join('') : '<tr><td colspan="4" class="empty">Belum ada riwayat tes alkohol</td></tr>';
 
-  // Format Status Terakhir BAC Test
   let bacValText = '-';
   let bacSubText = 'Belum pernah tes';
   let bacColor = '#64748b';
@@ -1655,7 +1658,7 @@ function renderProgressDetail(pid){
   }
 
   container.innerHTML = `
-    <!-- INFO PEKERJA (Urutan: Nama, Tensi Terakhir, Kategori Saat Ini, Terakhir BAC Test) -->
+    <!-- INFO PEKERJA (Posisi Terakhir BAC Test dipindah ke paling kanan) -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;margin-bottom:18px">
       <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">👤</div><div class="stat-info"><h3>Nama</h3><div class="val" style="font-size:1rem">${p.name}</div><div class="sub">${p.gender === 'L' ? 'Laki-laki' : 'Perempuan'} · ${calcAge(p.dob)} tahun</div></div></div>
       <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🩺</div><div class="stat-info"><h3>Terakhir (S/D)</h3><div class="val ${last ? vCls(last.systolic,140,120) : ''}" style="font-size:1.2rem">${last ? `${last.systolic}/${last.diastolic}` : '-'}</div><div class="sub">${last ? fmt(last.examDate) : '-'}</div></div></div>
@@ -1757,7 +1760,7 @@ function renderProgressDetail(pid){
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
+      plugins: {
             legend: { position: 'top' },
             tooltip: {
               callbacks: {
