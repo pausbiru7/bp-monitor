@@ -1733,13 +1733,13 @@ function renderProgressDetail(pid){
     </div>
     ` : ''}
 
-    <!-- RIWAYAT TES ALKOHOL -->
+   <!-- RIWAYAT TES ALKOHOL -->
     <div class="panel" style="margin-bottom:18px">
       <div class="panel-head">
         <h2>🍺 Riwayat Tes Alkohol (Alcohol Screening)</h2>
         <div style="display:flex;gap:8px">
-          <button class="btn btn-pdf btn-sm" onclick="exportPDF()">🖨️ Cetak PDF</button>
-          <button class="btn btn-sm" style="background:#25d366;color:#fff" onclick="kirimWA(${pid})">📲 Kirim ke WA</button>
+          <button class="btn btn-pdf btn-sm" onclick="printAlcoholPDF('${p.name}', '${p.nik}')">🖨️ Cetak PDF</button>
+          <button class="btn btn-sm" style="background:#25d366;color:#fff" onclick="shareAlcoholToWhatsApp('${p.name}', '${p.nik}', ${JSON.stringify(pAlcoholList).replace(/"/g, '&quot;')})">📲 Kirim ke WA</button>
         </div>
       </div>
       <div style="overflow-x:auto">
@@ -2998,6 +2998,59 @@ function handleAlcoholScanResult(codeText) {
     alert(`⚠️ QR Code / NIK "${codeText}" tidak terdaftar di database pekerja!`);
   }
 }
+  function handleAlcoholScanResult(codeText) {
+  const found = patients.find(p => String(p.nik).trim() === codeText || String(p.id) === codeText);
+  if (found) {
+    const selectEl = document.getElementById('alcPatientId');
+    if (selectEl) {
+      selectEl.value = found.id;
+      if (html5QrCodeAlcohol && scanActiveAlcohol) {
+        html5QrCodeAlcohol.stop().then(() => {
+          scanActiveAlcohol = false;
+          renderAlcoholPage();
+        }).catch(() => {
+          scanActiveAlcohol = false;
+          renderAlcoholPage();
+        });
+      }
+      alert(`Pekerja dikenali: ${found.name}`);
+    }
+  } else {
+    alert(`⚠️ QR Code / NIK "${codeText}" tidak terdaftar di database pekerja!`);
+  }
+}
+
+// ============================================================
+// FUNGSI SHARE WHATSAPP & CETAK PDF TES ALKOHOL
+// ============================================================
+function shareAlcoholToWhatsApp(workerName, workerNik, alcoholList) {
+  if (!alcoholList || alcoholList.length === 0) {
+    alert("Tidak ada riwayat tes alkohol untuk dibagikan.");
+    return;
+  }
+
+  const latest = alcoholList[alcoholList.length - 1];
+  
+  let text = `📋 *LAPORAN TES ALKOHOL (BAC TEST)*\n`;
+  text += `----------------------------------------\n`;
+  text += `👤 *Nama:* ${workerName}\n`;
+  text += `🆔 *NIK:* ${workerNik || '-'}\n`;
+  text += `📅 *Tes Terakhir:* ${latest.examDate || '-'}\n`;
+  text += `🔍 *Status:* ${latest.status || '-'}\n`;
+  text += `📊 *Kadar Alkohol:* ${latest.alcoholLevel || '-'}\n`;
+  text += `📝 *Catatan:* ${latest.notes || '-'}\n`;
+  text += `----------------------------------------\n`;
+  text += `*Total Riwayat Tes:* ${alcoholList.length} kali\n\n`;
+  text += `_Powered by Pausbiru7_`;
+
+  const encodedUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  window.open(encodedUrl, '_blank');
+}
+function printAlcoholPDF(workerName, workerNik) {
+  // Memanggil fungsi cetak bawaan browser untuk mencetak halaman/laporan aktif
+  window.print();
+}  
+
 // ============================================================
 
 </script>
