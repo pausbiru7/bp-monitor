@@ -485,8 +485,10 @@ let nextFid = followups.length ? Math.max(...followups.map(f => +f.id)) + 1 : 1;
 let nextPid = patients.length ? Math.max(...patients.map(p => +p.id)) + 1 : 1;
 let nextAid = alcoholExams.length ? Math.max(...alcoholExams.map(a => +a.id)) + 1 : 1;
 
-// Simpan format yang sudah dirapikan kembali ke memori
-save();
+// Simpan langsung ke memori lokal (Tanpa memicu error Google Sheets Sync)
+localStorage.setItem('bpm_patients', JSON.stringify(patients));
+localStorage.setItem('bpm_exams', JSON.stringify(exams));
+localStorage.setItem('bpm_alcohol', JSON.stringify(alcoholExams));
 
 function save(){
   localStorage.setItem('bpm_patients', JSON.stringify(patients));
