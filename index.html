@@ -3074,7 +3074,6 @@ function shareAlcoholToWhatsApp(workerName, workerNik, alcoholList) {
 }
 
 function printAlcoholPDF(workerName, workerNik) {
-  // 1. Ambil data alkohol dari localStorage
   let allAlcohol = [];
   try {
     allAlcohol = JSON.parse(
@@ -3084,20 +3083,18 @@ function printAlcoholPDF(workerName, workerNik) {
     );
   } catch(e) { allAlcohol = []; }
 
-  // 2. Filter data khusus pekerja ini berdasarkan NIK atau ID
   const pNikStr = String(workerNik || '').trim();
   const pAlcoholList = allAlcohol.filter(a => {
     const aNik = String(a.nik || '').trim();
     const aPatientId = String(a.patientId || a.workerId || a.id_pekerja || '').trim();
     return (pNikStr && (aNik === pNikStr || aPatientId === pNikStr));
-  }).reverse(); // Urutkan dari yang terbaru
+  }).reverse();
 
   if (pAlcoholList.length === 0) {
     alert("Tidak ada data riwayat tes alkohol untuk dicetak.");
     return;
   }
 
-  // 3. Buat baris tabel HTML khusus tes alkohol
   const rowsHtml = pAlcoholList.map((alc, idx) => {
     const resRaw = String(alc.result || alc.status || alc.hasil || alc.val || alc.value || 'Pass');
     const isPass = resRaw.toLowerCase().includes('pass') || resRaw.toLowerCase().includes('negatif') || resRaw === '0' || resRaw === '0.00';
@@ -3114,7 +3111,6 @@ function printAlcoholPDF(workerName, workerNik) {
     `;
   }).join('');
 
-  // 4. Buka Jendela Cetak Terpisah (Pop-up Window) dengan format khusus laporan tes alkohol
   const printWindow = window.open('', '_blank', 'width=900,height=700');
   printWindow.document.write(`
     <!DOCTYPE html>
