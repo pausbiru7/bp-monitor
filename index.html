@@ -2161,38 +2161,29 @@ function shareAlcoholToWhatsApp(workerName, workerNik, alcoholList) {
 function printAlcoholPDF(workerName, workerNik) {
   let allAlcohol = [];
   try {
-    allAlcohol = JSON.parse(localStorage.getItem('bpm_alcohol') || localStorage.getItem('alcoholExams') || '[]');
+    allAlcohol = JSON.parse(localStorage.getItem('bpm_alcohol') || '[]');
   } catch(e) { allAlcohol = []; }
 
   const pNikStr = String(workerNik || '').trim();
-  const pAlcoholList = allAlcohol.filter(a => {
-    const aNik = String(a.nik || '').trim();
-    const aPatientId = String(a.patientId || a.workerId || '').trim();
-    return (pNikStr && (aNik === pNikStr || aPatientId === pNikStr));
-  }).reverse();
+  const pAlcoholList = allAlcohol.filter(a => String(a.nik || '').trim() === pNikStr || String(a.patientId || '').trim() === pNikStr).reverse();
 
   if (pAlcoholList.length === 0) {
     alert("Tidak ada data riwayat tes alkohol untuk dicetak.");
     return;
   }
 
-  const rowsHtml = pAlcoholList.map((alc, idx) => {
-    const resRaw = String(alc.result || alc.status || alc.hasil || alc.val || alc.value || 'Pass');
-    const isPass = resRaw.toLowerCase().includes('pass') || resRaw.toLowerCase().includes('negatif') || resRaw === '0' || resRaw === '0.00';
-    const statusColor = isPass ? 'color: #059669; font-weight: bold;' : 'color: #dc2626; font-weight: bold;';
-    const alcDate = alc.date || alc.tanggal || alc.examDate || '-';
-    
-    return `
-      <tr>
-        <td style="text-align: center; padding: 10px; border: 1px solid #cbd5e1;">${idx + 1}</td>
-        <td style="padding: 10px; border: 1px solid #cbd5e1;">${alcDate}</td>
-        <td style="padding: 10px; border: 1px solid #cbd5e1; ${statusColor}">${resRaw}</td>
-        <td style="padding: 10px; border: 1px solid #cbd5e1;">${alc.notes || alc.catatan || '-'}</td>
-      </tr>
-    `;
-  }).join('');
+  const rowsHtml = pAlcoholList.map((alc, idx) => `
+    <tr>
+      <td style="text-align: center; padding: 10px; border: 1px solid #cbd5e1;">${idx + 1}</td>
+      <td style="padding: 10px; border: 1px solid #cbd5e1;">${alc.examDate || '-'}</td>
+      <td style="padding: 10px; border: 1px solid #cbd5e1; font-weight: bold;">${alc.status || 'Pass'}</td>
+      <td style="padding: 10px; border: 1px solid #cbd5e1;">${alc.alcoholLevel || '-'}</td>
+    </tr>
+  `).join('');
 
   const printWindow = window.open('', '_blank', 'width=900,height=700');
+  
+  // BAGIAN INI MEMBUAT HALAMAN CETAK BARU (HTML di dalam JS)
   printWindow.document.write(`
     <!DOCTYPE html>
     <html>
@@ -2200,62 +2191,19 @@ function printAlcoholPDF(workerName, workerNik) {
       <meta charset="utf-8">
       <title>Laporan Tes Alkohol - ${workerName}</title>
       <style>
-        @page { size: A4; margin: 20mm; }
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b; padding: 10px; margin: 0; }
-        .header { border-bottom: 2px solid #0f172a; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
-        .header h2 { margin: 0; color: #0f172a; font-size: 20px; }
-        .header p { margin: 4px 0 0; color: #64748b; font-size: 12px; }
-        .card-info { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; }
-        .card-info table { width: 100%; border: none; }
-        .card-info td { border: none; padding: 3px 0; }
-        table.data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-        table.data-table th { background: #f1f5f9; color: #334155; padding: 10px; border: 1px solid #cbd5e1; text-align: left; }
-        table.data-table td { padding: 8px 10px; border: 1px solid #cbd5e1; vertical-align: middle; }
-        .footer { margin-top: 40px; text-align: right; font-size: 12px; color: #64748b; }
+        body { font-family: Arial, sans-serif; padding: 20px; color: #1e293b; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #cbd5e1; padding: 8px 10px; font-size: 13px; text-align: left; }
+        th { background: #f1f5f9; }
       </style>
     </head>
     <body>
-      <div class="header">
-        <div>
-          <h2>LAPORAN RIWAYAT TES ALKOHOL (BAC TEST)</h2>
-          <p>Sistem Pemantauan Kesehatan & Keselamatan Kerja</p>
-        </div>
-        <div>
-          <p><strong>Tanggal Cetak:</strong> ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-        </div>
-      </div>
-
-      <div class="card-info">
-        <table>
-          <tr>
-            <td style="width: 120px;"><strong>Nama Pekerja</strong></td>
-            <td>: ${workerName}</td>
-          </tr>
-          <tr>
-            <td><strong>NIK / ID</strong></td>
-            <td>: ${workerNik || '-'}</td>
-          </tr>
-          <tr>
-            <td><strong>Total Tes</strong></td>
-            <td>: ${pAlcoholList.length} kali pemeriksaan tercatat</td>
-          </tr>
-        </table>
-      </div>
-
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th style="width: 40px; text-align: center;">No</th>
-            <th style="width: 140px;">Tanggal Tes</th>
-            <th style="width: 120px;">Hasil / Status</th>
-            <th>Catatan / Keterangan</th>
-          </tr>
-        </thead>
+      <h2>LAPORAN RIWAYAT TES ALKOHOL</h2>
+      <p><strong>Nama:</strong> ${workerName} | <strong>NIK:</strong> ${workerNik || '-'}</p>
+      <table>
+        <thead><tr><th>No</th><th>Tanggal</th><th>Status</th><th>Nilai BAC</th></tr></thead>
         <tbody>${rowsHtml}</tbody>
       </table>
-
-      <div class="footer"><p>Dokumen ini dicetak secara otomatis dari sistem</p></div>
-
       <script>
         window.onload = function() {
           setTimeout(function() {
@@ -2267,8 +2215,13 @@ function printAlcoholPDF(workerName, workerNik) {
     </body>
     </html>
   `);
+  
   printWindow.document.close();
 }
-</script>
-</body>
-</html>
+
+// INISIALISASI AWAL APLIKASI
+renderDashboard();
+
+</script>   <!-- PENUTUP SCRIPT UTAMA -->
+</body>     <!-- PENUTUP BODY UTAMA -->
+</html>     <!-- PENUTUP HTML UTAMA -->
