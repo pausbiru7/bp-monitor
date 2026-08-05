@@ -1588,7 +1588,7 @@ function renderProgressDetail(pid){
 
   if(!container) return;
 
-// 1. Ambil data tes alkohol (Lewatkan 'bac_token' karena itu token login, bukan array data)
+// 1. Ambil data tes alkohol dari localStorage
   let allAlcohol = [];
   try {
     allAlcohol = JSON.parse(
@@ -1598,24 +1598,33 @@ function renderProgressDetail(pid){
     );
   } catch(e) { allAlcohol = []; }
 
+  // 🔍 DEBUGGING DI CONSOLE
+  console.log("=== DEBUGGING PROGRESS PEKERJA ===");
+  console.log("Pekerja Dipilih (pid):", pid, "Nama:", p.name, "NIK:", p.nik);
+  console.log("Semua Data Alkohol di localStorage:", allAlcohol);
+
   const pIdStr = String(pid).trim();
   const pNikStr = String(p.nik || '').trim();
 
-  // 2. Pencocokan Hibrida (bisa mencocokkan ID internal maupun NIK)
+  // 2. Filter fleksibel (mencocokkan id, patientId, atau NIK)
   const pAlcoholList = allAlcohol.filter(a => {
-    const aPatientId = String(a.patientId || a.workerId || a.id_pekerja || '').trim();
+    const aPatientId = String(a.patientId || a.workerId || a.id_pekerja || a.id || '').trim();
     const aNik = String(a.nik || '').trim();
     
     return (
       (pIdStr && aPatientId === pIdStr) || 
-      (pNikStr && aPatientId === pNikStr) ||
-      (pIdStr && aNik === pIdStr)
+      (pNikStr && aNik === pNikStr) ||
+      (pIdStr && aNik === pIdStr) ||
+      (pNikStr && aPatientId === pNikStr)
     );
   }).sort((a, b) => {
     const dateA = String(a.date || a.tanggal || a.examDate || '');
     const dateB = String(b.date || b.tanggal || b.examDate || '');
     return dateA.localeCompare(dateB);
   });
+
+  console.log("Hasil Filter untuk Pekerja Ini:", pAlcoholList);
+  console.log("==================================");
 
   const lastAlc = pAlcoholList.length ? pAlcoholList[pAlcoholList.length - 1] : null;
   if(badge && pex.length){
