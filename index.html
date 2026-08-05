@@ -381,6 +381,86 @@ table th, table td {
 <script>
 "use strict";
 
+// ══════════════════════════════════════════
+// 🔐 LOGIN PIN (DIPINDAHKAN KE ATAS AGAR TERBACA DULU)
+// ══════════════════════════════════════════
+const DEFAULT_PIN = '123456';
+let pinInput = '';
+
+function getPin(){ return localStorage.getItem('bpm_pin') || DEFAULT_PIN; }
+
+function pinPress(digit){
+  if(!/^\d$/.test(String(digit))) return;
+  if(pinInput.length >= 6) return;
+  pinInput += String(digit);
+  updatePinDots();
+  if(pinInput.length === 6){ setTimeout(checkPin, 150); }
+}
+
+function pinDelete(){
+  pinInput = pinInput.slice(0, -1);
+  updatePinDots();
+}
+
+function pinClear(){
+  pinInput = '';
+  updatePinDots();
+}
+
+function updatePinDots(err = false){
+  for(let i = 0; i < 6; i++){
+    const dot = document.getElementById('dot' + i);
+    if(!dot) continue;
+    dot.className = 'pin-dot' + (i < pinInput.length ? ' filled' : '') + (err ? ' error' : '');
+  }
+}
+
+function checkPin(){
+  const loginOverlay = document.getElementById('loginOverlay');
+  const loginErr = document.getElementById('loginErr');
+  if(pinInput === getPin()){
+    if(loginOverlay) loginOverlay.style.display = 'none';
+    if(loginErr) loginErr.textContent = '';
+  } else {
+    updatePinDots(true);
+    if(loginErr) loginErr.textContent = 'PIN salah! Coba lagi.';
+    setTimeout(() => {
+      pinInput = '';
+      updatePinDots();
+      if(loginErr) loginErr.textContent = '';
+    }, 800);
+  }
+}
+
+function doLogout(){
+  if(!confirm('Keluar dari BP Monitor?')) return;
+  pinInput = '';
+  updatePinDots();
+  const loginOverlay = document.getElementById('loginOverlay');
+  if(loginOverlay) loginOverlay.style.display = 'flex';
+}
+
+function doChangePin(){
+  const oldPin = document.getElementById('oldPin');
+  const newPin = document.getElementById('newPin');
+  const confirmPin = document.getElementById('confirmPin');
+  const err = document.getElementById('changePinErr');
+  const modal = document.getElementById('changePinModal');
+  if(!oldPin || !newPin || !confirmPin || !err || !modal) return;
+
+  const old = oldPin.value, nw = newPin.value, cf = confirmPin.value;
+  if(old !== getPin()){ err.textContent = 'PIN lama salah!'; return; }
+  if(nw.length !== 6){ err.textContent = 'PIN baru harus 6 digit!'; return; }
+  if(!/^\d+$/.test(nw)){ err.textContent = 'PIN hanya boleh angka!'; return; }
+  if(nw !== cf){ err.textContent = 'Konfirmasi PIN tidak cocok!'; return; }
+
+  localStorage.setItem('bpm_pin', nw);
+  err.textContent = '';
+  oldPin.value = ''; newPin.value = ''; confirmPin.value = '';
+  modal.style.display = 'none';
+  alert('✅ PIN berhasil diubah!');
+}
+
 // ══ DATA ══════════════════════════════════
 let patients = JSON.parse(localStorage.getItem('bpm_patients') || 'null') || [];
 let exams = (JSON.parse(localStorage.getItem('bpm_exams') || 'null') || [])
@@ -1630,94 +1710,6 @@ function getRekomTeks(s, d, prevS){
 }
 
 // ══════════════════════════════════════════
-// 🔐 LOGIN PIN
-// ══════════════════════════════════════════
-const DEFAULT_PIN = '123456';
-let pinInput = '';
-
-function getPin(){
-  return localStorage.getItem('bpm_pin') || DEFAULT_PIN;
-}
-
-function pinPress(digit){
-  if(!/^\d$/.test(String(digit))) return;
-  if(pinInput.length >= 6) return;
-  pinInput += String(digit);
-  updatePinDots();
-  if(pinInput.length === 6){
-    setTimeout(checkPin, 150);
-  }
-}
-
-function pinDelete(){
-  pinInput = pinInput.slice(0, -1);
-  updatePinDots();
-}
-
-function pinClear(){
-  pinInput = '';
-  updatePinDots();
-}
-
-function updatePinDots(err = false){
-  for(let i = 0; i < 6; i++){
-    const dot = document.getElementById('dot' + i);
-    if(!dot) continue;
-    dot.className = 'pin-dot' + (i < pinInput.length ? ' filled' : '') + (err ? ' error' : '');
-  }
-}
-
-function checkPin(){
-  const loginOverlay = document.getElementById('loginOverlay');
-  const loginErr = document.getElementById('loginErr');
-  if(pinInput === getPin()){
-    if(loginOverlay) loginOverlay.style.display = 'none';
-    if(loginErr) loginErr.textContent = '';
-  } else {
-    updatePinDots(true);
-    if(loginErr) loginErr.textContent = 'PIN salah! Coba lagi.';
-    setTimeout(() => {
-      pinInput = '';
-      updatePinDots();
-      const err = document.getElementById('loginErr');
-      if(err) err.textContent = '';
-    }, 800);
-  }
-}
-
-function doLogout(){
-  if(!confirm('Keluar dari BP Monitor?')) return;
-  pinInput = '';
-  updatePinDots();
-  const loginOverlay = document.getElementById('loginOverlay');
-  if(loginOverlay) loginOverlay.style.display = 'flex';
-}
-
-function doChangePin(){
-  const oldPin = document.getElementById('oldPin');
-  const newPin = document.getElementById('newPin');
-  const confirmPin = document.getElementById('confirmPin');
-  const err = document.getElementById('changePinErr');
-  const modal = document.getElementById('changePinModal');
-  if(!oldPin || !newPin || !confirmPin || !err || !modal) return;
-
-  const old = oldPin.value;
-  const nw = newPin.value;
-  const cf = confirmPin.value;
-
-  if(old !== getPin()){ err.textContent = 'PIN lama salah!'; return; }
-  if(nw.length !== 6){ err.textContent = 'PIN baru harus 6 digit!'; return; }
-  if(!/^\d+$/.test(nw)){ err.textContent = 'PIN hanya boleh angka!'; return; }
-  if(nw !== cf){ err.textContent = 'Konfirmasi PIN tidak cocok!'; return; }
-
-  localStorage.setItem('bpm_pin', nw);
-  err.textContent = '';
-  oldPin.value = ''; newPin.value = ''; confirmPin.value = '';
-  modal.style.display = 'none';
-  alert('✅ PIN berhasil diubah!');
-}
-
-// ══════════════════════════════════════════
 // 🔔 REMINDER BANNER (H-7)
 // ══════════════════════════════════════════
 async function loadAndShowReminders(){
@@ -2216,12 +2208,12 @@ function printAlcoholPDF(workerName, workerNik) {
     </html>
   `);
   
-  printWindow.document.close();
+printWindow.document.close();
 }
 
-// INISIALISASI AWAL APLIKASI
+// INISIALISASI AWAL
 renderDashboard();
 
-</script>   <!-- PENUTUP SCRIPT UTAMA -->
-</body>     <!-- PENUTUP BODY UTAMA -->
-</html>     <!-- PENUTUP HTML UTAMA -->
+</script>
+</body>
+</html>
