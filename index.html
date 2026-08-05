@@ -72,7 +72,9 @@ tr:hover td{background:#fafbff;}
 .btn-sm{padding:4px 11px;font-size:.73rem;}
 .month-select{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;}
 .month-select select{padding:7px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.82rem;outline:none;}
+/* CHART CANVAS */
 .chart-box{position:relative;height:260px;}
+/* PROGRESS */
 .progress-card{border:1px solid #e2e8f0;border-radius:11px;padding:14px;margin-bottom:10px;transition:.2s;}
 .progress-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.07);}
 .pc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
@@ -81,6 +83,7 @@ tr:hover td{background:#fafbff;}
 .exam-chip{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px;font-size:.72rem;flex-shrink:0;min-width:80px;text-align:center;}
 .exam-chip.latest{border-color:#2563eb;background:#eff6ff;}
 .ec-date{color:#94a3b8;font-size:.65rem;}.ec-val{font-weight:700;font-size:.85rem;}
+/* REKOMENDASI */
 .rekom-box{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:.8rem;line-height:1.6;}
 .rekom-box.opt{background:#e0f7fa;border-left:3px solid #0891b2;}
 .rekom-box.nor{background:#dcfce7;border-left:3px solid #16a34a;}
@@ -90,6 +93,7 @@ tr:hover td{background:#fafbff;}
 .rekom-box.ht3{background:#f3e8ff;border-left:3px solid #7c3aed;}
 .rekom-box.iso{background:#dbeafe;border-left:3px solid #2563eb;}
 .rekom-title{font-weight:700;margin-bottom:4px;}
+/* FU */
 .fu-card{border:1px solid #e2e8f0;border-radius:11px;padding:13px 15px;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;transition:.2s;}
 .fu-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.07);}
 .fu-card.pending{border-left:4px solid #f59e0b;}.fu-card.done{border-left:4px solid #22c55e;opacity:.7;}
@@ -97,6 +101,7 @@ tr:hover td{background:#fafbff;}
 .fu-date{font-size:.72rem;color:#94a3b8;margin-top:3px;}.fu-actions{display:flex;gap:7px;flex-shrink:0;}
 .empty{text-align:center;padding:36px;color:#94a3b8;font-size:.85rem;}
 
+/* ── LOGIN ── */
 #loginOverlay{position:fixed;inset:0;background:linear-gradient(135deg,#1e3a5f,#2563eb);display:flex;align-items:center;justify-content:center;z-index:9999;}
 .login-box{background:#fff;border-radius:20px;padding:40px 36px;width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);}
 .login-logo{font-size:2.5rem;margin-bottom:8px;}
@@ -114,24 +119,27 @@ tr:hover td{background:#fafbff;}
 .pin-key.del:hover{background:#fecaca;}
 .login-err{color:#dc2626;font-size:.8rem;margin-top:8px;min-height:20px;}
 .login-hint{font-size:.72rem;color:#94a3b8;margin-top:12px;}
-
+/* CHANGE PIN */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:8888;}
 .modal-box{background:#fff;border-radius:16px;padding:28px;width:340px;text-align:center;}
 .modal-box h3{font-size:1rem;font-weight:700;margin-bottom:16px;}
-
+/* ── SEARCH / FILTER ── */
 .search-bar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
 .search-bar input{padding:8px 13px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.83rem;outline:none;flex:1;min-width:180px;}
+.search-bar input:focus{border-color:#2563eb;}
 .search-bar select{padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.82rem;outline:none;background:#fff;}
-
+.search-bar select:focus{border-color:#2563eb;}
+/* ── REMINDER BANNER ── */
 .reminder-banner{background:linear-gradient(135deg,#fef3c7,#fde68a);border:1.5px solid #f59e0b;border-radius:12px;padding:14px 18px;margin-bottom:18px;}
 .reminder-banner-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
 .reminder-banner-head h3{font-size:.9rem;font-weight:700;color:#92400e;}
 .reminder-item{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:8px;padding:10px 14px;margin-bottom:7px;}
+.reminder-item:last-child{margin-bottom:0;}
 .reminder-days{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px;}
 .days-today{background:#fee2e2;color:#dc2626;}
 .days-soon{background:#ffedd5;color:#ea580c;}
 .days-ok{background:#fef9c3;color:#854d0e;}
-
+/* ── PDF PRINT STYLES ── */
 @media print {
   body{display:block;background:#fff;font-size:12px;}
   .sidebar,.topbar,.btn,.btn-pdf,.fu-actions,button{display:none!important;}
@@ -145,30 +153,134 @@ tr:hover td{background:#fafbff;}
 #print-header{display:none;padding:10px 0 16px;border-bottom:2px solid #1e3a5f;margin-bottom:16px;}
 #print-header h2{font-size:1.1rem;color:#1e3a5f;}
 #print-header p{font-size:.8rem;color:#64748b;margin-top:3px;}
-
+  
+  /* ── RESPONSIVE (HP portrait) ─────────────────────────────── */
 @media (max-width: 900px){
-  body{flex-direction:column;min-height:100vh;}
-  .sidebar{width:100%;min-height:auto;flex-direction:row;align-items:center;padding:8px 10px;}
-  .sidebar-logo{padding:10px 10px;border-bottom:none;flex:0 0 auto;}
-  .sidebar-logo h2{font-size:.95rem;}
-  .sidebar-logo span{display:none;}
-  .sidebar-nav{padding:0 6px;flex:1;display:flex;gap:6px;overflow-x:auto;white-space:nowrap;}
-  .nav-item{margin-bottom:0;flex:0 0 auto;padding:8px 10px;}
-  .sidebar-foot{display:none;}
-  .main{max-height:none;overflow:visible;}
-  .topbar{padding:12px 14px;flex-wrap:wrap;gap:8px;}
-  .topbar-right{width:100%;justify-content:flex-start;flex-wrap:wrap;}
-  .content{padding:14px;}
-  .stats{grid-template-columns:repeat(2,1fr);}
-  .grid-2,.grid-3{grid-template-columns:1fr;}
-  .form-grid{grid-template-columns:1fr;}
-  .chart-box{height:220px;}
-  table{min-width:720px;}
+  body{
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* Sidebar jadi top bar agar tidak memakan lebar */
+  .sidebar{
+    width: 100%;
+    min-height: auto;
+    flex-direction: row;
+    align-items: center;
+    padding: 8px 10px;
+  }
+
+  .sidebar-logo{
+    padding: 10px 10px;
+    border-bottom: none;
+    flex: 0 0 auto;
+  }
+  .sidebar-logo h2{ font-size: .95rem; }
+  .sidebar-logo span{ display: none; }
+
+  .sidebar-nav{
+    padding: 0 6px;
+    flex: 1;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+
+  .nav-item{
+    margin-bottom: 0;
+    flex: 0 0 auto;
+    padding: 8px 10px;
+    border-radius: 10px;
+  }
+
+  .sidebar-foot{ display: none; }
+
+  .main{
+    max-height: none;
+    overflow: visible;
+  }
+
+  .topbar{
+    padding: 12px 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .topbar-right{
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .content{
+    padding: 14px 14px;
+  }
+
+  /* Grid turun kolom */
+  .stats{
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .grid-2{
+    grid-template-columns: 1fr;
+  }
+  .grid-3{
+    grid-template-columns: 1fr;
+  }
+
+  /* Card & panel padding sedikit diperkecil */
+  .panel-body{ padding: 14px; }
+  .panel-head{ padding: 12px 14px; }
+
+  /* Form jadi 1 kolom yang rapi */
+  .form-grid{
+    grid-template-columns: 1fr;
+  }
+
+  /* Chart box sedikit lebih pendek agar tidak makan layar */
+  .chart-box{ height: 220px; }
+
+  /* Table: pastikan bisa swipe horizontal */
+  table{
+    min-width: 720px;
+  }
+  .panel > div[style*="overflow-x:auto"]{
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 520px){
+  .stats{
+    grid-template-columns: 1fr;
+  }
+  .badge-date{ width: 100%; }
+  .topbar h1{ width: 100%; }
+}
+  /* PENGAMAN TABEL RESPONSIVE */
+.panel {
+  max-width: 100%;
+}
+
+.panel > div[style*="overflow-x"] {
+  width: 100% !important;
+  max-width: 100vw !important;
+  overflow-x: auto !important;
+  display: block !important;
+  /* Menambahkan bayangan tipis di kanan agar pengguna tahu tabel bisa digeser */
+  box-shadow: inset -10px 0 8px -10px rgba(0,0,0,0.1); 
+}
+
+/* Memastikan teks tabel tidak turun baris */
+table th, table td {
+  white-space: nowrap !important;
 }
 </style>
 </head>
 <body>
-
 <!-- LOGIN OVERLAY -->
 <div id="loginOverlay">
   <div class="login-box">
@@ -270,7 +382,7 @@ tr:hover td{background:#fafbff;}
 "use strict";
 
 // ══════════════════════════════════════════
-// 🔐 LOGIN PIN
+// 🔐 LOGIN PIN (DIPINDAHKAN KE ATAS AGAR TERBACA DULU)
 // ══════════════════════════════════════════
 const DEFAULT_PIN = '123456';
 let pinInput = '';
@@ -369,8 +481,10 @@ function save(){
   localStorage.setItem('bpm_alcohol', JSON.stringify(alcoholExams));
 }
 
+// ══ KEPMENKES 4634/2021 CLASSIFICATION ════
 function getStatus(s, d){
-  s = +s; d = +d;
+  s = +s;
+  d = +d;
   if(s >= 180 || d >= 110) return {key:'ht3', label:'Hipertensi Derajat 3', cls:'b-ht3', color:'#7c3aed'};
   if(s >= 160 || d >= 100) return {key:'ht2', label:'Hipertensi Derajat 2', cls:'b-ht2', color:'#dc2626'};
   if(s >= 140 && d < 90)   return {key:'iso', label:'HT Sistolik Terisolasi', cls:'b-iso', color:'#2563eb'};
@@ -381,22 +495,82 @@ function getStatus(s, d){
   return {key:'opt', label:'Optimal', cls:'b-opt', color:'#0891b2'};
 }
 
+// ══ REKOMENDASI OTOMATIS ══════════════════
 function getRekomendasi(s, d, prevS, pex){
   const st = getStatus(s, d);
   const trend = prevS != null ? (s < prevS ? 'turun' : s > prevS ? 'naik' : 'tetap') : null;
-  const trendNote = trend === 'turun' ? 'Tekanan darah menunjukkan perbaikan. ' : trend === 'naik' ? 'Perhatian: tekanan darah meningkat dari pemeriksaan sebelumnya. ' : '';
+  const trendNote =
+    trend === 'turun'
+      ? 'Tekanan darah menunjukkan perbaikan. '
+      : trend === 'naik'
+        ? 'Perhatian: tekanan darah meningkat dari pemeriksaan sebelumnya. '
+        : '';
+
   const rekom = {
-    opt: { icon: '✅', judul: 'Optimal — Pertahankan!', isi: `${trendNote}Tekanan darah optimal. Kontrol ulang 12 bulan.`, jadwal: 'Kontrol: 12 bulan' },
-    nor: { icon: '✅', judul: 'Normal — Jaga Konsistensi', isi: `${trendNote}Tekanan darah normal. Kontrol ulang 6–12 bulan.`, jadwal: 'Kontrol: 6–12 bulan' },
-    pre: { icon: '⚠️', judul: 'Normal-Tinggi — Waspadai', isi: `${trendNote}Modifikasi gaya hidup segera.`, jadwal: 'Kontrol: 3–6 bulan' },
-    ht1: { icon: '🔶', judul: 'Hipertensi Derajat 1', isi: `${trendNote}Diperlukan evaluasi dokter & modifikasi gaya hidup.`, jadwal: 'Kontrol: 1–3 bulan' },
-    ht2: { icon: '🔴', judul: 'Hipertensi Derajat 2', isi: `${trendNote}Wajib terapi antihipertensi.`, jadwal: 'Kontrol: 2–4 minggu' },
-    ht3: { icon: '🚨', judul: 'Hipertensi Derajat 3 — DARURAT!', isi: `${trendNote}SEGERA rujuk ke IGD/RS.`, jadwal: 'SEGERA ke IGD/RS' },
-    iso: { icon: '🔵', judul: 'HT Sistolik Terisolasi', isi: `${trendNote}Evaluasi dokter diperlukan.`, jadwal: 'Kontrol: 1–2 bulan' },
-    low: { icon: '🧊', judul: 'Hipotensi', isi: `${trendNote}Segera istirahat dan minum air cukup.`, jadwal: 'Bila ada keluhan' }
+    opt: {
+      icon: '✅',
+      judul: 'Optimal — Pertahankan!',
+      isi: `${trendNote}Tekanan darah dalam kondisi optimal. Pertahankan gaya hidup sehat: olahraga teratur, diet rendah garam, hindari stres. Kontrol ulang 12 bulan.`,
+      jadwal: 'Kontrol: 12 bulan'
+    },
+    nor: {
+      icon: '✅',
+      judul: 'Normal — Jaga Konsistensi',
+      isi: `${trendNote}Tekanan darah normal. Lanjutkan pola hidup sehat. Batasi konsumsi garam <5g/hari, olahraga 30 menit/hari. Kontrol ulang 6–12 bulan.`,
+      jadwal: 'Kontrol: 6–12 bulan'
+    },
+    pre: {
+      icon: '⚠️',
+      judul: 'Normal-Tinggi — Waspadai',
+      isi: `${trendNote}Tekanan darah di batas normal-tinggi. Modifikasi gaya hidup segera: kurangi garam, turunkan berat badan jika overweight, olahraga aerobik rutin, batasi alkohol & rokok. Belum perlu obat, namun perlu monitoring ketat.`,
+      jadwal: 'Kontrol: 3–6 bulan'
+    },
+    ht1: {
+      icon: '🔶',
+      judul: 'Hipertensi Derajat 1 — Tindakan Diperlukan',
+      isi: `${trendNote}Diperlukan modifikasi gaya hidup intensif + evaluasi dokter. Pertimbangkan terapi farmakologis jika ada faktor risiko kardiovaskular. Pantau tekanan darah mandiri setiap hari. Batasi garam <5g/hari.`,
+      jadwal: 'Kontrol: 1–3 bulan'
+    },
+    ht2: {
+      icon: '🔴',
+      judul: 'Hipertensi Derajat 2 — Segera Tangani',
+      isi: `${trendNote}Wajib terapi antihipertensi + modifikasi gaya hidup. Rujuk ke dokter spesialis penyakit dalam. Pantau tekanan darah harian. Periksa organ target (jantung, ginjal, mata).`,
+      jadwal: 'Kontrol: 2–4 minggu'
+    },
+    ht3: {
+      icon: '🚨',
+      judul: 'Hipertensi Derajat 3 — DARURAT!',
+      isi: `${trendNote}Tekanan darah sangat tinggi — risiko kerusakan organ akut. SEGERA rujuk ke IGD/RS. Hindari aktivitas berat. Jangan hentikan obat tiba-tiba. Evaluasi tanda-tanda komplikasi (nyeri dada, sesak, gangguan penglihatan).`,
+      jadwal: 'SEGERA ke IGD/RS'
+    },
+   iso: {
+      icon: '🔵',
+      judul: 'HT Sistolik Terisolasi — Perlu Evaluasi',
+      isi: `${trendNote}Tekanan sistolik tinggi namun diastolik normal — sering pada lansia. Evaluasi dokter diperlukan. Perhatikan risiko kardiovaskular. Terapi disesuaikan kondisi pekerja.`,
+      jadwal: 'Kontrol: 1–2 bulan'
+    },
+    low: {
+      icon: '🧊',
+      judul: 'Hipotensi (Tekanan Darah Rendah)',
+      isi: `${trendNote}Tekanan darah di bawah normal. Jika disertai gejala pusing, lemas, pucat, atau pandangan gelap, segera istirahat (berbaring) dan minum air yang cukup. Konsultasi ke dokter/klinik jika keluhan berlanjut.`,
+      jadwal: 'Bila ada keluhan'
+    }
   };
+
   const r = rekom[st.key];
   return `<div class="rekom-box ${st.key}"><div class="rekom-title">${r.icon} ${r.judul}</div><div>${r.isi}</div><div style="margin-top:6px;font-weight:600;font-size:.78rem">📅 ${r.jadwal}</div></div>`;
+}
+
+function fmtDob(d){
+  if(!d) return '-';
+  const raw = String(d).trim();
+  const s = raw.includes('T') ? raw.slice(0, 10) : raw;
+  const p = s.split('-');
+  if(p.length !== 3) return raw;
+  const bulanNama = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  const blnNum = parseInt(p[1], 10);
+  if(blnNum < 1 || blnNum > 12) return raw;
+  return `${p[2]} ${bulanNama[blnNum]} ${p[0]}`;
 }
 
 function calcAge(dob){
@@ -405,10 +579,14 @@ function calcAge(dob){
   const s = raw.includes('T') ? raw.slice(0, 10) : raw;
   const p = s.split('-');
   if(p.length !== 3) return '-';
-  const bYear = parseInt(p[0], 10), bMonth = parseInt(p[1], 10) - 1, bDay = parseInt(p[2], 10);
+  const bYear = parseInt(p[0], 10);
+  const bMonth = parseInt(p[1], 10) - 1;
+  const bDay = parseInt(p[2], 10);
   const t = new Date();
   let a = t.getFullYear() - bYear;
-  if(t.getMonth() < bMonth || (t.getMonth() === bMonth && t.getDate() < bDay)) a--;
+  if(t.getMonth() < bMonth || (t.getMonth() === bMonth && t.getDate() < bDay)){
+    a--;
+  }
   return a;
 }
 
@@ -420,16 +598,21 @@ function fmt(d){
   if(p.length !== 3) return raw;
   const bulanNama = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
   const blnNum = parseInt(p[1], 10);
-  return blnNum >= 1 && blnNum <= 12 ? `${p[2]} ${bulanNama[blnNum]} ${p[0]}` : raw;
+  if(blnNum < 1 || blnNum > 12) return raw;
+  return `${p[2]} ${bulanNama[blnNum]} ${p[0]}`;
 }
 
-function monthKey(d){ return d ? String(d).slice(0, 7) : null; }
+function monthKey(d){
+  return d ? String(d).slice(0, 7) : null;
+}
+
 function monthLabel(k){
   if(!k) return '';
   const [y, m] = String(k).split('-');
   const bulanNama = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
   const blnIdx = parseInt(m, 10) - 1;
-  return blnIdx >= 0 && blnIdx <= 11 ? `${bulanNama[blnIdx]} ${y}` : k;
+  if(blnIdx < 0 || blnIdx > 11) return k;
+  return `${bulanNama[blnIdx]} ${y}`;
 }
 
 function trendArrow(c, p){
@@ -446,8 +629,9 @@ function pName(pid){
 }
 
 function pExams(pid){
-  return exams.filter(e => String(e.patientId || e.workerId || e.id_pekerja) === String(pid))
-    .sort((a, b) => String(a.examDate || '').localeCompare(String(b.examDate || '')));
+  return exams
+    .filter(e => String(e.patientId || e.workerId || e.id_pekerja) === String(pid))
+    .sort((a, b) => String(a.examDate || a.date || a.tanggal || '').localeCompare(String(b.examDate || b.date || b.tanggal || '')));
 }
 
 function lastExam(pid){
@@ -455,26 +639,47 @@ function lastExam(pid){
   return ex.length ? ex[ex.length - 1] : null;
 }
 
-function vCls(v, hi, md){ return v >= hi ? 'v-hi' : v >= md ? 'v-md' : 'v-ok'; }
-function destroyChart(id){ const c = Chart.getChart(id); if(c) c.destroy(); }
+function vCls(v, hi, md){
+  return v >= hi ? 'v-hi' : v >= md ? 'v-md' : 'v-ok';
+}
 
-document.getElementById('currentDate').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-document.getElementById('printDate').textContent = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+function destroyChart(id){
+  const c = Chart.getChart(id);
+  if(c) c.destroy();
+}
+
+document.getElementById('currentDate').textContent = new Date().toLocaleDateString('id-ID', {
+  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+});
+document.getElementById('printDate').textContent = new Date().toLocaleDateString('id-ID', {
+  day: '2-digit', month: 'long', year: 'numeric'
+});
 
 const pages = ['dashboard', 'records', 'patients', 'progress', 'monthly', 'followup', 'alcohol'];
-const titles = { dashboard: 'Dashboard', records: 'Input Pemeriksaan', patients: 'Master Data Pekerja', progress: 'Progress Pekerja', monthly: 'Laporan Bulanan', followup: 'Manajemen Follow-Up', alcohol: 'Tes Alkohol (BAC)' };
+const titles = {
+  dashboard: 'Dashboard',
+  records: 'Input Pemeriksaan',
+  patients: 'Master Data Pekerja',
+  progress: 'Progress Pekerja',
+  monthly: 'Laporan Bulanan',
+  followup: 'Manajemen Follow-Up',
+  alcohol: 'Tes Alkohol (BAC)'
+};
 
 function showPage(p){
   pages.forEach(k => {
     const pageEl = document.getElementById('page-' + k);
     if(pageEl) pageEl.style.display = k === p ? 'block' : 'none';
   });
+
   document.querySelectorAll('.nav-item').forEach(n => {
     const targetPage = n.getAttribute('onclick')?.match(/showPage\('([^']+)'\)/)?.[1];
     n.classList.toggle('active', targetPage === p);
   });
+
   const statsArea = document.getElementById('statsArea');
   if(statsArea) statsArea.style.display = p === 'dashboard' ? 'grid' : 'none';
+
   const pageTitle = document.getElementById('pageTitle');
   if(pageTitle) pageTitle.textContent = titles[p] || '';
 
@@ -485,14 +690,24 @@ function showPage(p){
   if(p === 'monthly') renderMonthly();
   if(p === 'followup') renderFollowups();
   if(p === 'alcohol') renderAlcoholPage();
+
   if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
 }
 
-function exportPDF(){ window.print(); }
+function exportPDF(){
+  const printDate = document.getElementById('printDate');
+  if(printDate){
+    printDate.textContent = new Date().toLocaleDateString('id-ID', {
+      day: '2-digit', month: 'long', year: 'numeric'
+    });
+  }
+  window.print();
+}
 
 function renderStats(){
   const allLast = patients.map(p => lastExam(p.id)).filter(Boolean);
   const ht = allLast.filter(e => ['ht1', 'ht2', 'ht3', 'iso'].includes(getStatus(e.systolic, e.diastolic).key)).length;
+  const pre = allLast.filter(e => getStatus(e.systolic, e.diastolic).key === 'pre').length;
   const nor = allLast.filter(e => ['opt', 'nor'].includes(getStatus(e.systolic, e.diastolic).key)).length;
   const pend = followups.filter(f => f.status === 'pending').length;
   const alcTotal = alcoholExams.length;
@@ -500,12 +715,13 @@ function renderStats(){
 
   const statsArea = document.getElementById('statsArea');
   if(!statsArea) return;
+
   statsArea.innerHTML = `
-    <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">👥</div><div class="stat-info"><h3>Total Pekerja</h3><div class="val">${patients.length}</div></div></div>
-    <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🔴</div><div class="stat-info"><h3>Hipertensi</h3><div class="val" style="color:#dc2626">${ht}</div></div></div>
-    <div class="stat-card"><div class="stat-icon" style="background:#dcfce7">🟢</div><div class="stat-info"><h3>Optimal/Normal</h3><div class="val" style="color:#16a34a">${nor}</div></div></div>
-    <div class="stat-card"><div class="stat-icon" style="background:#fef3c7">🔔</div><div class="stat-info"><h3>Follow-Up</h3><div class="val" style="color:#d97706">${pend}</div></div></div>
-    <div class="stat-card"><div class="stat-icon" style="background:#fce7f3">🍷</div><div class="stat-info"><h3>Tes Alkohol</h3><div class="val">${alcTotal}</div><div class="sub" style="${alcFail > 0 ? 'color:#dc2626;font-weight:bold' : 'color:#16a34a'}">${alcFail > 0 ? '⚠️ ' + alcFail + ' Fail' : 'Semua Pass ✓'}</div></div></div>`;
+    <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">👥</div><div class="stat-info"><h3>Total Pekerja</h3><div class="val">${patients.length}</div><div class="sub">Terdaftar</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🔴</div><div class="stat-info"><h3>Hipertensi</h3><div class="val" style="color:#dc2626">${ht}</div><div class="sub">Perlu penanganan</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:#dcfce7">🟢</div><div class="stat-info"><h3>Optimal/Normal</h3><div class="val" style="color:#16a34a">${nor}</div><div class="sub">Kondisi baik</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:#fef3c7">🔔</div><div class="stat-info"><h3>Follow-Up</h3><div class="val" style="color:#d97706">${pend}</div><div class="sub">Menunggu</div></div></div>
+    <div class="stat-card" style="border: ${alcFail > 0 ? '1px solid #fecaca' : 'none'}"><div class="stat-icon" style="background:#fce7f3">🍷</div><div class="stat-info"><h3>Tes Alkohol</h3><div class="val">${alcTotal}</div><div class="sub" style="${alcFail > 0 ? 'color:#dc2626;font-weight:bold' : 'color:#16a34a'}">${alcFail > 0 ? '⚠️ ' + alcFail + ' Kasus Fail' : 'Semua Pass ✓'}</div></div></div>`;
 }
 
 function renderDashboard(){
@@ -541,6 +757,17 @@ function renderDashboard(){
     return `<tr><td><strong>${escapeHtml(a.patientName)}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
   }).join('');
 
+  const alcPass = alcoholExams.filter(a => a.status === 'Pass').length;
+  const alcFail = alcoholExams.filter(a => a.status === 'Fail').length;
+  const totalAlc = alcoholExams.length;
+  const passPct = totalAlc > 0 ? Math.round((alcPass / totalAlc) * 100) : 0;
+  const failPct = totalAlc > 0 ? Math.round((alcFail / totalAlc) * 100) : 0;
+
+  const pend = followups.filter(f => f.status === 'pending');
+  const fuHtml = pend.slice(0, 3).map(f => {
+    return `<div class="fu-card pending"><div><div class="fu-name">${f.patientName}</div><div class="fu-reason">${f.reason}</div><div class="fu-date">📅 ${fmt(f.dueDate)}</div></div><span class="badge b-pending">Menunggu</span></div>`;
+  }).join('') || '<div class="empty">✅ Tidak ada follow-up pending</div>';
+
   const dashboardEl = document.getElementById('page-dashboard');
   if(!dashboardEl) return;
 
@@ -552,7 +779,53 @@ function renderDashboard(){
       </div>
       <div class="panel">
         <div class="panel-head"><h2>🍷 Pemeriksaan Alkohol Terbaru</h2></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Nilai BAC</th><th>Distribusi</th></tr></thead><tbody>${alcRows || '<tr><td colspan="4" class="empty">Belum ada data</td></tr>'}</tbody></table></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Nilai BAC</th><th>Distribusi</th></tr></thead><tbody>${alcRows || '<tr><td colspan="4" class="empty">Belum ada data pemeriksaan alkohol</td></tr>'}</tbody></table></div>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-bottom:18px">
+      <div class="panel">
+        <div class="panel-head"><h2>🥧 Distribusi Kategori BP (Terakhir)</h2></div>
+        <div class="panel-body"><div class="chart-box"><canvas id="dashPieChart"></canvas></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>🥧 Distribusi Tes Alkohol (Pass vs Fail)</h2></div>
+        <div class="panel-body">
+          <div style="display:flex; justify-content:center; gap:10px; margin-bottom:10px;">
+            <span class="badge b-nor" style="font-size:.85rem">Pass: ${passPct}%</span> 
+            <span class="badge b-ht2" style="font-size:.85rem">Fail: ${failPct}%</span>
+          </div>
+          <div class="chart-box" style="height:220px"><canvas id="dashAlcPieChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-bottom:18px">
+      <div class="panel">
+        <div class="panel-head"><h2>📊 Tren Rata-rata Sistolik (6 Bulan)</h2></div>
+        <div class="panel-body"><div class="chart-box"><canvas id="dashTrendChart"></canvas></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>📖 Klasifikasi Distribusi Alkohol (BAC)</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Distribusi</th><th>Nilai BAC</th><th>Keterangan</th></tr></thead><tbody>
+          <tr><td><span class="badge b-nor">Pass</span></td><td>0.00</td><td>Aman / Layak Kerja</td></tr>
+          <tr><td><span class="badge b-ht2">Fail</span></td><td>&gt; 0.00</td><td>Tidak Layak Kerja (Tindakan Diperlukan)</td></tr>
+        </tbody></table></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><h2>🔔 Follow-Up Pending</h2><span style="font-size:.75rem;color:#f59e0b">${pend.length} menunggu</span></div>
+        <div class="panel-body">${fuHtml}</div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>📖 Klasifikasi Tekanan Darah (KEPMENKES)</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Kategori</th><th>Sistolik</th><th>Diastolik</th><th>Risiko</th></tr></thead><tbody>
+          <tr><td><span class="badge b-opt">Optimal</span></td><td>&lt;120</td><td>&lt;80</td><td>Minimal</td></tr>
+          <tr><td><span class="badge b-nor">Normal</span></td><td>120–129</td><td>80–84</td><td>Rendah</td></tr>
+          <tr><td><span class="badge b-pre">Normal-Tinggi</span></td><td>130–139</td><td>85–89</td><td>Sedang</td></tr>
+          <tr><td><span class="badge b-ht1">HT Derajat 1</span></td><td>140–159</td><td>90–99</td><td>Sedang</td></tr>
+          <tr><td><span class="badge b-ht2">HT Derajat 2</span></td><td>160–179</td><td>100–109</td><td>Tinggi</td></tr>
+          <tr><td><span class="badge b-ht3">HT Derajat 3</span></td><td>≥180</td><td>≥110</td><td>Sangat Tinggi</td></tr>
+        </tbody></table></div>
       </div>
     </div>`;
 
@@ -562,29 +835,138 @@ function renderDashboard(){
       destroyChart('dashTrendChart');
       new Chart(trendCanvas, {
         type: 'line',
-        data: { labels: months.map(m => monthLabel(m)), datasets: [{ label: 'Rata-rata Sistolik', data: avgByMonth, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.1)', fill: true, tension: .4 }] },
-        options: { responsive: true, maintainAspectRatio: false }
+        data: { labels: months.map(m => monthLabel(m)), datasets: [{ label: 'Rata-rata Sistolik', data: avgByMonth, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.1)', fill: true, tension: .4, pointRadius: 5, pointBackgroundColor: '#2563eb', spanGaps: true }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 80, max: 200, ticks: { callback: v => v + ' mmHg' } }, x: { grid: { display: false } } } }
       });
+    }
+
+    const pieCanvas = document.getElementById('dashPieChart');
+    if(pieCanvas){
+      destroyChart('dashPieChart');
+      const catDefs = [
+        {key:'opt', label:'Optimal', color:'#0891b2'}, {key:'nor', label:'Normal', color:'#16a34a'}, {key:'pre', label:'Normal-Tinggi', color:'#ca8a04'},
+        {key:'ht1', label:'HT Derajat 1', color:'#ea580c'}, {key:'ht2', label:'HT Derajat 2', color:'#dc2626'}, {key:'ht3', label:'HT Derajat 3', color:'#7c3aed'},
+        {key:'iso', label:'HT Sistolik Terisolasi', color:'#2563eb'}, {key:'low', label:'Hipotensi', color:'#0369a1'}
+      ];
+      const active = catDefs.filter(c => catCount[c.key] > 0);
+      new Chart(pieCanvas, {
+        type: 'doughnut',
+        data: { labels: active.map(c => c.label), datasets: [{ data: active.map(c => catCount[c.key]), backgroundColor: active.map(c => c.color), borderWidth: 2 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } } }
+      });
+    }
+
+    const alcPieCanvas = document.getElementById('dashAlcPieChart');
+    if (alcPieCanvas) {
+      destroyChart('dashAlcPieChart');
+      if (totalAlc > 0) {
+        new Chart(alcPieCanvas, {
+          type: 'doughnut',
+          data: { labels: ['Pass (Aman)', 'Fail (Tidak Layak)'], datasets: [{ data: [alcPass, alcFail], backgroundColor: ['#16a34a', '#dc2626'], borderWidth: 2 }] },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } }
+        });
+      }
     }
   });
 }
-
+ 
 function renderRecords(){
   const opts = patients.map(p => `<option value="${p.id}">${p.name} (${p.nik || ''})</option>`).join('');
+  const qR = document.getElementById('recSearch')?.value || '';
+  const kR = document.getElementById('recKat')?.value || '';
+  const filteredExams = filterExams(qR, kR).slice(0, 30);
+
+  const rows = filteredExams.map(e => {
+    const st = getStatus(e.systolic, e.diastolic);
+    const pex = pExams(e.patientId);
+    const idx = pex.findIndex(x => x.id === e.id);
+    const prev = idx > 0 ? pex[idx - 1] : null;
+    const pulseText = e.pulse == null || e.pulse === '' ? '-' : e.pulse;
+
+    return `<tr><td><strong>${pName(e.patientId)}</strong></td><td>${fmt(e.examDate)}</td><td class="${vCls(e.systolic,140,120)}">${e.systolic}</td><td class="${vCls(e.diastolic,90,80)}">${e.diastolic}</td><td>${pulseText}</td><td>${trendArrow(e.systolic,prev?.systolic)}</td><td><span class="badge ${st.cls}">${st.label}</span></td><td style="display:flex;gap:4px"><button class="btn btn-warning btn-sm" onclick="editExam(${e.id})">✏️</button><button class="btn btn-danger btn-sm" onclick="delExam(${e.id})">🗑</button></td></tr>`;
+  }).join('');
+
   const pageRecords = document.getElementById('page-records');
   if(!pageRecords) return;
 
   pageRecords.innerHTML = `
     <div class="panel"><div class="panel-head"><h2>➕ Tambah Hasil Pemeriksaan</h2></div><div class="panel-body">
+      <div style="margin-bottom:12px;">
+        <button type="button" class="btn btn-outline" onclick="toggleBpScanner()">📷 Scan QR Code Pekerja</button>
+        <div id="scanner-bp-container" style="display:none; margin-top:10px; padding:10px; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc;">
+          <div id="scanner-bp-worker" style="width:100%; max-width:350px; margin:0 auto;"></div>
+          <div style="text-align:center; margin-top:8px;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="stopBpWorkerScanner(); document.getElementById('scanner-bp-container').style.display='none';">Tutup Kamera</button>
+          </div>
+        </div>
+      </div>
       <div class="form-grid">
         <div class="fg"><label>Pekerja</label><select id="ePid" onchange="fillPatientInfo()">${opts}</select></div>
+        <div class="fg"><label>Tgl Lahir</label><input id="eDob" readonly></div>
+        <div class="fg"><label>Usia (otomatis)</label><input id="eAge" readonly></div>
         <div class="fg"><label>Tanggal Periksa</label><input id="eDate" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
-        <div class="fg"><label>Sistolik (mmHg)</label><input id="eSys" type="number" placeholder="120"></div>
-        <div class="fg"><label>Diastolik (mmHg)</label><input id="eDia" type="number" placeholder="80"></div>
+        <div class="fg"><label>Sistolik (mmHg)</label><input id="eSys" type="number" placeholder="120" oninput="previewCat()"></div>
+        <div class="fg"><label>Diastolik (mmHg)</label><input id="eDia" type="number" placeholder="80" oninput="previewCat()"></div>
         <div class="fg"><label>Denyut Nadi (bpm)</label><input id="ePulse" type="number" placeholder="72"></div>
+        <div class="fg"><label>Kategori (otomatis)</label><input id="eCat" readonly></div>
       </div>
-      <button class="btn btn-primary" onclick="addExam()">💾 Simpan Pemeriksaan</button>
-    </div></div>`;
+      <div id="eRekom"></div>
+      <div style="display:flex;gap:10px;align-items:center;margin-top:12px">
+        <button class="btn btn-primary" onclick="addExam()">💾 Simpan Pemeriksaan</button>
+        <span id="eSaveMsg" style="font-size:.8rem;color:#16a34a"></span>
+      </div>
+    </div></div>
+    <div class="panel"><div class="panel-head"><h2>📋 Riwayat Pemeriksaan</h2><span style="font-size:.75rem;color:#64748b">${filteredExams.length} dari ${exams.length} data</span></div>
+      <div class="panel-body" style="padding-bottom:0">
+        <div class="search-bar">
+          <input id="recSearch" placeholder="🔍 Cari nama pekerja..." value="${qR}" oninput="renderRecords()">
+          <select id="recKat" onchange="renderRecords()">${katOpts.replace(`value="${kR}"`, `value="${kR}" selected`)}</select>
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('recSearch').value='';document.getElementById('recKat').value='';renderRecords()">✕ Reset</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Nadi</th><th>Trend</th><th>Kategori</th><th>Aksi</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="8" class="empty">Tidak ada data yang sesuai</td></tr>'}</tbody></table></div></div>`;
+
+  fillPatientInfo();
+}
+
+function fillPatientInfo(){
+  const ePid = document.getElementById('ePid');
+  const eDob = document.getElementById('eDob');
+  const eAge = document.getElementById('eAge');
+  if(!ePid || !eDob || !eAge) return;
+  const pid = +ePid.value;
+  const p = patients.find(x => x.id === pid);
+  if(!p){
+    eDob.value = '';
+    eAge.value = '';
+    return;
+  }
+  eDob.value = p.dob || '';
+  eAge.value = calcAge(p.dob) + ' tahun';
+  previewCat();
+}
+
+function previewCat(){
+  const eSys = document.getElementById('eSys');
+  const eDia = document.getElementById('eDia');
+  const ePid = document.getElementById('ePid');
+  const eCat = document.getElementById('eCat');
+  const eRekom = document.getElementById('eRekom');
+  if(!eSys || !eDia || !ePid || !eCat || !eRekom) return;
+  const s = +eSys.value;
+  const d = +eDia.value;
+  if(!s || !d){
+    eCat.value = '';
+    eRekom.innerHTML = '';
+    return;
+  }
+  const pid = +ePid.value;
+  const pex = pExams(pid);
+  const prev = pex.length ? pex[pex.length - 1] : null;
+  const st = getStatus(s, d);
+  eCat.value = st.label;
+  eRekom.innerHTML = getRekomendasi(s, d, prev?.systolic, pex);
 }
 
 function addExam(){
@@ -593,130 +975,1083 @@ function addExam(){
   const eDia = document.getElementById('eDia');
   const eDate = document.getElementById('eDate');
   const ePulse = document.getElementById('ePulse');
-  if(!ePid || !eSys || !eDia || !eDate) return;
+  if(!ePid || !eSys || !eDia || !eDate || !ePulse) return;
   const pid = +ePid.value;
   const s = +eSys.value;
   const d = +eDia.value;
   const dt = eDate.value;
-  const pulse = ePulse.value ? +ePulse.value : null;
-  if(!pid || !s || !d || !dt) return alert('Lengkapi data!');
+  const pulseRaw = ePulse.value.trim();
+  const pulse = pulseRaw ? +pulseRaw : null;
+  if(!pid || !s || !d || !dt) return alert('Lengkapi data pemeriksaan!');
 
-  exams.push({ id: nextEid++, patientId: pid, systolic: s, diastolic: d, pulse, examDate: dt });
+  exams.push({
+    id: nextEid++, patientId: pid, systolic: s, diastolic: d, pulse, examDate: dt
+  });
   save();
-  alert('Pemeriksaan berhasil disimpan!');
+  renderRecords();
+  const saveMsg = document.getElementById('eSaveMsg');
+  if(saveMsg){
+    saveMsg.textContent = '✅ Tersimpan!';
+    setTimeout(() => { const el = document.getElementById('eSaveMsg'); if(el) el.textContent = ''; }, 2500);
+  }
 }
 
-function escapeHtml(v){ return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+function delExam(id){
+  if(!confirm('Hapus pemeriksaan ini?')) return;
+  exams = exams.filter(e => e.id !== id);
+  save();
+  renderRecords();
+}
+
+function editExam(id){
+  const existingModal = document.getElementById('editModal');
+  if(existingModal) existingModal.remove();
+  const e = exams.find(x => x.id === id);
+  if(!e) return;
+  const p = patients.find(x => x.id === e.patientId);
+  const pageRecords = document.getElementById('page-records');
+  if(!pageRecords) return;
+
+  pageRecords.insertAdjacentHTML('afterbegin', `
+    <div id="editModal" style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;display:flex;align-items:center;justify-content:center">
+      <div style="background:#fff;border-radius:12px;padding:24px;width:340px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+        <h3 style="margin:0 0 16px">✏️ Edit Pemeriksaan</h3>
+        <div style="margin-bottom:10px"><label style="font-size:.8rem;font-weight:600">Pekerja</label>
+          <input readonly value="${p ? p.name : '—'}" style="width:100%;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc"></div>
+        <div style="margin-bottom:10px"><label style="font-size:.8rem;font-weight:600">Tanggal Periksa</label>
+          <input id="edDate" type="date" value="${e.examDate}" style="width:100%;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px"></div>
+        <div style="margin-bottom:10px"><label style="font-size:.8rem;font-weight:600">Sistolik (mmHg)</label>
+          <input id="edSys" type="number" value="${e.systolic}" style="width:100%;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px"></div>
+        <div style="margin-bottom:10px"><label style="font-size:.8rem;font-weight:600">Diastolik (mmHg)</label>
+          <input id="edDia" type="number" value="${e.diastolic}" style="width:100%;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px"></div>
+        <div style="margin-bottom:16px"><label style="font-size:.8rem;font-weight:600">Denyut Nadi (bpm)</label>
+          <input id="edPulse" type="number" value="${e.pulse == null ? '' : e.pulse}" style="width:100%;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn btn-outline" onclick="document.getElementById('editModal').remove()">Batal</button>
+          <button class="btn btn-primary" onclick="updateExam(${id})">💾 Simpan</button>
+        </div>
+      </div>
+    </div>`);
+}
+
+function updateExam(id){
+  const e = exams.find(x => x.id === id);
+  if(!e) return;
+  const edDate = document.getElementById('edDate');
+  const edSys = document.getElementById('edSys');
+  const edDia = document.getElementById('edDia');
+  const edPulse = document.getElementById('edPulse');
+  if(!edDate || !edSys || !edDia || !edPulse) return;
+  const dt = edDate.value;
+  const s = +edSys.value;
+  const d = +edDia.value;
+  const pulseRaw = edPulse.value.trim();
+  const pulse = pulseRaw ? +pulseRaw : null;
+  if(!dt || !s || !d) return alert('Lengkapi semua data!');
+
+  e.examDate = dt;
+  e.systolic = s;
+  e.diastolic = d;
+  e.pulse = pulse;
+  save();
+  const editModal = document.getElementById('editModal');
+  if(editModal) editModal.remove();
+  renderRecords();
+  alert('✅ Data berhasil diperbarui!');
+}
+
+function escapeHtml(v){
+  return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+let editingPatientId = null;
 
 function renderPatients(){
-  const rows = patients.map(p => `
-    <tr>
-      <td><code>${escapeHtml(p.nik || '-')}</code></td>
-      <td><strong>${escapeHtml(p.name)}</strong></td>
-      <td>${escapeHtml(p.phone || '-')}</td>
-      <td><button class="btn btn-danger btn-sm" onclick="delPatient(${p.id})">🗑️</button></td>
-    </tr>`).join('');
+  const qP = document.getElementById('patSearch')?.value || '';
+  const filtered = patients.filter(p => !qP || String(p.name).toLowerCase().includes(qP.toLowerCase()) || String(p.nik).toLowerCase().includes(qP.toLowerCase()));
 
+  const rows = filtered.map(p => {
+    const pExList = pExams(p.id);
+    const examsCount = pExList.length;
+    let le = examsCount > 0 ? pExList[examsCount - 1] : null;
+    let st = le ? getStatus(le.systolic, le.diastolic) : null;
+    const safeName = escapeHtml(p.name || '');
+    const safeDob = p.dob ? fmt(p.dob) : '-';
+    const safePhone = escapeHtml(p.phone || '');
+    const waBtn = p.phone ? `<a href="https://wa.me/${safePhone}" target="_blank" rel="noopener noreferrer" class="btn btn-success btn-sm" title="Buka WA" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">💬</a>` : '<span style="color:#cbd5e1;font-size:.75rem">—</span>';
+    const phoneHtml = p.phone ? `<span style="font-size:.78rem">${safePhone}</span>` : '<span style="color:#cbd5e1">—</span>';
+    const safeNik = escapeHtml(p.nik || p.id || '-');
+    const ageText = p.dob ? calcAge(p.dob) + ' th' : '-';
+    const badgeHtml = st ? `<span class="badge ${st.cls}" style="padding:4px 8px;border-radius:4px;font-size:0.75rem;font-weight:600;">${st.label}</span>` : '-';
+
+    return `
+      <tr>
+        <td><code>${safeNik}</code></td>
+        <td><strong>${safeName}</strong></td>
+        <td>${safeDob}</td>
+        <td>${ageText}</td>
+        <td>${p.gender === 'L' ? 'L' : 'P'}</td>
+        <td>${phoneHtml}</td>
+        <td>${examsCount} kali</td>
+        <td>${le ? `${le.systolic}/${le.diastolic}` : '-'}</td>
+        <td>${badgeHtml}</td>
+        <td style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm" onclick="showWorkerBarcode('${p.id}')" title="Lihat QR Code" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:#f8fafc;">🏷️</button>
+          ${waBtn}
+          <button class="btn btn-outline btn-sm" onclick="editPatient('${p.id}')" title="Edit" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="delPatient('${p.id}')" title="Hapus" style="width:32px;min-width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center">🗑️</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  const editing = patients.find(p => String(p.id) === String(editingPatientId));
   const pagePatients = document.getElementById('page-patients');
   if(!pagePatients) return;
 
   pagePatients.innerHTML = `
-    <div class="panel"><div class="panel-head"><h2>➕ Daftarkan Pekerja Baru</h2></div><div class="panel-body">
-      <div class="form-grid">
-        <div class="fg"><label>NIK / ID</label><input id="pNik" placeholder="NIK"></div>
-        <div class="fg"><label>Nama Lengkap</label><input id="pName" placeholder="Nama"></div>
-        <div class="fg"><label>No. HP / WA</label><input id="pPhone" placeholder="628..."></div>
+    <div class="panel">
+      <div class="panel-head"><h2>${editing ? '✏ Edit Data Pekerja' : '➕ Daftarkan Pekerja Baru'}</h2></div>
+      <div class="panel-body">
+        <div class="form-grid">
+          <div class="fg"><label>No. ID / NIK Pekerja</label><input id="pNik" placeholder="Contoh: EMP001 / NIK" value="${escapeHtml(editing?.nik || '')}" oninput="generateFormBarcode()"></div>
+          <div class="fg"><label>Nama Lengkap</label><input id="pName" placeholder="Nama pekerja" value="${escapeHtml(editing?.name || '')}" oninput="generateFormBarcode()"></div>
+          <div class="fg"><label>Tanggal Lahir</label><input id="pDob" type="date" onchange="autoAge()" value="${escapeHtml(editing?.dob || '')}"></div>
+          <div class="fg"><label>Usia (otomatis)</label><input id="pAge" readonly placeholder="Dari tgl lahir"></div>
+          <div class="fg"><label>Jenis Kelamin</label>
+            <select id="pGender"><option value="L" ${(editing?.gender || 'L') === 'L' ? 'selected' : ''}>Laki-laki</option><option value="P" ${(editing?.gender || 'L') === 'P' ? 'selected' : ''}>Perempuan</option></select>
+          </div>
+          <div class="fg"><label>No. HP / WhatsApp</label><input id="pPhone" type="tel" placeholder="628xxxxxxxxxx" oninput="formatPhone()" value="${escapeHtml(editing?.phone || '')}"></div>
+        </div>
+        
+        <div class="barcode-box" id="w-barcode-box" style="display:none; text-align:center; margin-top:14px; background:#fafafa; border-radius:12px; border:2px dashed #ddd; padding:20px;">
+          <div style="background:#fff; padding:12px; border:1px solid #e2e8f0; border-radius:12px; display:inline-block; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+            <img id="w-barcode-img" src="" alt="QR Code Pekerja" style="width:180px; height:180px; object-fit:contain;" />
+          </div>
+          <div class="label" id="w-barcode-label" style="margin-top:10px; font-size:0.85rem; font-weight:700; color:#475569;"></div>
+          <div class="btn-row" style="display:flex; gap:10px; justify-content:center; margin-top:12px;">
+            <button class="btn btn-outline" style="width:auto; padding:8px 14px;" onclick="downloadBarcode('w')">📥 Download</button>
+            <button class="btn btn-outline" style="width:auto; padding:8px 14px;" onclick="printBarcode('w')">🖨️ Print</button>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+          <button class="btn btn-primary" onclick="addPatient()">${editing ? '💾 Simpan Perubahan' : '💾 Simpan Pekerja'}</button>
+          ${editing ? `<button class="btn btn-outline" onclick="cancelEditPatient()">Batal Edit</button>` : ''}
+        </div>
       </div>
-      <button class="btn btn-primary" onclick="addPatient()">💾 Simpan Pekerja</button>
-    </div></div>
-    <div class="panel"><div class="panel-head"><h2>👤 Daftar Pekerja</h2></div>
-      <table><thead><tr><th>NIK</th><th>Nama</th><th>No. HP</th><th>Aksi</th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="4" class="empty">Belum ada pekerja</td></tr>'}</tbody></table>
-    </div>`;
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>👤 Daftar Pekerja</h2><span style="font-size:.75rem;color:#64748b">${filtered.length} dari ${patients.length} pekerja</span></div>
+      <div class="panel-body" style="padding-bottom:0">
+        <div class="search-bar">
+         <input id="patSearch" placeholder="🔍 Cari nama pekerja..." value="${escapeHtml(qP)}" oninput="renderPatients()">
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('patSearch').value='';renderPatients()">✕ Reset</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>No. ID</th><th>Nama</th><th>Tgl Lahir</th><th>Usia</th><th>JK</th><th>No. HP</th><th>Jml Periksa</th><th>Terakhir S/D</th><th>Kategori</th><th>Aksi</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="10" class="empty">Belum ada data pekerja terdaftar</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  autoAge();
+  formatPhone();
+  generateFormBarcode();
+}
+
+function generateFormBarcode() {
+  const pNikInput = document.getElementById('pNik');
+  const pNameInput = document.getElementById('pName');
+  const box = document.getElementById('w-barcode-box');
+  const img = document.getElementById('w-barcode-img');
+  const label = document.getElementById('w-barcode-label');
+  if(!pNikInput || !box || !img || !label) return;
+  const nikVal = pNikInput.value.trim();
+  const nameVal = pNameInput ? pNameInput.value.trim() : '';
+  if(nikVal === ''){
+    box.style.display = 'none';
+    return;
+  }
+  box.style.display = 'block';
+  img.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(nikVal)}`;
+  label.textContent = nameVal ? `${nameVal} • ${nikVal}` : nikVal;
+}
+
+function showWorkerBarcode(id){
+  const p = patients.find(x => String(x.id) === String(id));
+  if(!p) return;
+  const pNikInput = document.getElementById('pNik');
+  const pNameInput = document.getElementById('pName');
+  if(pNikInput) pNikInput.value = p.nik || p.id || '';
+  if(pNameInput) pNameInput.value = p.name || '';
+  generateFormBarcode();
+  const box = document.getElementById('w-barcode-box');
+  if(box) box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function downloadBarcode(type) {
+  const imgEl = document.getElementById(`${type}-barcode-img`);
+  if (!imgEl || !imgEl.src) return;
+  fetch(imgEl.src).then(res => res.blob()).then(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.download = `qrcode-pekerja-${Date.now()}.png`;
+    a.href = url;
+    a.click();
+    URL.revokeObjectURL(url);
+  }).catch(() => {});
+}
+
+function printBarcode(type) {
+  const box = document.getElementById(`${type}-barcode-box`);
+  if (!box) return;
+  const win = window.open('', '_blank');
+  win.document.write(`<html><head><title>Cetak QR Code</title><style>body{text-align:center;padding:30px;font-family:sans-serif;}img{width:220px;height:220px;object-fit:contain;}.label{margin-top:12px;font-size:18px;font-weight:bold;color:#1e293b;}</style></head><body>${box.innerHTML}</body></html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); win.close(); }, 250);
+}
+
+function autoAge(){
+  const pDob = document.getElementById('pDob');
+  const pAge = document.getElementById('pAge');
+  if(!pDob || !pAge) return;
+  pAge.value = pDob.value ? calcAge(pDob.value) + ' tahun' : '';
+}
+
+function normalizePhone(value){
+  let phone = String(value || '').replace(/\D/g, '');
+  if(phone.startsWith('0')) phone = '62' + phone.slice(1);
+  else if(phone.startsWith('8')) phone = '62' + phone;
+  return phone;
+}
+
+function formatPhone(){
+  const pPhone = document.getElementById('pPhone');
+  if(!pPhone) return;
+  pPhone.value = normalizePhone(pPhone.value);
+}
+
+function editPatient(id){
+  editingPatientId = id;
+  renderPatients();
+  const contentArea = document.querySelector('.content');
+  if (contentArea) contentArea.scrollTo({ top: 0, behavior: 'smooth' });
+  setTimeout(() => { const el = document.getElementById('pName'); if(el) el.focus(); }, 300);
+}
+
+function cancelEditPatient(){
+  editingPatientId = null;
+  renderPatients();
 }
 
 function addPatient(){
-  const nik = document.getElementById('pNik').value.trim();
-  const name = document.getElementById('pName').value.trim();
-  const phone = document.getElementById('pPhone').value.trim();
-  if(!nik || !name) return alert('NIK dan Nama wajib diisi!');
-  patients.push({ id: nextPid++, nik, name, phone });
+  const pNik = document.getElementById('pNik');
+  const pName = document.getElementById('pName');
+  const pDob = document.getElementById('pDob');
+  const pGender = document.getElementById('pGender');
+  const pPhone = document.getElementById('pPhone');
+  if(!pNik || !pName || !pDob || !pGender || !pPhone) return;
+  const nik = pNik.value.trim();
+  const name = pName.value.trim();
+  const dob = pDob.value;
+  const gender = pGender.value;
+  const phone = normalizePhone(pPhone.value);
+  if(!nik || !name || !dob) return alert('No. ID/NIK, Nama, dan tanggal lahir wajib diisi!');
+
+  if(editingPatientId != null){
+    const idx = patients.findIndex(p => String(p.id) === String(editingPatientId));
+    if(idx === -1) return alert('Data pekerja tidak ditemukan.');
+    patients[idx] = { ...patients[idx], nik, name, dob, gender, phone };
+    followups = followups.map(f => String(f.patientId) === String(editingPatientId) ? { ...f, patientName: name } : f);
+    editingPatientId = null;
+    save();
+    renderPatients();
+    if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
+    return;
+  }
+
+  patients.push({ id: nextPid++, nik, name, dob, gender, phone });
   save();
   renderPatients();
 }
-
+  
 function delPatient(id){
-  if(!confirm('Hapus pekerja?')) return;
+  if(!confirm('Hapus pekerja dan semua pemeriksaannya?')) return;
   patients = patients.filter(p => p.id !== id);
+  exams = exams.filter(e => e.patientId !== id);
+  followups = followups.filter(f => f.patientId !== id);
+  if(String(editingPatientId) === String(id)) editingPatientId = null;
   save();
   renderPatients();
+  if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
 }
 
 function renderProgress(){
   const pageProgress = document.getElementById('page-progress');
   if(!pageProgress) return;
-  pageProgress.innerHTML = `<div class="panel"><div class="panel-head"><h2>📈 Progress Pekerja</h2></div><div class="panel-body"><p>Fitur ringkas aktif.</p></div></div>`;
+  if(!patients.length){
+    pageProgress.innerHTML = '<div class="empty">Belum ada pekerja terdaftar</div>';
+    return;
+  }
+  const firstId = patients[0].id;
+  const opts = patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+
+  pageProgress.innerHTML = `
+    <div class="panel" style="margin-bottom:18px">
+      <div class="panel-head"><h2>📈 Progress & Rekomendasi Pekerja</h2></div>
+      <div class="panel-body" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div class="fg" style="min-width:220px;margin:0">
+          <label>Pilih Pekerja</label>
+          <select id="progressPid" onchange="renderProgressDetail(+this.value)" style="padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.88rem;outline:none;">${opts}</select>
+        </div>
+        <div id="progSummaryBadge" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px"></div>
+      </div>
+    </div>
+    <div id="progressDetail"></div>`;
+
+  renderProgressDetail(firstId);
+}
+
+function renderProgressDetail(pid){
+  const p = patients.find(x => String(x.id) === String(pid));
+  if(!p) return;
+  const sel = document.getElementById('progressPid');
+  if(sel) sel.value = pid;
+
+  const pex = pExams(pid);
+  const container = document.getElementById('progressDetail');
+  const badge = document.getElementById('progSummaryBadge');
+  if(!container) return;
+
+  let allAlcohol = [];
+  try {
+    allAlcohol = JSON.parse(localStorage.getItem('bpm_alcohol') || localStorage.getItem('alcoholExams') || '[]');
+  } catch(e) { allAlcohol = []; }
+
+  const pIdStr = String(pid).trim();
+  const pNikStr = String(p.nik || '').trim();
+
+  const pAlcoholList = allAlcohol.filter(a => {
+    const aPatientId = String(a.patientId || a.workerId || '').trim();
+    const aNik = String(a.nik || '').trim();
+    return (pIdStr && aPatientId === pIdStr) || (pNikStr && aNik === pNikStr);
+  }).sort((a, b) => String(a.examDate || '').localeCompare(String(b.examDate || '')));
+
+  const lastAlc = pAlcoholList.length ? pAlcoholList[pAlcoholList.length - 1] : null;
+  if(badge && pex.length){
+    const last = pex[pex.length - 1];
+    const st = getStatus(last.systolic, last.diastolic);
+    const first = pex[0];
+    const diff = last.systolic - first.systolic;
+    const diffHtml = diff === 0 ? '<span class="trend-eq">Tetap</span>' : diff < 0 ? `<span class="trend-dn">▼ Turun ${Math.abs(diff)} mmHg dari awal</span>` : `<span class="trend-up">▲ Naik ${diff} mmHg dari awal</span>`;
+    const alcInfoBadge = pAlcoholList.length ? ` · ${pAlcoholList.length} tes alkohol` : '';
+    badge.innerHTML = `<span class="badge ${st.cls}">${st.label}</span>${diffHtml}<span style="font-size:.78rem;color:#64748b">${pex.length} pemeriksaan${alcInfoBadge}</span>`;
+  } else if(badge){
+    badge.innerHTML = '';
+  }
+
+  if(!pex.length && !pAlcoholList.length){
+    container.innerHTML = `<div class="panel"><div class="panel-body"><div class="empty">📋 ${p.name} belum memiliki data pemeriksaan maupun tes alkohol</div></div></div>`;
+    return;
+  }
+
+  const last = pex.length ? pex[pex.length - 1] : null;
+  const stLast = last ? getStatus(last.systolic, last.diastolic) : null;
+  const prevS = pex.length > 1 ? pex[pex.length - 2].systolic : null;
+
+  const chips = pex.map((e, i, arr) => {
+    const isLatest = i === arr.length - 1;
+    const st = getStatus(e.systolic, e.diastolic);
+    return `<div class="exam-chip ${isLatest ? 'latest' : ''}" style="min-width:90px">
+      <div class="ec-date">${fmt(e.examDate)}</div>
+      <div class="ec-val" style="color:${st.color}">${e.systolic}/${e.diastolic}</div>
+      <span class="badge ${st.cls}" style="font-size:.6rem;padding:2px 7px">${st.label}</span>
+    </div>`;
+  }).join('');
+
+  const rows = pex.slice().reverse().map((e, i, arr) => {
+    const prev2 = arr[i + 1] || null;
+    const st = getStatus(e.systolic, e.diastolic);
+    const pulseText = e.pulse == null || e.pulse === '' ? '-' : e.pulse;
+    return `<tr>
+      <td>${fmt(e.examDate)}</td>
+      <td class="${vCls(e.systolic,140,120)}">${e.systolic}</td>
+      <td class="${vCls(e.diastolic,90,80)}">${e.diastolic}</td>
+      <td>${pulseText}</td>
+      <td>${trendArrow(e.systolic,prev2?.systolic)}</td>
+      <td>${trendArrow(e.diastolic,prev2?.diastolic)}</td>
+      <td><span class="badge ${st.cls}">${st.label}</span></td>
+      <td><button class="btn btn-danger btn-sm" onclick="delExamProgress(${e.id},${pid})">🗑</button></td>
+    </tr>`;
+  }).join('');
+
+  const alcoholRows = pAlcoholList.length ? pAlcoholList.slice().reverse().map((alc, idx) => {
+    const resRaw = String(alc.result || alc.status || alc.hasil || alc.val || alc.value || 'Pass');
+    const isPass = resRaw.toLowerCase().includes('pass') || resRaw.toLowerCase().includes('negatif') || resRaw === '0' || resRaw === '0.00';
+    const badgeColor = isPass ? 'background:#d1fae5;color:#065f46;' : 'background:#fee2e2;color:#991b1b;';
+    const resText = alc.result || alc.status || alc.hasil || (isPass ? 'Pass' : resRaw);
+    const alcDate = alc.date || alc.tanggal || alc.examDate || '-';
+    return `<tr>
+      <td>#${pAlcoholList.length - idx}</td>
+      <td>${fmt(alcDate)}</td>
+      <td><span style="padding:3px 8px;border-radius:4px;font-size:0.75rem;font-weight:600;${badgeColor}">${resText}</span></td>
+      <td>${alc.notes || alc.catatan || '-'}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="4" class="empty">Belum ada riwayat tes alkohol</td></tr>';
+
+  let bacValText = '-';
+  let bacSubText = 'Belum pernah tes';
+  let bacColor = '#64748b';
+  if (lastAlc) {
+    const resRaw = String(lastAlc.result || lastAlc.status || lastAlc.hasil || lastAlc.val || lastAlc.value || 'Pass');
+    const isPass = resRaw.toLowerCase().includes('pass') || resRaw.toLowerCase().includes('negatif') || resRaw === '0' || resRaw === '0.00';
+    bacValText = lastAlc.result || lastAlc.status || lastAlc.hasil || (isPass ? 'Pass' : resRaw);
+    bacSubText = fmt(lastAlc.date || lastAlc.tanggal || lastAlc.examDate);
+    bacColor = isPass ? '#059669' : '#dc2626';
+  }
+
+  container.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;margin-bottom:18px">
+      <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">👤</div><div class="stat-info"><h3>Nama</h3><div class="val" style="font-size:1rem">${p.name}</div><div class="sub">NIK: ${p.nik || '-'} · ${calcAge(p.dob)} tahun</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🩺</div><div class="stat-info"><h3>Terakhir (S/D)</h3><div class="val ${last ? vCls(last.systolic,140,120) : ''}" style="font-size:1.2rem">${last ? `${last.systolic}/${last.diastolic}` : '-'}</div><div class="sub">${last ? fmt(last.examDate) : '-'}</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:${stLast ? stLast.color + '22' : '#f1f5f9'}">📊</div><div class="stat-info"><h3>Kategori Saat Ini</h3><div class="val" style="font-size:.95rem;color:${stLast ? stLast.color : '#64748b'}">${stLast ? stLast.label : '-'}</div><div class="sub">${pex.length} pemeriksaan</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#e0f2fe">🍺</div><div class="stat-info"><h3>Terakhir BAC Test</h3><div class="val" style="font-size:1.1rem;color:${bacColor}">${bacValText}</div><div class="sub">${bacSubText}</div></div></div>
+    </div>
+
+    ${pex.length ? `
+    <div class="panel" style="margin-bottom:18px">
+      <div class="panel-head"><h2>📅 Semua Riwayat Pemeriksaan Tensi</h2><span style="font-size:.75rem;color:#64748b">${pex.length} data · terbaru di kanan</span></div>
+      <div class="panel-body"><div class="pc-exams" style="gap:8px">${chips}</div></div>
+    </div>
+    ` : ''}
+
+    ${pex.length ? `
+    <div class="panel" style="margin-bottom:18px">
+      <div class="panel-head"><h2>📈 Grafik Tren Tekanan Darah</h2></div>
+      <div class="panel-body"><div class="chart-box" style="height:280px"><canvas id="progDetailChart"></canvas></div></div>
+    </div>
+    ` : ''}
+
+    <div class="panel" style="margin-bottom:18px">
+      <div class="panel-head">
+        <h2>🍺 Riwayat Tes Alkohol (Alcohol Screening)</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-pdf btn-sm" onclick="printAlcoholPDF('${p.name}', '${p.nik}')">🖨️ Cetak PDF</button>
+          <button class="btn btn-sm" style="background:#25d366;color:#fff" onclick="shareAlcoholToWhatsApp('${p.name}', '${p.nik}', ${JSON.stringify(pAlcoholList).replace(/"/g, '&quot;')})">📲 Kirim ke WA</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>No</th><th>Tanggal</th><th>Hasil Tes</th><th>Catatan</th></tr></thead>
+          <tbody>${alcoholRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    ${pex.length ? `
+    <div class="panel" style="margin-bottom:18px">
+      <div class="panel-head"><h2>📋 Tabel Riwayat Lengkap Tensi</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-pdf btn-sm" onclick="exportPDF()">🖨️ Cetak PDF</button>
+          <button class="btn btn-sm" style="background:#25d366;color:#fff" onclick="kirimWA(${pid})">📲 Kirim ke WA</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto"><table><thead><tr><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Nadi</th><th>Trend S</th><th>Trend D</th><th>Kategori</th><th>Aksi</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>
+    </div>
+    ` : ''}
+
+    ${last ? `
+    <div class="panel">
+      <div class="panel-head"><h2>💡 Rekomendasi Klinis (Pemeriksaan Terakhir)</h2></div>
+      <div class="panel-body">${getRekomendasi(last.systolic,last.diastolic,prevS,pex)}</div>
+    </div>
+    ` : ''}`;
+
+  if (pex.length) {
+    requestAnimationFrame(() => {
+      const chartEl = document.getElementById('progDetailChart');
+      if(!chartEl) return;
+      destroyChart('progDetailChart');
+      new Chart(chartEl, {
+        type: 'line',
+        data: {
+          labels: pex.map(e => fmt(e.examDate)),
+          datasets: [
+            { label: 'Sistolik', data: pex.map(e => e.systolic), borderColor: '#dc2626', backgroundColor: 'rgba(220,38,38,.08)', tension: .4, fill: true, pointRadius: 5, pointBackgroundColor: '#dc2626' },
+            { label: 'Diastolik', data: pex.map(e => e.diastolic), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', tension: .4, fill: true, pointRadius: 5, pointBackgroundColor: '#2563eb' }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'top' } },
+          scales: { y: { min: 50, max: 220, ticks: { callback: v => v + ' mmHg' } }, x: { grid: { display: false } } }
+        }
+      });
+    });
+  }
+}
+
+function delExamProgress(eid, pid){
+  if(!confirm('Hapus data pemeriksaan ini?')) return;
+  exams = exams.filter(e => e.id !== eid);
+  save();
+  renderProgressDetail(pid);
+  renderStats();
 }
 
 function renderMonthly(){
+  const allMonths = [...new Set(exams.map(e => monthKey(e.examDate)).filter(Boolean))].sort();
+  const selMonth = allMonths[allMonths.length - 1] || monthKey(new Date().toISOString());
+  renderMonthlyData(selMonth, allMonths);
+}
+
+function renderMonthlyData(mk, allMonths){
   const pageMonthly = document.getElementById('page-monthly');
   if(!pageMonthly) return;
-  pageMonthly.innerHTML = `<div class="panel"><div class="panel-head"><h2>🗓️ Laporan Bulanan</h2></div><div class="panel-body"><p>Laporan aktif.</p></div></div>`;
+  if(!allMonths) allMonths = [...new Set(exams.map(e => monthKey(e.examDate)).filter(Boolean))].sort();
+  if(!mk) mk = allMonths[allMonths.length - 1] || monthKey(new Date().toISOString());
+
+  const opts = allMonths.map(m => `<option value="${m}" ${m === mk ? 'selected' : ''}>${monthLabel(m)}</option>`).join('');
+  const me = exams.filter(e => monthKey(e.examDate) === mk);
+  const avgS = me.length ? Math.round(me.reduce((a, e) => a + e.systolic, 0) / me.length) : 0;
+  const avgD = me.length ? Math.round(me.reduce((a, e) => a + e.diastolic, 0) / me.length) : 0;
+  const last6 = allMonths.slice(-6);
+  const l6Avgs = last6.map(m => {
+    const me2 = exams.filter(e => monthKey(e.examDate) === m);
+    return me2.length ? Math.round(me2.reduce((a, e) => a + e.systolic, 0) / me2.length) : null;
+  });
+
+  const catCount = {opt:0, nor:0, pre:0, ht1:0, ht2:0, ht3:0, iso:0, low:0};
+  me.forEach(e => { catCount[getStatus(e.systolic, e.diastolic).key]++; });
+
+  const catDefs = [
+    {key:'opt', label:'Optimal', color:'#0891b2'}, {key:'nor', label:'Normal', color:'#16a34a'}, {key:'pre', label:'Normal-Tinggi', color:'#ca8a04'},
+    {key:'ht1', label:'HT Derajat 1', color:'#ea580c'}, {key:'ht2', label:'HT Derajat 2', color:'#dc2626'}, {key:'ht3', label:'HT Derajat 3', color:'#7c3aed'},
+    {key:'iso', label:'HT Sistolik Terisolasi', color:'#2563eb'}, {key:'low', label:'Hipotensi', color:'#0369a1'}
+  ];
+
+  const rows = me.map(e => {
+    const pex = pExams(e.patientId);
+    const idx = pex.findIndex(x => x.id === e.id);
+    const prev = idx > 0 ? pex[idx - 1] : null;
+    const st = getStatus(e.systolic, e.diastolic);
+    return `<tr><td><strong>${pName(e.patientId)}</strong></td><td>${fmt(e.examDate)}</td><td class="${vCls(e.systolic,140,120)}">${e.systolic}</td><td class="${vCls(e.diastolic,90,80)}">${e.diastolic}</td><td>${trendArrow(e.systolic,prev?.systolic)}</td><td><span class="badge ${st.cls}">${st.label}</span></td></tr>`;
+  }).join('');
+
+  pageMonthly.innerHTML = `
+    <div class="month-select"><label style="font-size:.83rem;font-weight:600;color:#475569">Pilih Bulan:</label>
+      <select onchange="renderMonthlyData(this.value)">${opts}</select>
+      <span style="font-size:.8rem;color:#64748b">${me.length} pemeriksaan</span></div>
+    <div class="grid-3" style="margin-bottom:18px">
+      <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">📋</div><div class="stat-info"><h3>Total Periksa</h3><div class="val">${me.length}</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🩺</div><div class="stat-info"><h3>Rata-rata Sistolik</h3><div class="val ${avgS ? vCls(avgS,140,120) : ''}">${avgS || '-'}</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#dbeafe">💙</div><div class="stat-info"><h3>Rata-rata Diastolik</h3><div class="val ${avgD ? vCls(avgD,90,80) : ''}">${avgD || '-'}</div></div></div>
+    </div>
+    <div class="grid-2" style="margin-bottom:18px">
+      <div class="panel"><div class="panel-head"><h2>📊 Tren Sistolik 6 Bulan Terakhir</h2></div><div class="panel-body"><div class="chart-box"><canvas id="mTrendChart"></canvas></div></div></div>
+      <div class="panel"><div class="panel-head"><h2>🗂 Distribusi Kategori Bulan Ini</h2></div><div class="panel-body"><div class="chart-box"><canvas id="mCatChart"></canvas></div></div></div>
+    </div>
+    <div class="panel"><div class="panel-head"><h2>📋 Detail Pemeriksaan — ${monthLabel(mk)}</h2><button class="btn btn-pdf btn-sm" onclick="exportPDF()">🖨️ PDF</button></div>
+      <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Trend</th><th>Kategori</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="6" class="empty">Tidak ada pemeriksaan bulan ini</td></tr>'}</tbody></table></div></div>`;
+
+  requestAnimationFrame(() => {
+    const trendChart = document.getElementById('mTrendChart');
+    const catChart = document.getElementById('mCatChart');
+    if(trendChart){
+      destroyChart('mTrendChart');
+      new Chart(trendChart, {
+        type: 'bar',
+        data: {
+          labels: last6.map(m => monthLabel(m)),
+          datasets: [{ label: 'Rata-rata Sistolik', data: l6Avgs, backgroundColor: l6Avgs.map(v => v == null ? 'rgba(148,163,184,.45)' : v >= 140 ? 'rgba(220,38,38,.7)' : v >= 130 ? 'rgba(202,138,4,.7)' : 'rgba(22,163,74,.7)'), borderRadius: 6 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 80, max: 200, ticks: { callback: v => v + ' mmHg' } }, x: { grid: { display: false } } } }
+      });
+    }
+    if(catChart){
+      destroyChart('mCatChart');
+      const active = catDefs.filter(c => catCount[c.key] > 0);
+      new Chart(catChart, {
+        type: 'pie',
+        data: { labels: active.map(c => c.label), datasets: [{ data: active.map(c => catCount[c.key]), backgroundColor: active.map(c => c.color), borderWidth: 2 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 10 } } } } }
+      });
+    }
+  });
 }
 
 function renderFollowups(){
+  const opts = patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+  const list = followups.map(f => {
+    const statusLabel = f.status === 'done' ? 'Selesai' : 'Menunggu';
+    const statusClass = f.status === 'done' ? 'b-done' : 'b-pending';
+    const doneBtn = f.status === 'pending' ? `<button class="btn btn-success btn-sm" onclick="doneFollowup(${f.id})">✅</button>` : '';
+    return `<div class="fu-card ${f.status}"><div><div class="fu-name">${f.patientName}</div><div class="fu-reason">${f.reason}</div><div class="fu-date">📅 Jadwal: ${fmt(f.dueDate)}</div></div>
+    <div class="fu-actions"><span class="badge ${statusClass}">${statusLabel}</span>${doneBtn}<button class="btn btn-danger btn-sm" onclick="delFollowup(${f.id})">🗑</button></div></div>`;
+  }).join('');
+
   const pageFollowup = document.getElementById('page-followup');
   if(!pageFollowup) return;
-  pageFollowup.innerHTML = `<div class="panel"><div class="panel-head"><h2>🔔 Follow-Up</h2></div><div class="panel-body"><p>Follow-up aktif.</p></div></div>`;
+
+  pageFollowup.innerHTML = `
+    <div class="panel"><div class="panel-head"><h2>➕ Tambah Follow-Up</h2></div><div class="panel-body">
+      <div class="form-grid">
+        <div class="fg"><label>Pekerja</label><select id="fPid">${opts}</select></div>
+        <div class="fg"><label>Alasan Follow-Up</label><input id="fReason" placeholder="Keterangan..."></div>
+        <div class="fg"><label>Tanggal Follow-Up</label><input id="fDate" type="date"></div>
+      </div>
+      <button class="btn btn-primary" onclick="addFollowup()">💾 Simpan Follow-Up</button>
+    </div></div>
+    <div class="panel"><div class="panel-head"><h2>🗂 Daftar Follow-Up</h2><span style="font-size:.75rem;color:#f59e0b">${followups.filter(f => f.status === 'pending').length} menunggu</span></div>
+      <div class="panel-body">${followups.length ? list : '<div class="empty">🎉 Tidak ada follow-up</div>'}</div></div>`;
+}
+
+function addFollowup(){
+  const fPid = document.getElementById('fPid');
+  const fReason = document.getElementById('fReason');
+  const fDate = document.getElementById('fDate');
+  if(!fPid || !fReason || !fDate) return;
+  const pid = +fPid.value;
+  const reason = fReason.value.trim();
+  const dueDate = fDate.value;
+  if(!pid || !reason || !dueDate) return alert('Lengkapi semua data!');
+  const p = patients.find(x => x.id === pid);
+
+  followups.push({ id: nextFid++, patientId: pid, patientName: p ? p.name : '?', reason, dueDate, status: 'pending' });
+  save();
+  renderFollowups();
+  renderStats();
+  if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
+}
+
+function doneFollowup(id){
+  const f = followups.find(x => x.id === id);
+  if(f) f.status = 'done';
+  save();
+  renderFollowups();
+  renderStats();
+  if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
+}
+
+function delFollowup(id){
+  followups = followups.filter(f => f.id !== id);
+  save();
+  renderFollowups();
+  renderStats();
+  if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
+}
+
+function kirimWA(pid){
+  const p = patients.find(x => x.id === pid);
+  if(!p) return;
+  const phone = normalizePhone(p.phone);
+  if(!phone){
+    alert('Pekerja ini belum memiliki nomor HP/WhatsApp.');
+    return;
+  }
+  const pex = pExams(pid);
+  if(!pex.length){
+    alert('Belum ada data pemeriksaan.');
+    return;
+  }
+  const last = pex[pex.length - 1];
+  const st = getStatus(last.systolic, last.diastolic);
+  const prev = pex.length > 1 ? pex[pex.length - 2] : null;
+  const diff = prev ? (last.systolic - prev.systolic) : null;
+  const trendNote = diff === null ? '' : diff < 0 ? `Turun ${Math.abs(diff)} mmHg. ` : diff > 0 ? `Naik ${diff} mmHg. ` : 'Stabil. ';
+  const riwayat = pex.slice(-5).map(e => `  • ${e.examDate}: ${e.systolic}/${e.diastolic} mmHg (${getStatus(e.systolic,e.diastolic).label})`).join('\n');
+  const jadwalMap = { opt: '12 bulan', nor: '6–12 bulan', pre: '3–6 bulan', ht1: '1–3 bulan', ht2: '2–4 minggu', ht3: 'SEGERA ke IGD/RS', iso: '1–2 bulan' };
+  const jadwal = jadwalMap[st.key] || '-';
+  const pulseText = last.pulse == null || last.pulse === '' ? '-' : last.pulse;
+
+  const pesan = `🩺 *Laporan Tekanan Darah*
+━━━━━━━━━━━━━━━━━━━━
+👤 *Pekerja:* ${p.name}
+🎂 *Usia:* ${calcAge(p.dob)} tahun
+📅 *Tgl Periksa:* ${fmt(last.examDate)}
+*Hasil Terakhir:*
+• Sistolik  : *${last.systolic} mmHg*
+• Diastolik : *${last.diastolic} mmHg*
+• Nadi      : ${pulseText} bpm
+• Kategori  : *${st.label}*
+${trendNote}
+*Riwayat 5 Terakhir:*
+${riwayat}
+*Rekomendasi:*
+${getRekomTeks(last.systolic,last.diastolic,prev?.systolic)}
+📅 *Jadwal Kontrol:* ${jadwal}
+━━━━━━━━━━━━━━━━━━━━
+_KEPMENKES RI No. 4634/2021_`;
+
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(pesan)}`, '_blank', 'noopener,noreferrer');
+}
+
+function getRekomTeks(s, d, prevS){
+  const st = getStatus(s, d);
+  const trend = prevS != null ? (s < prevS ? 'Perbaikan. ' : s > prevS ? 'Meningkat. ' : '') : '';
+  const map = {
+    opt: `${trend}Optimal. Pertahankan gaya hidup sehat.`,
+    nor: `${trend}Normal. Lanjutkan pola hidup sehat.`,
+    pre: `${trend}Normal-Tinggi. Modifikasi gaya hidup segera.`,
+    ht1: `${trend}Hipertensi Derajat 1. Evaluasi dokter & modifikasi gaya hidup.`,
+    ht2: `${trend}Hipertensi Derajat 2. Wajib terapi antihipertensi.`,
+    ht3: `${trend}⚠️ Hipertensi Derajat 3 — SEGERA ke IGD/RS!`,
+    iso: `${trend}HT Sistolik Terisolasi. Perlu evaluasi dokter.`,
+    low: `${trend}Hipotensi. Perbanyak minum air & istirahat.`
+  };
+  return map[st.key] || '-';
 }
 
 // ══════════════════════════════════════════
-// 🍷 MODUL TES ALKOHOL (TANPA CETAK PDF DI APLIKASI)
+// 🔔 REMINDER BANNER (H-7)
 // ══════════════════════════════════════════
+async function loadAndShowReminders(){
+  const container = document.getElementById('reminderBanner');
+  if(!container) return;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const reminders = followups.filter(f => {
+    if(f.status === 'done' || !f.dueDate) return false;
+    const due = new Date(f.dueDate);
+    if(Number.isNaN(due.getTime())) return false;
+    due.setHours(0, 0, 0, 0);
+    const diff = Math.round((due - today) / (1000 * 60 * 60 * 24));
+    return diff >= 0 && diff <= 7;
+  }).map(f => {
+    const due = new Date(f.dueDate);
+    due.setHours(0, 0, 0, 0);
+    const diff = Math.round((due - today) / (1000 * 60 * 60 * 24));
+    const p = patients.find(x => String(x.id) === String(f.patientId)) || {};
+    const phone = normalizePhone(p.phone || '');
+    return { ...f, daysLeft: diff, phone };
+  }).sort((a, b) => a.daysLeft - b.daysLeft);
+
+  if(!reminders.length){
+    container.innerHTML = '';
+    return;
+  }
+
+  const items = reminders.map(r => {
+    const daysCls = r.daysLeft === 0 ? 'days-today' : r.daysLeft <= 3 ? 'days-soon' : 'days-ok';
+    const daysText = r.daysLeft === 0 ? 'Hari ini!' : r.daysLeft === 1 ? 'Besok!' : 'H-' + r.daysLeft;
+    const reminderText = `🔔 *Reminder Follow-Up*\n\nYth. ${r.patientName},\nJadwal kontrol pada *${fmt(r.dueDate)}*.\nAlasan: ${r.reason}\n\nTerima kasih.`;
+    const waBtn = r.phone ? `<a href="https://wa.me/${r.phone}?text=${encodeURIComponent(reminderText)}" target="_blank" rel="noopener noreferrer" class="btn btn-sm" style="background:#25d366;color:#fff;flex-shrink:0">📲 WA</a>` : '';
+
+    return `<div class="reminder-item">
+      <div><div style="font-weight:700;font-size:.85rem">${r.patientName}</div><div style="font-size:.75rem;color:#64748b">${r.reason} · 📅 ${fmt(r.dueDate)}</div></div>
+      <div style="display:flex;align-items:center;gap:8px"><span class="reminder-days ${daysCls}">${daysText}</span>${waBtn}</div>
+    </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="reminder-banner">
+      <div class="reminder-banner-head">
+        <h3>🔔 Reminder Follow-Up — ${reminders.length} pekerja dalam 7 hari ke depan</h3>
+        <button onclick="this.closest('.reminder-banner').style.display='none'" style="background:none;border:none;cursor:pointer;color:#92400e;font-size:1.1rem">✕</button>
+      </div>
+      ${items}
+    </div>`;
+}
+
+function filterPatients(query, kategori){
+  return patients.filter(p=>{
+    const le = lastExam(p.id);
+    const matchName = !query || p.name.toLowerCase().includes(query.toLowerCase());
+    const matchKat  = !kategori || (le && getStatus(le.systolic,le.diastolic).key===kategori);
+    return matchName && matchKat;
+  });
+}
+function filterExams(query, kategori){
+  return [...exams].sort((a,b)=>b.examDate.localeCompare(a.examDate)).filter(e=>{
+    const p = patients.find(x=>x.id===e.patientId);
+    const matchName = !query || (p && p.name.toLowerCase().includes(query.toLowerCase()));
+    const matchKat  = !kategori || getStatus(e.systolic,e.diastolic).key===kategori;
+    return matchName && matchKat;
+  });
+}
+const katOpts = `<option value="">Semua Kategori</option>
+  <option value="opt">Optimal</option><option value="nor">Normal</option><option value="pre">Normal-Tinggi</option>
+  <option value="ht1">Hipertensi Derajat 1</option><option value="ht2">Hipertensi Derajat 2</option><option value="ht3">Hipertensi Derajat 3</option>
+  <option value="iso">HT Sistolik Terisolasi</option><option value="low">Hipotensi (Darah Rendah)</option>`;
+
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwEgEuZFusctV7hmG0yNobQzJ2JlUR2lSy5XYmkpfro4VvT1nwt8ChqR8_2f9ckAEOl/exec';
+
+function setSyncStatus(state, msg){
+  const badge = document.getElementById('syncBadge');
+  const icon = document.getElementById('syncIcon');
+  const text = document.getElementById('syncText');
+  if(!badge || !icon || !text) return;
+  badge.className = 'sync-badge';
+  if(state === 'loading'){ badge.classList.add('sync-loading'); icon.innerHTML = '<span class="spin">🔄</span>'; text.textContent = msg || 'Menyimpan...'; return; }
+  if(state === 'ok'){ badge.classList.add('sync-ok'); icon.textContent = '✅'; text.textContent = msg || 'Tersimpan'; return; }
+  if(state === 'err'){ badge.classList.add('sync-err'); icon.textContent = '❌'; text.textContent = msg || 'Gagal sync'; return; }
+  badge.classList.add('sync-local'); icon.textContent = '☁️'; text.textContent = msg || 'Lokal';
+}
+
+function isConfigured(){
+  return Boolean(SCRIPT_URL && SCRIPT_URL !== 'PASTE_WEB_APP_URL_DISINI');
+}
+
+function saveLocal(){
+  localStorage.setItem('bpm_patients', JSON.stringify(patients));
+  localStorage.setItem('bpm_exams', JSON.stringify(exams));
+  localStorage.setItem('bpm_followups', JSON.stringify(followups));
+  localStorage.setItem('bpm_alcohol', JSON.stringify(alcoholExams));
+}
+
+function save(){
+  saveLocal();
+  if(isConfigured()){ syncToSheets(false); } else { setSyncStatus('local', 'Lokal saja'); }
+}
+
+function syncToSheets(verify = false){
+  if(!isConfigured()){ setSyncStatus('local', 'Mode Lokal'); return Promise.resolve(false); }
+  setSyncStatus('loading', verify ? 'Sync & verifikasi...' : 'Mengirim...');
+  return fetch(SCRIPT_URL, {
+    method: 'POST', mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'sync_all', patients, exams, followups, alcoholExams })
+  }).then(async () => {
+    if(!verify){
+      setSyncStatus('ok', 'Terkirim');
+      setTimeout(() => setSyncStatus('local', 'Belum diverifikasi'), 1800);
+      return true;
+    }
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    const verified = await verifySheetsData();
+    if(verified){ setSyncStatus('ok', 'Google Sheets ✓'); return true; }
+    setSyncStatus('err', 'Gagal verifikasi');
+    return false;
+  }).catch(err => {
+    console.error('Sync error:', err);
+    setSyncStatus('err', 'Gagal — cek URL');
+    return false;
+  });
+}
+
+async function fetchAllFromSheets(){
+  const res = await fetch(`${SCRIPT_URL}?action=all&t=${Date.now()}`);
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  const json = await res.json();
+  if(!json.success) throw new Error(json.error || 'Response gagal');
+  return json;
+}
+
+function normalizeSheetsPayload(json){
+  const nextPatients = (json.patients || []).map(p => ({ ...p, id: +p.id, phone: p.phone ? String(p.phone) : '' }));
+  const nextExams = (json.exams || []).map(e => ({
+    ...e, id: +e.id, patientId: +e.patientId, systolic: +e.systolic, diastolic: +e.diastolic,
+    pulse: e.pulse === '' || e.pulse == null ? null : +e.pulse,
+    examDate: e.examDate ? String(e.examDate).slice(0, 10) : ''
+  }));
+  const nextFollowups = (json.followups || []).map(f => ({ ...f, id: +f.id, patientId: +f.patientId, dueDate: f.dueDate ? String(f.dueDate).slice(0, 10) : '', status: f.status || 'pending' }));
+  const nextAlcohol = (json.alcoholExams || []).map(a => ({ ...a, id: +a.id, patientId: +a.patientId, examDate: a.examDate ? String(a.examDate).slice(0, 10) : '' }));
+  return { patients: nextPatients, exams: nextExams, followups: nextFollowups, alcoholExams: nextAlcohol };
+}
+
+function refreshIdCounters(){
+  nextPid = patients.length ? Math.max(...patients.map(p => +p.id)) + 1 : 1;
+  nextEid = exams.length ? Math.max(...exams.map(e => +e.id)) + 1 : 1;
+  nextFid = followups.length ? Math.max(...followups.map(f => +f.id)) + 1 : 1;
+  nextAid = alcoholExams.length ? Math.max(...alcoholExams.map(a => +a.id)) + 1 : 1;
+}
+
+async function verifySheetsData(){
+  try {
+    const json = await fetchAllFromSheets();
+    const remote = normalizeSheetsPayload(json);
+    return remote.patients.length === patients.length && remote.exams.length === exams.length && remote.followups.length === followups.length && (remote.alcoholExams || []).length === alcoholExams.length;
+  } catch(err){ return false; }
+}
+
+async function loadFromSheets(){
+  if(!isConfigured()){ setSyncStatus('local', 'Mode Lokal'); return false; }
+  setSyncStatus('loading', 'Memuat data...');
+  try {
+    const json = await fetchAllFromSheets();
+    const normalized = normalizeSheetsPayload(json);
+    patients = normalized.patients;
+    exams = normalized.exams;
+    followups = normalized.followups;
+    alcoholExams = normalized.alcoholExams;
+    refreshIdCounters();
+    saveLocal();
+    setSyncStatus('ok', 'Google Sheets ✓');
+    return true;
+  } catch(err){
+    setSyncStatus('err', 'Pakai data lokal');
+    return false;
+  }
+}
+
+function manualSync(){
+  if(!isConfigured()){
+    alert('⚙️ URL Apps Script belum dikonfigurasi.');
+    return;
+  }
+  syncToSheets(true);
+}
+
+let bpWorkerScanner = null;
+function initBpWorkerScanner() {
+  const container = document.getElementById('scanner-bp-container');
+  if (container) container.style.display = 'block';
+  setTimeout(() => {
+    const scannerEl = document.getElementById('scanner-bp-worker');
+    if (!scannerEl) return;
+    if (bpWorkerScanner) { bpWorkerScanner.stop().catch(() => {}); bpWorkerScanner = null; }
+    bpWorkerScanner = new Html5Qrcode('scanner-bp-worker');
+    bpWorkerScanner.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 280, height: 130 } },
+      (decodedText) => {
+        const scannedNik = decodedText.trim();
+        const matchedPatient = patients.find(p => String(p.nik).trim() === scannedNik || String(p.id).trim() === scannedNik);
+        if (matchedPatient) {
+          const selectEl = document.getElementById('ePid');
+          if (selectEl) { selectEl.value = matchedPatient.id; fillPatientInfo(); }
+          stopBpWorkerScanner();
+          if (container) container.style.display = 'none';
+          alert(`✅ Pekerja ditemukan: ${matchedPatient.name}`);
+        } else {
+          alert(`⚠️ QR Code terbaca ("${scannedNik}"), tapi data pekerja tidak terdaftar.`);
+        }
+      },
+      () => {}
+    ).catch(err => { console.error('BP Scanner error:', err); });
+  }, 100);
+}
+
+function stopBpWorkerScanner() {
+  if (bpWorkerScanner) { bpWorkerScanner.stop().catch(() => {}); bpWorkerScanner = null; }
+}
+
+function toggleBpScanner() {
+  const container = document.getElementById('scanner-bp-container');
+  if (container && container.style.display === 'none') { initBpWorkerScanner(); }
+  else { stopBpWorkerScanner(); if (container) container.style.display = 'none'; }
+}
+
+(async () => {
+  await loadFromSheets();
+  renderDashboard();
+  loadAndShowReminders();
+})();
+
+document.addEventListener('keydown', function(event) {
+  const loginOverlay = document.getElementById('loginOverlay');
+  if (loginOverlay && window.getComputedStyle(loginOverlay).display !== 'none') {
+    const key = event.key;
+    if (/^[0-9]$/.test(key)) pinPress(key);
+    else if (key === 'Backspace') pinDelete();
+    else if (key === 'Escape' || key === 'Delete') pinClear();
+  }
+});
+
+// ============================================================
+// 🍷 MODUL TES ALKOHOL
+// ============================================================
+let scanActiveAlcohol = false;
+
 function renderAlcoholPage() {
-  const rows = alcoholExams.map(e => {
+  const pageAlcohol = document.getElementById('page-alcohol');
+  if(!pageAlcohol) return;
+
+  pageAlcohol.innerHTML = `
+    <div class="panel">
+      <div class="panel-head"><h2>🍷 Pemeriksaan Alkohol (BAC)</h2></div>
+      <div class="panel-body">
+        <div style="margin-bottom:15px; display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="toggleAlcoholScanner()">
+            ${scanActiveAlcohol ? '⏹ Matikan Kamera' : '📷 Scan QR / NIK Pekerja'}
+          </button>
+        </div>
+
+        <div id="alcoholScannerContainer" style="display:${scanActiveAlcohol ? 'block' : 'none'}; margin-bottom:15px; text-align:center;">
+          <div id="alcohol-reader" style="width:100%; max-width:400px; margin:0 auto;"></div>
+          <p style="font-size:.8rem; color:#64748b; margin-top:5px;">Arahkan kamera ke QR Code atau NIK Pekerja</p>
+        </div>
+
+       <div class="form-grid">
+          <div class="fg">
+            <label>Cari / Pilih Pekerja (NIK / Nama)</label>
+            <select id="alcPatientId">
+              <option value="">-- Pilih Pekerja --</option>
+              ${patients.map(p => `<option value="${p.id}">[${p.nik || p.id}] ${p.name}</option>`).join('')}
+            </select>
+          </div>
+          <div class="fg">
+            <label>Nilai BAC (Contoh: 0.00)</label>
+            <input id="alcLevel" type="text" placeholder="Contoh: 0.00" oninput="autoDetectAlcoholStatus()">
+          </div>
+          <div class="fg">
+            <label>Distribusi (Otomatis)</label>
+            <input id="alcStatus" type="text" readonly value="Pass" style="font-weight:700; background:#f8fafc;">
+          </div>
+          <div class="fg">
+            <label>Tanggal Pemeriksaan</label>
+            <input id="alcDate" type="date" value="${new Date().toISOString().slice(0,10)}">
+          </div>
+        </div>
+
+        <div style="margin-top:15px;">
+          <button class="btn btn-primary" onclick="saveAlcoholExam()">💾 Simpan Pemeriksaan Alkohol</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>📋 Riwayat Pemeriksaan Alkohol</h2>
+        <span style="font-size:.75rem;color:#64748b">${alcoholExams.length} data tercatat</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr><th>Tanggal</th><th>No. ID / NIK</th><th>Nama Pekerja</th><th>Distribusi</th><th>Nilai BAC</th><th>Aksi</th></tr>
+          </thead>
+          <tbody>${renderAlcoholRows()}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  if (scanActiveAlcohol) initAlcoholScanner();
+}
+
+function renderAlcoholRows() {
+  if (alcoholExams.length === 0) return '<tr><td colspan="6" class="empty">Belum ada riwayat pemeriksaan alkohol</td></tr>';
+  const sorted = [...alcoholExams].sort((a, b) => new Date(b.examDate) - new Date(a.examDate));
+  return sorted.map(e => {
     const pat = patients.find(p => String(p.id) === String(e.patientId)) || {};
     const badgeCls = e.status === 'Pass' ? 'b-nor' : 'b-ht2';
     return `
       <tr>
         <td>${e.examDate || '-'}</td>
-        <td><code>${escapeHtml(pat.nik || '-')}</code></td>
-        <td><strong>${escapeHtml(pat.name || 'Tidak dikenal')}</strong></td>
+        <td><code>${escapeHtml(pat.nik || pat.id || '-')}</code></td>
+        <td><strong>${escapeHtml(pat.name || e.patientName || 'Tidak dikenal')}</strong></td>
         <td><span class="badge ${badgeCls}">${escapeHtml(e.status)}</span></td>
         <td>${escapeHtml(e.alcoholLevel || '-')}</td>
-        <td>
-          <button class="btn btn-sm" style="background:#25d366;color:#fff" onclick="shareAlcoholToWhatsApp('${escapeHtml(pat.name || '')}', '${escapeHtml(pat.nik || '')}')">📲 WA</button>
-          <button class="btn btn-danger btn-sm" onclick="delAlcoholExam(${e.id})">🗑️</button>
-        </td>
-      </tr>`;
+        <td><button class="btn btn-danger btn-sm" onclick="delAlcoholExam(${e.id})" title="Hapus">🗑️</button></td>
+      </tr>
+    `;
   }).join('');
+}
 
-  const pageAlcohol = document.getElementById('page-alcohol');
-  if(!pageAlcohol) return;
-
-  pageAlcohol.innerHTML = `
-    <div class="panel"><div class="panel-head"><h2>🍷 Pemeriksaan Alkohol (BAC)</h2></div><div class="panel-body">
-      <div class="form-grid">
-        <div class="fg">
-          <label>Pilih Pekerja</label>
-          <select id="alcPatientId">
-            <option value="">-- Pilih Pekerja --</option>
-            ${patients.map(p => `<option value="${p.id}">[${p.nik || '-'}] ${p.name}</option>`).join('')}
-          </select>
-        </div>
-        <div class="fg"><label>Nilai BAC</label><input id="alcLevel" type="text" value="0.00"></div>
-        <div class="fg">
-          <label>Status</label>
-          <select id="alcStatus"><option value="Pass">Pass (Aman)</option><option value="Fail">Fail (Tidak Layak)</option></select>
-        </div>
-        <div class="fg"><label>Tanggal</label><input id="alcDate" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
-      </div>
-      <button class="btn btn-primary" onclick="saveAlcoholExam()">💾 Simpan Tes Alkohol</button>
-    </div></div>
-    <div class="panel"><div class="panel-head"><h2>📋 Riwayat Pemeriksaan Alkohol</h2></div>
-      <table><thead><tr><th>Tanggal</th><th>NIK</th><th>Nama</th><th>Status</th><th>BAC</th><th>Aksi</th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="6" class="empty">Belum ada riwayat</td></tr>'}</tbody></table>
-    </div>`;
+function autoDetectAlcoholStatus() {
+  const val = parseFloat(document.getElementById('alcLevel').value) || 0;
+  const statusEl = document.getElementById('alcStatus');
+  if (statusEl) {
+    statusEl.value = val > 0 ? 'Fail' : 'Pass';
+  }
 }
 
 function saveAlcoholExam() {
@@ -724,34 +2059,161 @@ function saveAlcoholExam() {
   const status = document.getElementById('alcStatus').value;
   const alcoholLevel = document.getElementById('alcLevel').value.trim();
   const examDate = document.getElementById('alcDate').value;
-  if (!patientId || !examDate) return alert('Pilih pekerja dan tanggal!');
+  if (!patientId || !examDate) return alert('Pilih pekerja dan tanggal pemeriksaan terlebih dahulu!');
 
   const pat = patients.find(p => String(p.id) === String(patientId));
-  alcoholExams.push({ id: nextAid++, patientId: Number(patientId), patientName: pat ? pat.name : '', status, alcoholLevel, examDate });
+  alcoholExams.push({
+    id: nextAid++,
+    patientId: Number(patientId),
+    patientName: pat ? pat.name : '',
+    status: status,
+    alcoholLevel: alcoholLevel || '0.00',
+    examDate: examDate
+  });
+
   save();
   renderAlcoholPage();
-  alert('Berhasil disimpan!');
+  alert('Pemeriksaan alkohol berhasil disimpan!');
 }
 
 function delAlcoholExam(id) {
-  if (!confirm('Hapus data ini?')) return;
+  if (!confirm('Hapus data pemeriksaan alkohol ini?')) return;
   alcoholExams = alcoholExams.filter(e => String(e.id) !== String(id));
   save();
   renderAlcoholPage();
 }
 
-function shareAlcoholToWhatsApp(workerName, workerNik) {
-  const list = alcoholExams.filter(a => {
-    const p = patients.find(x => x.id === a.patientId);
-    return p && (p.nik === workerNik || p.name === workerName);
-  });
-  if (list.length === 0) return alert("Tidak ada riwayat tes alkohol.");
-  const latest = list[list.length - 1];
-  const text = `📋 *LAPORAN TES ALKOHOL*\n👤 *Nama:* ${workerName}\n🆔 *NIK:* ${workerNik || '-'}\n📅 *Tanggal:* ${latest.examDate}\n🔍 *Status:* ${latest.status}\n📊 *BAC:* ${latest.alcoholLevel}\n_Powered by Pausbiru7_`;
-  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+function toggleAlcoholScanner() {
+  scanActiveAlcohol = !scanActiveAlcohol;
+  renderAlcoholPage();
 }
 
+let html5QrCodeAlcohol = null;
+function initAlcoholScanner() {
+  if (typeof Html5Qrcode === 'undefined') return;
+  setTimeout(() => {
+    if (!html5QrCodeAlcohol) html5QrCodeAlcohol = new Html5Qrcode("alcohol-reader");
+    html5QrCodeAlcohol.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 150 } },
+      (decodedText) => { handleAlcoholScanResult(decodedText.trim()); },
+      () => {}
+    ).catch(err => { console.error("Gagal membuka kamera:", err); });
+  }, 200);
+}
+
+function handleAlcoholScanResult(codeText) {
+  const found = patients.find(p => String(p.nik).trim() === codeText || String(p.id) === codeText);
+  if (found) {
+    const selectEl = document.getElementById('alcPatientId');
+    if (selectEl) {
+      selectEl.value = found.id;
+      if (html5QrCodeAlcohol && scanActiveAlcohol) {
+        html5QrCodeAlcohol.stop().then(() => {
+          scanActiveAlcohol = false;
+          renderAlcoholPage();
+        }).catch(() => {
+          scanActiveAlcohol = false;
+          renderAlcoholPage();
+        });
+      }
+      alert(`Pekerja dikenali: ${found.name}`);
+    }
+  } else {
+    alert(`⚠️ QR Code / NIK "${codeText}" tidak terdaftar di database pekerja!`);
+  }
+}
+
+// ============================================================
+// FUNGSI SHARE WHATSAPP & CETAK PDF TES ALKOHOL
+// ============================================================
+function shareAlcoholToWhatsApp(workerName, workerNik, alcoholList) {
+  if (!alcoholList || alcoholList.length === 0) {
+    alert("Tidak ada riwayat tes alkohol untuk dibagikan.");
+    return;
+  }
+
+  const latest = alcoholList[alcoholList.length - 1];
+  let text = `📋 *LAPORAN TES ALKOHOL (BAC TEST)*\n`;
+  text += `----------------------------------------\n`;
+  text += `👤 *Nama:* ${workerName}\n`;
+  text += `🆔 *NIK:* ${workerNik || '-'}\n`;
+  text += `📅 *Tes Terakhir:* ${latest.examDate || '-'}\n`;
+  text += `🔍 *Status:* ${latest.status || '-'}\n`;
+  text += `📊 *Kadar Alkohol:* ${latest.alcoholLevel || '-'}\n`;
+  text += `📝 *Catatan:* ${latest.notes || '-'}\n`;
+  text += `----------------------------------------\n`;
+  text += `*Total Riwayat Tes:* ${alcoholList.length} kali\n\n`;
+  text += `_Powered by Pausbiru7_`;
+
+  const encodedUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  window.open(encodedUrl, '_blank');
+}
+
+function printAlcoholPDF(workerName, workerNik) {
+  let allAlcohol = [];
+  try {
+    allAlcohol = JSON.parse(localStorage.getItem('bpm_alcohol') || '[]');
+  } catch(e) { allAlcohol = []; }
+
+  const pNikStr = String(workerNik || '').trim();
+  const pAlcoholList = allAlcohol.filter(a => String(a.nik || '').trim() === pNikStr || String(a.patientId || '').trim() === pNikStr).reverse();
+
+  if (pAlcoholList.length === 0) {
+    alert("Tidak ada data riwayat tes alkohol untuk dicetak.");
+    return;
+  }
+
+  const rowsHtml = pAlcoholList.map((alc, idx) => `
+    <tr>
+      <td style="text-align: center; padding: 10px; border: 1px solid #cbd5e1;">${idx + 1}</td>
+      <td style="padding: 10px; border: 1px solid #cbd5e1;">${alc.examDate || '-'}</td>
+      <td style="padding: 10px; border: 1px solid #cbd5e1; font-weight: bold;">${alc.status || 'Pass'}</td>
+      <td style="padding: 10px; border: 1px solid #cbd5e1;">${alc.alcoholLevel || '-'}</td>
+    </tr>
+  `).join('');
+
+  const printWindow = window.open('', '_blank', 'width=900,height=700');
+  
+  // BAGIAN INI MEMBUAT HALAMAN CETAK BARU (HTML di dalam JS)
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Laporan Tes Alkohol - ${workerName}</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 20px; color: #1e293b; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #cbd5e1; padding: 8px 10px; font-size: 13px; text-align: left; }
+        th { background: #f1f5f9; }
+      </style>
+    </head>
+    <body>
+      <h2>LAPORAN RIWAYAT TES ALKOHOL</h2>
+      <p><strong>Nama:</strong> ${workerName} | <strong>NIK:</strong> ${workerNik || '-'}</p>
+      <table>
+        <thead><tr><th>No</th><th>Tanggal</th><th>Status</th><th>Nilai BAC</th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+      <script>
+        window.onload = function() {
+          setTimeout(function() {
+            window.print();
+            window.close();
+          }, 500);
+        }
+      </script>
+    </body>
+    </html>
+  `);
+  
+printWindow.document.close();
+}
+
+// INISIALISASI AWAL
 renderDashboard();
+
 </script>
 </body>
 </html>
