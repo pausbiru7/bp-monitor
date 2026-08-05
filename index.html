@@ -473,7 +473,6 @@ let nextEid = exams.length ? Math.max(...exams.map(e => +e.id)) + 1 : 1;
 let nextFid = followups.length ? Math.max(...followups.map(f => +f.id)) + 1 : 1;
 let nextPid = patients.length ? Math.max(...patients.map(p => +p.id)) + 1 : 1;
 let nextAid = alcoholExams.length ? Math.max(...alcoholExams.map(a => +a.id)) + 1 : 1;
-
 function save(){
   localStorage.setItem('bpm_patients', JSON.stringify(patients));
   localStorage.setItem('bpm_exams', JSON.stringify(exams));
