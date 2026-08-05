@@ -2182,7 +2182,7 @@ function getRekomTeks(s, d, prevS){
   return map[st.key] || '-';
 }
 // ══════════════════════════════════════════
-// 🔐 LOGIN PIN
+// 🔐 LOGIN PIN (AMAN & ANTI-CRASH)
 // ══════════════════════════════════════════
 const DEFAULT_PIN = '123456';
 let pinInput = '';
@@ -2196,10 +2196,19 @@ function pinPress(digit){
   if(pinInput.length >= 6) return;
 
   pinInput += String(digit);
-  updatePinDots();
+  
+  try {
+    if (typeof updatePinDots === 'function') {
+      updatePinDots();
+    }
+  } catch(e) {}
 
   if(pinInput.length === 6){
-    setTimeout(checkPin, 150);
+    setTimeout(() => {
+      if (typeof checkPin === 'function') {
+        checkPin();
+      }
+    }, 150);
   }
 }
 function pinDelete(){
