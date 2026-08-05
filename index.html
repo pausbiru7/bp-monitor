@@ -461,18 +461,33 @@ function doChangePin(){
   alert('✅ PIN berhasil diubah!');
 }
 
-// ══ DATA ══════════════════════════════════
-let patients = JSON.parse(localStorage.getItem('bpm_patients') || 'null') || [];
-let exams = (JSON.parse(localStorage.getItem('bpm_exams') || 'null') || [])
-  .map(e => ({ ...e, examDate: e.examDate?.slice(0, 10) }));
-let followups = JSON.parse(localStorage.getItem('bpm_followups') || 'null') || [];
-let alcoholExams = (JSON.parse(localStorage.getItem('bpm_alcohol') || 'null') || [])
-  .map(e => ({ ...e, examDate: e.examDate?.slice(0, 10) }));
+// ══ DATA (DENGAN PEMULIHAN DATA LAMA) ══════════════════════════════════
+let patients = JSON.parse(localStorage.getItem('bpm_patients') || localStorage.getItem('patients') || localStorage.getItem('wh_workers') || '[]');
+
+let examsRaw = localStorage.getItem('bpm_exams') || localStorage.getItem('exams') || localStorage.getItem('wh_exams') || '[]';
+let exams = JSON.parse(examsRaw).map(e => ({ ...e, examDate: (e.examDate || e.date || e.tanggal || '').slice(0, 10) }));
+
+let followups = JSON.parse(localStorage.getItem('bpm_followups') || '[]');
+
+// Tarik data alkohol dari memori lama dan sesuaikan formatnya
+let alcRaw = localStorage.getItem('bpm_alcohol') || localStorage.getItem('alcoholExams') || localStorage.getItem('wh_alcohol') || localStorage.getItem('alcohol') || '[]';
+let alcoholExams = JSON.parse(alcRaw).map(e => ({
+  ...e,
+  id: e.id || Date.now() + Math.random(),
+  patientId: Number(e.patientId || e.workerId || e.id_pekerja),
+  examDate: (e.examDate || e.date || e.tanggal || '').slice(0, 10),
+  alcoholLevel: e.alcoholLevel || e.val || e.value || e.hasil || '0.00',
+  status: e.status || e.result || 'Pass'
+}));
 
 let nextEid = exams.length ? Math.max(...exams.map(e => +e.id)) + 1 : 1;
 let nextFid = followups.length ? Math.max(...followups.map(f => +f.id)) + 1 : 1;
 let nextPid = patients.length ? Math.max(...patients.map(p => +p.id)) + 1 : 1;
 let nextAid = alcoholExams.length ? Math.max(...alcoholExams.map(a => +a.id)) + 1 : 1;
+
+// Simpan format yang sudah dirapikan kembali ke memori
+save();
+
 function save(){
   localStorage.setItem('bpm_patients', JSON.stringify(patients));
   localStorage.setItem('bpm_exams', JSON.stringify(exams));
