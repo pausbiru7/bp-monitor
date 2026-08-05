@@ -1243,21 +1243,13 @@ function renderProgressDetail(pid){
   const badge = document.getElementById('progSummaryBadge');
   if(!container) return;
 
-  let allAlcohol = [];
-  try {
-    allAlcohol = JSON.parse(localStorage.getItem('bpm_alcohol') || localStorage.getItem('alcoholExams') || '[]');
-  } catch(e) { allAlcohol = []; }
-
-  const pIdStr = String(pid).trim();
-  const pNikStr = String(p.nik || '').trim();
-
-  const pAlcoholList = allAlcohol.filter(a => {
-    const aPatientId = String(a.patientId || a.workerId || '').trim();
-    const aNik = String(a.nik || '').trim();
-    return (pIdStr && aPatientId === pIdStr) || (pNikStr && aNik === pNikStr);
-  }).sort((a, b) => String(a.examDate || '').localeCompare(String(b.examDate || '')));
+  // PERBAIKAN POIN 1 & 2: Ambil langsung dari variabel global alcoholExams
+  const pAlcoholList = alcoholExams
+    .filter(a => Number(a.patientId) === Number(pid))
+    .sort((a, b) => String(a.examDate || '').localeCompare(String(b.examDate || '')));
 
   const lastAlc = pAlcoholList.length ? pAlcoholList[pAlcoholList.length - 1] : null;
+
   if(badge && pex.length){
     const last = pex[pex.length - 1];
     const st = getStatus(last.systolic, last.diastolic);
@@ -1271,7 +1263,7 @@ function renderProgressDetail(pid){
   }
 
   if(!pex.length && !pAlcoholList.length){
-    container.innerHTML = `<div class="panel"><div class="panel-body"><div class="empty">📋 ${p.name} belum memiliki data pemeriksaan maupun tes alkohol</div></div></div>`;
+    container.innerHTML = `<div class="panel"><div class="panel-body"><div class="empty">📋 ${p.name} belum memiliki data pemeriksaan tensi maupun tes alkohol</div></div></div>`;
     return;
   }
 
@@ -1306,16 +1298,13 @@ function renderProgressDetail(pid){
   }).join('');
 
   const alcoholRows = pAlcoholList.length ? pAlcoholList.slice().reverse().map((alc, idx) => {
-    const resRaw = String(alc.result || alc.status || alc.hasil || alc.val || alc.value || 'Pass');
-    const isPass = resRaw.toLowerCase().includes('pass') || resRaw.toLowerCase().includes('negatif') || resRaw === '0' || resRaw === '0.00';
+    const isPass = alc.status === 'Pass' || alc.status === 'Aman';
     const badgeColor = isPass ? 'background:#d1fae5;color:#065f46;' : 'background:#fee2e2;color:#991b1b;';
-    const resText = alc.result || alc.status || alc.hasil || (isPass ? 'Pass' : resRaw);
-    const alcDate = alc.date || alc.tanggal || alc.examDate || '-';
     return `<tr>
       <td>#${pAlcoholList.length - idx}</td>
-      <td>${fmt(alcDate)}</td>
-      <td><span style="padding:3px 8px;border-radius:4px;font-size:0.75rem;font-weight:600;${badgeColor}">${resText}</span></td>
-      <td>${alc.notes || alc.catatan || '-'}</td>
+      <td>${fmt(alc.examDate)}</td>
+      <td><span style="padding:3px 8px;border-radius:4px;font-size:0.75rem;font-weight:600;${badgeColor}">${alc.status}</span></td>
+      <td>${alc.alcoholLevel || '-'}</td>
     </tr>`;
   }).join('') : '<tr><td colspan="4" class="empty">Belum ada riwayat tes alkohol</td></tr>';
 
@@ -1323,10 +1312,9 @@ function renderProgressDetail(pid){
   let bacSubText = 'Belum pernah tes';
   let bacColor = '#64748b';
   if (lastAlc) {
-    const resRaw = String(lastAlc.result || lastAlc.status || lastAlc.hasil || lastAlc.val || lastAlc.value || 'Pass');
-    const isPass = resRaw.toLowerCase().includes('pass') || resRaw.toLowerCase().includes('negatif') || resRaw === '0' || resRaw === '0.00';
-    bacValText = lastAlc.result || lastAlc.status || lastAlc.hasil || (isPass ? 'Pass' : resRaw);
-    bacSubText = fmt(lastAlc.date || lastAlc.tanggal || lastAlc.examDate);
+    const isPass = lastAlc.status === 'Pass' || lastAlc.status === 'Aman';
+    bacValText = lastAlc.status;
+    bacSubText = fmt(lastAlc.examDate);
     bacColor = isPass ? '#059669' : '#dc2626';
   }
 
@@ -1357,12 +1345,12 @@ function renderProgressDetail(pid){
         <h2>🍺 Riwayat Tes Alkohol (Alcohol Screening)</h2>
         <div style="display:flex;gap:8px">
           <button class="btn btn-pdf btn-sm" onclick="printAlcoholPDF('${p.name}', '${p.nik}')">🖨️ Cetak PDF</button>
-          <button class="btn btn-sm" style="background:#25d366;color:#fff" onclick="shareAlcoholToWhatsApp('${p.name}', '${p.nik}', ${JSON.stringify(pAlcoholList).replace(/"/g, '&quot;')})">📲 Kirim ke WA</button>
+          <button class="btn btn-sm" style="background:#25d366;color:#fff" onclick="shareAlcoholToWhatsApp('${p.name}', '${p.nik}')">📲 Kirim ke WA</button>
         </div>
       </div>
       <div style="overflow-x:auto">
         <table>
-          <thead><tr><th>No</th><th>Tanggal</th><th>Hasil Tes</th><th>Catatan</th></tr></thead>
+          <thead><tr><th>No</th><th>Tanggal</th><th>Hasil Tes</th><th>Nilai BAC</th></tr></thead>
           <tbody>${alcoholRows}</tbody>
         </table>
       </div>
