@@ -1588,26 +1588,29 @@ function renderProgressDetail(pid){
 
   if(!container) return;
 
-// 1. Ambil data tes alkohol dari localStorage (termasuk 'bac_token')
+// 1. Ambil data tes alkohol (Lewatkan 'bac_token' karena itu token login, bukan array data)
   let allAlcohol = [];
   try {
     allAlcohol = JSON.parse(
-      localStorage.getItem('bac_token') || 
-      localStorage.getItem('wh_alcohol') || 
       localStorage.getItem('alcoholExams') || 
+      localStorage.getItem('wh_alcohol') || 
       localStorage.getItem('alcohol') || '[]'
     );
   } catch(e) { allAlcohol = []; }
 
+  const pIdStr = String(pid).trim();
   const pNikStr = String(p.nik || '').trim();
 
-  // Pencocokan murni berbasis NIK
+  // 2. Pencocokan Hibrida (bisa mencocokkan ID internal maupun NIK)
   const pAlcoholList = allAlcohol.filter(a => {
     const aPatientId = String(a.patientId || a.workerId || a.id_pekerja || '').trim();
     const aNik = String(a.nik || '').trim();
     
-    // Mencocokkan apakah patientId atau nik pada data alkohol sama dengan NIK pekerja
-    return pNikStr && (aPatientId === pNikStr || aNik === pNikStr);
+    return (
+      (pIdStr && aPatientId === pIdStr) || 
+      (pNikStr && aPatientId === pNikStr) ||
+      (pIdStr && aNik === pIdStr)
+    );
   }).sort((a, b) => {
     const dateA = String(a.date || a.tanggal || a.examDate || '');
     const dateB = String(b.date || b.tanggal || b.examDate || '');
