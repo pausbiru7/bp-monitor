@@ -461,41 +461,60 @@ function doChangePin(){
   alert('✅ PIN berhasil diubah!');
 }
 
-// ══ DATA (DENGAN PEMULIHAN DATA LAMA) ══════════════════════════════════
-let patients = JSON.parse(localStorage.getItem('bpm_patients') || localStorage.getItem('patients') || localStorage.getItem('wh_workers') || '[]');
+// ══════════════════════════════════════════
+// 🕰 FUNGSI TANGGAL ANTI MUNDUR ZONA WAKTU
+// ══════════════════════════════════════════
+function getToday() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+// ══ DATA (DENGAN PEMULIHAN & PERBAIKAN FORMAT) ══════════════════════════════════
+let patientsRaw = localStorage.getItem('bpm_patients') || localStorage.getItem('patients') || localStorage.getItem('wh_workers') || '[]';
+let patients = JSON.parse(patientsRaw).map(p => ({ ...p, id: Number(p.id) || Date.now() }));
 
 let examsRaw = localStorage.getItem('bpm_exams') || localStorage.getItem('exams') || localStorage.getItem('wh_exams') || '[]';
-let exams = JSON.parse(examsRaw).map(e => ({ ...e, examDate: (e.examDate || e.date || e.tanggal || '').slice(0, 10) }));
+let exams = JSON.parse(examsRaw).map(e => ({ 
+  ...e, 
+  id: Number(e.id),
+  patientId: Number(e.patientId || e.workerId || e.id_pekerja),
+  examDate: (e.examDate || e.date || e.tanggal || '').slice(0, 10) 
+}));
 
 let followups = JSON.parse(localStorage.getItem('bpm_followups') || '[]');
 
-// Tarik data alkohol dari memori lama dan sesuaikan formatnya
 let alcRaw = localStorage.getItem('bpm_alcohol') || localStorage.getItem('alcoholExams') || localStorage.getItem('wh_alcohol') || localStorage.getItem('alcohol') || '[]';
-let alcoholExams = JSON.parse(alcRaw).map(e => ({
-  ...e,
-  id: e.id || Date.now() + Math.random(),
-  patientId: Number(e.patientId || e.workerId || e.id_pekerja),
-  examDate: (e.examDate || e.date || e.tanggal || '').slice(0, 10),
-  alcoholLevel: e.alcoholLevel || e.val || e.value || e.hasil || '0.00',
-  status: e.status || e.result || 'Pass'
-}));
+let alcoholExams = JSON.parse(alcRaw).map((e, index) => {
+  let st = e.status || e.result || e.hasil || 'Pass';
+  let lvl = e.alcoholLevel || e.val || e.value || e.kadar;
+  if (!lvl || lvl === '') {
+    lvl = (st.toLowerCase().includes('pass') || st.toLowerCase().includes('aman')) ? '0.00' : '0.05';
+  }
+  let dt = (e.examDate || e.date || e.tanggal || '').slice(0, 10);
+  
+  return {
+    ...e,
+    id: Number(e.id) || (Date.now() + index),
+    patientId: Number(e.patientId || e.workerId || e.id_pekerja || e.id),
+    examDate: dt,
+    alcoholLevel: lvl,
+    status: st
+  };
+});
 
 let nextEid = exams.length ? Math.max(...exams.map(e => +e.id)) + 1 : 1;
 let nextFid = followups.length ? Math.max(...followups.map(f => +f.id)) + 1 : 1;
 let nextPid = patients.length ? Math.max(...patients.map(p => +p.id)) + 1 : 1;
 let nextAid = alcoholExams.length ? Math.max(...alcoholExams.map(a => +a.id)) + 1 : 1;
 
-// Simpan langsung ke memori lokal (Tanpa memicu error Google Sheets Sync)
 localStorage.setItem('bpm_patients', JSON.stringify(patients));
 localStorage.setItem('bpm_exams', JSON.stringify(exams));
+localStorage.setItem('bpm_followups', JSON.stringify(followups));
 localStorage.setItem('bpm_alcohol', JSON.stringify(alcoholExams));
 
-function save(){
-  localStorage.setItem('bpm_patients', JSON.stringify(patients));
-  localStorage.setItem('bpm_exams', JSON.stringify(exams));
-  localStorage.setItem('bpm_followups', JSON.stringify(followups));
-  localStorage.setItem('bpm_alcohol', JSON.stringify(alcoholExams));
-}
 
 // ══ KEPMENKES 4634/2021 CLASSIFICATION ════
 function getStatus(s, d){
@@ -627,7 +646,7 @@ function renderStats(){
   const nor = allLast.filter(e => ['opt', 'nor'].includes(getStatus(e.systolic, e.diastolic).key)).length;
   const pend = followups.filter(f => f.status === 'pending').length;
   const alcTotal = alcoholExams.length;
-  const alcFail = alcoholExams.filter(a => a.status === 'Fail').length;
+  const alcFail = alcoholExams.filter(a => a.status === 'Fail' || a.status === 'Tidak Layak').length;
 
   const statsArea = document.getElementById('statsArea');
   if(!statsArea) return;
@@ -668,12 +687,14 @@ function renderDashboard(){
 
   const recentAlcohol = [...alcoholExams].sort((a, b) => String(b.examDate).localeCompare(String(a.examDate))).slice(0, 5);
   const alcRows = recentAlcohol.map(a => {
-    const badgeCls = a.status === 'Pass' ? 'b-nor' : 'b-ht2';
-    return `<tr><td><strong>${escapeHtml(a.patientName)}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
+    const isPass = a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman');
+    const badgeCls = isPass ? 'b-nor' : 'b-ht2';
+    const pat = patients.find(p => String(p.id) === String(a.patientId)) || {};
+    return `<tr><td><strong>${escapeHtml(pat.name || a.patientName)}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
   }).join('');
 
-  const alcPass = alcoholExams.filter(a => a.status === 'Pass').length;
-  const alcFail = alcoholExams.filter(a => a.status === 'Fail').length;
+  const alcPass = alcoholExams.filter(a => a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman')).length;
+  const alcFail = alcoholExams.length - alcPass;
   const totalAlc = alcoholExams.length;
   const passPct = totalAlc > 0 ? Math.round((alcPass / totalAlc) * 100) : 0;
   const failPct = totalAlc > 0 ? Math.round((alcFail / totalAlc) * 100) : 0;
@@ -819,7 +840,7 @@ function renderRecords(){
         <div class="fg"><label>Pekerja</label><select id="ePid" onchange="fillPatientInfo()">${opts}</select></div>
         <div class="fg"><label>Tgl Lahir</label><input id="eDob" readonly></div>
         <div class="fg"><label>Usia (otomatis)</label><input id="eAge" readonly></div>
-        <div class="fg"><label>Tanggal Periksa</label><input id="eDate" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
+        <div class="fg"><label>Tanggal Periksa</label><input id="eDate" type="date" value="${getToday()}"></div>
         <div class="fg"><label>Sistolik (mmHg)</label><input id="eSys" type="number" placeholder="120" oninput="previewCat()"></div>
         <div class="fg"><label>Diastolik (mmHg)</label><input id="eDia" type="number" placeholder="80" oninput="previewCat()"></div>
         <div class="fg"><label>Denyut Nadi (bpm)</label><input id="ePulse" type="number" placeholder="72"></div>
@@ -1243,10 +1264,14 @@ function renderProgressDetail(pid){
   const badge = document.getElementById('progSummaryBadge');
   if(!container) return;
 
-  // PERBAIKAN POIN 1 & 2: Ambil langsung dari variabel global alcoholExams
-  const pAlcoholList = alcoholExams
-    .filter(a => Number(a.patientId) === Number(pid))
-    .sort((a, b) => String(a.examDate || '').localeCompare(String(b.examDate || '')));
+  const pIdStr = String(pid).trim();
+  const pNikStr = String(p.nik || '').trim();
+
+  const pAlcoholList = alcoholExams.filter(a => {
+    const aPatientId = String(a.patientId || a.workerId || '').trim();
+    const aNik = String(a.nik || '').trim();
+    return (pIdStr && aPatientId === pIdStr) || (pNikStr && aNik === pNikStr);
+  }).sort((a, b) => String(a.examDate || '').localeCompare(String(b.examDate || '')));
 
   const lastAlc = pAlcoholList.length ? pAlcoholList[pAlcoholList.length - 1] : null;
 
@@ -1263,7 +1288,7 @@ function renderProgressDetail(pid){
   }
 
   if(!pex.length && !pAlcoholList.length){
-    container.innerHTML = `<div class="panel"><div class="panel-body"><div class="empty">📋 ${p.name} belum memiliki data pemeriksaan tensi maupun tes alkohol</div></div></div>`;
+    container.innerHTML = `<div class="panel"><div class="panel-body"><div class="empty">📋 ${p.name} belum memiliki data pemeriksaan maupun tes alkohol</div></div></div>`;
     return;
   }
 
@@ -1298,7 +1323,7 @@ function renderProgressDetail(pid){
   }).join('');
 
   const alcoholRows = pAlcoholList.length ? pAlcoholList.slice().reverse().map((alc, idx) => {
-    const isPass = alc.status === 'Pass' || alc.status === 'Aman';
+    const isPass = alc.status.toLowerCase().includes('pass') || alc.status.toLowerCase().includes('aman');
     const badgeColor = isPass ? 'background:#d1fae5;color:#065f46;' : 'background:#fee2e2;color:#991b1b;';
     return `<tr>
       <td>#${pAlcoholList.length - idx}</td>
@@ -1312,7 +1337,7 @@ function renderProgressDetail(pid){
   let bacSubText = 'Belum pernah tes';
   let bacColor = '#64748b';
   if (lastAlc) {
-    const isPass = lastAlc.status === 'Pass' || lastAlc.status === 'Aman';
+    const isPass = lastAlc.status.toLowerCase().includes('pass') || lastAlc.status.toLowerCase().includes('aman');
     bacValText = lastAlc.status;
     bacSubText = fmt(lastAlc.examDate);
     bacColor = isPass ? '#059669' : '#dc2626';
@@ -1344,7 +1369,6 @@ function renderProgressDetail(pid){
       <div class="panel-head">
         <h2>🍺 Riwayat Tes Alkohol (Alcohol Screening)</h2>
         <div style="display:flex;gap:8px">
-          <button class="btn btn-pdf btn-sm" onclick="printAlcoholPDF('${p.name}', '${p.nik}')">🖨️ Cetak PDF</button>
           <button class="btn btn-sm" style="background:#25d366;color:#fff" onclick="shareAlcoholToWhatsApp('${p.name}', '${p.nik}')">📲 Kirim ke WA</button>
         </div>
       </div>
@@ -1360,7 +1384,6 @@ function renderProgressDetail(pid){
     <div class="panel" style="margin-bottom:18px">
       <div class="panel-head"><h2>📋 Tabel Riwayat Lengkap Tensi</h2>
         <div style="display:flex;gap:8px">
-          <button class="btn btn-pdf btn-sm" onclick="exportPDF()">🖨️ Cetak PDF</button>
           <button class="btn btn-sm" style="background:#25d366;color:#fff" onclick="kirimWA(${pid})">📲 Kirim ke WA</button>
         </div>
       </div>
@@ -1410,7 +1433,7 @@ function delExamProgress(eid, pid){
 
 function renderMonthly(){
   const allMonths = [...new Set(exams.map(e => monthKey(e.examDate)).filter(Boolean))].sort();
-  const selMonth = allMonths[allMonths.length - 1] || monthKey(new Date().toISOString());
+  const selMonth = allMonths[allMonths.length - 1] || monthKey(getToday());
   renderMonthlyData(selMonth, allMonths);
 }
 
@@ -1418,7 +1441,7 @@ function renderMonthlyData(mk, allMonths){
   const pageMonthly = document.getElementById('page-monthly');
   if(!pageMonthly) return;
   if(!allMonths) allMonths = [...new Set(exams.map(e => monthKey(e.examDate)).filter(Boolean))].sort();
-  if(!mk) mk = allMonths[allMonths.length - 1] || monthKey(new Date().toISOString());
+  if(!mk) mk = allMonths[allMonths.length - 1] || monthKey(getToday());
 
   const opts = allMonths.map(m => `<option value="${m}" ${m === mk ? 'selected' : ''}>${monthLabel(m)}</option>`).join('');
   const me = exams.filter(e => monthKey(e.examDate) === mk);
@@ -1460,7 +1483,7 @@ function renderMonthlyData(mk, allMonths){
       <div class="panel"><div class="panel-head"><h2>📊 Tren Sistolik 6 Bulan Terakhir</h2></div><div class="panel-body"><div class="chart-box"><canvas id="mTrendChart"></canvas></div></div></div>
       <div class="panel"><div class="panel-head"><h2>🗂 Distribusi Kategori Bulan Ini</h2></div><div class="panel-body"><div class="chart-box"><canvas id="mCatChart"></canvas></div></div></div>
     </div>
-    <div class="panel"><div class="panel-head"><h2>📋 Detail Pemeriksaan — ${monthLabel(mk)}</h2><button class="btn btn-pdf btn-sm" onclick="exportPDF()">🖨️ PDF</button></div>
+    <div class="panel"><div class="panel-head"><h2>📋 Detail Pemeriksaan — ${monthLabel(mk)}</h2></div>
       <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Trend</th><th>Kategori</th></tr></thead>
       <tbody>${rows || '<tr><td colspan="6" class="empty">Tidak ada pemeriksaan bulan ini</td></tr>'}</tbody></table></div></div>`;
 
@@ -1508,7 +1531,7 @@ function renderFollowups(){
       <div class="form-grid">
         <div class="fg"><label>Pekerja</label><select id="fPid">${opts}</select></div>
         <div class="fg"><label>Alasan Follow-Up</label><input id="fReason" placeholder="Keterangan..."></div>
-        <div class="fg"><label>Tanggal Follow-Up</label><input id="fDate" type="date"></div>
+        <div class="fg"><label>Tanggal Follow-Up</label><input id="fDate" type="date" value="${getToday()}"></div>
       </div>
       <button class="btn btn-primary" onclick="addFollowup()">💾 Simpan Follow-Up</button>
     </div></div>
@@ -1901,7 +1924,7 @@ function renderAlcoholPage() {
           </div>
           <div class="fg">
             <label>Tanggal Pemeriksaan</label>
-            <input id="alcDate" type="date" value="${new Date().toISOString().slice(0,10)}">
+            <input id="alcDate" type="date" value="${getToday()}">
           </div>
         </div>
 
@@ -1932,10 +1955,11 @@ function renderAlcoholPage() {
 
 function renderAlcoholRows() {
   if (alcoholExams.length === 0) return '<tr><td colspan="6" class="empty">Belum ada riwayat pemeriksaan alkohol</td></tr>';
-  const sorted = [...alcoholExams].sort((a, b) => new Date(b.examDate) - new Date(a.examDate));
+  const sorted = [...alcoholExams].sort((a, b) => String(b.examDate).localeCompare(String(a.examDate)));
   return sorted.map(e => {
     const pat = patients.find(p => String(p.id) === String(e.patientId)) || {};
-    const badgeCls = e.status === 'Pass' ? 'b-nor' : 'b-ht2';
+    const isPass = e.status.toLowerCase().includes('pass') || e.status.toLowerCase().includes('aman');
+    const badgeCls = isPass ? 'b-nor' : 'b-ht2';
     return `
       <tr>
         <td>${e.examDate || '-'}</td>
@@ -2028,90 +2052,41 @@ function handleAlcoholScanResult(codeText) {
 }
 
 // ============================================================
-// FUNGSI SHARE WHATSAPP & CETAK PDF TES ALKOHOL
+// 📲 FUNGSI SHARE WHATSAPP ALKOHOL (DENGAN REKOMENDASI)
 // ============================================================
-function shareAlcoholToWhatsApp(workerName, workerNik, alcoholList) {
-  if (!alcoholList || alcoholList.length === 0) {
+function shareAlcoholToWhatsApp(workerName, workerNik) {
+  const list = alcoholExams.filter(a => {
+    const p = patients.find(x => x.id === a.patientId);
+    return p && (p.nik === workerNik || p.name === workerName);
+  }).sort((a, b) => String(a.examDate).localeCompare(String(b.examDate)));
+
+  if (list.length === 0) {
     alert("Tidak ada riwayat tes alkohol untuk dibagikan.");
     return;
   }
 
-  const latest = alcoholList[alcoholList.length - 1];
+  const latest = list[list.length - 1];
+  const isPass = latest.status.toLowerCase().includes('pass') || latest.status.toLowerCase().includes('aman');
+  
+  // REKOMENDASI BERDASARKAN STATUS
+  const rekomendasi = isPass 
+    ? "✅ Pekerja dalam kondisi *AMAN* dan *LAYAK KERJA*. Pertahankan gaya hidup sehat dan patuhi aturan perusahaan." 
+    : "🚨 Pekerja terindikasi mengonsumsi alkohol dan dinyatakan *TIDAK LAYAK BEKERJA* hari ini. Harap segera melapor ke atasan untuk tindak lanjut sesuai SOP K3!";
+
   let text = `📋 *LAPORAN TES ALKOHOL (BAC TEST)*\n`;
-  text += `----------------------------------------\n`;
+  text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
   text += `👤 *Nama:* ${workerName}\n`;
   text += `🆔 *NIK:* ${workerNik || '-'}\n`;
-  text += `📅 *Tes Terakhir:* ${latest.examDate || '-'}\n`;
-  text += `🔍 *Status:* ${latest.status || '-'}\n`;
-  text += `📊 *Kadar Alkohol:* ${latest.alcoholLevel || '-'}\n`;
-  text += `📝 *Catatan:* ${latest.notes || '-'}\n`;
-  text += `----------------------------------------\n`;
-  text += `*Total Riwayat Tes:* ${alcoholList.length} kali\n\n`;
+  text += `📅 *Tes Terakhir:* ${fmt(latest.examDate)}\n`;
+  text += `🔍 *Status:* ${latest.status}\n`;
+  text += `📊 *Kadar BAC:* ${latest.alcoholLevel}\n`;
+  text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `*💡 Rekomendasi Klinis:*\n${rekomendasi}\n\n`;
+  text += `_Sistem Pemantauan Keselamatan Kerja_\n`;
   text += `_Powered by Pausbiru7_`;
 
   const encodedUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
   window.open(encodedUrl, '_blank');
-}
-
-function printAlcoholPDF(workerName, workerNik) {
-  let allAlcohol = [];
-  try {
-    allAlcohol = JSON.parse(localStorage.getItem('bpm_alcohol') || '[]');
-  } catch(e) { allAlcohol = []; }
-
-  const pNikStr = String(workerNik || '').trim();
-  const pAlcoholList = allAlcohol.filter(a => String(a.nik || '').trim() === pNikStr || String(a.patientId || '').trim() === pNikStr).reverse();
-
-  if (pAlcoholList.length === 0) {
-    alert("Tidak ada data riwayat tes alkohol untuk dicetak.");
-    return;
-  }
-
-  const rowsHtml = pAlcoholList.map((alc, idx) => `
-    <tr>
-      <td style="text-align: center; padding: 10px; border: 1px solid #cbd5e1;">${idx + 1}</td>
-      <td style="padding: 10px; border: 1px solid #cbd5e1;">${alc.examDate || '-'}</td>
-      <td style="padding: 10px; border: 1px solid #cbd5e1; font-weight: bold;">${alc.status || 'Pass'}</td>
-      <td style="padding: 10px; border: 1px solid #cbd5e1;">${alc.alcoholLevel || '-'}</td>
-    </tr>
-  `).join('');
-
-  const printWindow = window.open('', '_blank', 'width=900,height=700');
-  
-  // BAGIAN INI MEMBUAT HALAMAN CETAK BARU (HTML di dalam JS)
-  printWindow.document.write(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <title>Laporan Tes Alkohol - ${workerName}</title>
-      <style>
-        body { font-family: Arial, sans-serif; padding: 20px; color: #1e293b; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #cbd5e1; padding: 8px 10px; font-size: 13px; text-align: left; }
-        th { background: #f1f5f9; }
-      </style>
-    </head>
-    <body>
-      <h2>LAPORAN RIWAYAT TES ALKOHOL</h2>
-      <p><strong>Nama:</strong> ${workerName} | <strong>NIK:</strong> ${workerNik || '-'}</p>
-      <table>
-        <thead><tr><th>No</th><th>Tanggal</th><th>Status</th><th>Nilai BAC</th></tr></thead>
-        <tbody>${rowsHtml}</tbody>
-      </table>
-      <script>
-        window.onload = function() {
-          setTimeout(function() {
-            window.print();
-            window.close();
-          }, 500);
-        }
-      <\/script>
-    </body>
-    </html>
-  `);
-  
-printWindow.document.close();
 }
 
 // INISIALISASI AWAL
