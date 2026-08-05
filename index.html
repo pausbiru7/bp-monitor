@@ -2180,7 +2180,8 @@ function getRekomTeks(s, d, prevS){
   };
 
   return map[st.key] || '-';
-}// ══════════════════════════════════════════
+}
+// ══════════════════════════════════════════
 // 🔐 LOGIN PIN
 // ══════════════════════════════════════════
 const DEFAULT_PIN = '123456';
@@ -2201,7 +2202,6 @@ function pinPress(digit){
     setTimeout(checkPin, 150);
   }
 }
-
 function pinDelete(){
   pinInput = pinInput.slice(0, -1);
   updatePinDots();
