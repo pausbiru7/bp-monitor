@@ -382,7 +382,7 @@ table th, table td {
 "use strict";
 
 // ══════════════════════════════════════════
-// 🔐 LOGIN PIN (DIPINDAHKAN KE ATAS AGAR TERBACA DULU)
+// 🔐 LOGIN PIN
 // ══════════════════════════════════════════
 const DEFAULT_PIN = '123456';
 let pinInput = '';
@@ -483,8 +483,7 @@ function save(){
 
 // ══ KEPMENKES 4634/2021 CLASSIFICATION ════
 function getStatus(s, d){
-  s = +s;
-  d = +d;
+  s = +s; d = +d;
   if(s >= 180 || d >= 110) return {key:'ht3', label:'Hipertensi Derajat 3', cls:'b-ht3', color:'#7c3aed'};
   if(s >= 160 || d >= 100) return {key:'ht2', label:'Hipertensi Derajat 2', cls:'b-ht2', color:'#dc2626'};
   if(s >= 140 && d < 90)   return {key:'iso', label:'HT Sistolik Terisolasi', cls:'b-iso', color:'#2563eb'};
@@ -499,78 +498,19 @@ function getStatus(s, d){
 function getRekomendasi(s, d, prevS, pex){
   const st = getStatus(s, d);
   const trend = prevS != null ? (s < prevS ? 'turun' : s > prevS ? 'naik' : 'tetap') : null;
-  const trendNote =
-    trend === 'turun'
-      ? 'Tekanan darah menunjukkan perbaikan. '
-      : trend === 'naik'
-        ? 'Perhatian: tekanan darah meningkat dari pemeriksaan sebelumnya. '
-        : '';
-
+  const trendNote = trend === 'turun' ? 'Tekanan darah menunjukkan perbaikan. ' : trend === 'naik' ? 'Perhatian: tekanan darah meningkat dari pemeriksaan sebelumnya. ' : '';
   const rekom = {
-    opt: {
-      icon: '✅',
-      judul: 'Optimal — Pertahankan!',
-      isi: `${trendNote}Tekanan darah dalam kondisi optimal. Pertahankan gaya hidup sehat: olahraga teratur, diet rendah garam, hindari stres. Kontrol ulang 12 bulan.`,
-      jadwal: 'Kontrol: 12 bulan'
-    },
-    nor: {
-      icon: '✅',
-      judul: 'Normal — Jaga Konsistensi',
-      isi: `${trendNote}Tekanan darah normal. Lanjutkan pola hidup sehat. Batasi konsumsi garam <5g/hari, olahraga 30 menit/hari. Kontrol ulang 6–12 bulan.`,
-      jadwal: 'Kontrol: 6–12 bulan'
-    },
-    pre: {
-      icon: '⚠️',
-      judul: 'Normal-Tinggi — Waspadai',
-      isi: `${trendNote}Tekanan darah di batas normal-tinggi. Modifikasi gaya hidup segera: kurangi garam, turunkan berat badan jika overweight, olahraga aerobik rutin, batasi alkohol & rokok. Belum perlu obat, namun perlu monitoring ketat.`,
-      jadwal: 'Kontrol: 3–6 bulan'
-    },
-    ht1: {
-      icon: '🔶',
-      judul: 'Hipertensi Derajat 1 — Tindakan Diperlukan',
-      isi: `${trendNote}Diperlukan modifikasi gaya hidup intensif + evaluasi dokter. Pertimbangkan terapi farmakologis jika ada faktor risiko kardiovaskular. Pantau tekanan darah mandiri setiap hari. Batasi garam <5g/hari.`,
-      jadwal: 'Kontrol: 1–3 bulan'
-    },
-    ht2: {
-      icon: '🔴',
-      judul: 'Hipertensi Derajat 2 — Segera Tangani',
-      isi: `${trendNote}Wajib terapi antihipertensi + modifikasi gaya hidup. Rujuk ke dokter spesialis penyakit dalam. Pantau tekanan darah harian. Periksa organ target (jantung, ginjal, mata).`,
-      jadwal: 'Kontrol: 2–4 minggu'
-    },
-    ht3: {
-      icon: '🚨',
-      judul: 'Hipertensi Derajat 3 — DARURAT!',
-      isi: `${trendNote}Tekanan darah sangat tinggi — risiko kerusakan organ akut. SEGERA rujuk ke IGD/RS. Hindari aktivitas berat. Jangan hentikan obat tiba-tiba. Evaluasi tanda-tanda komplikasi (nyeri dada, sesak, gangguan penglihatan).`,
-      jadwal: 'SEGERA ke IGD/RS'
-    },
-   iso: {
-      icon: '🔵',
-      judul: 'HT Sistolik Terisolasi — Perlu Evaluasi',
-      isi: `${trendNote}Tekanan sistolik tinggi namun diastolik normal — sering pada lansia. Evaluasi dokter diperlukan. Perhatikan risiko kardiovaskular. Terapi disesuaikan kondisi pekerja.`,
-      jadwal: 'Kontrol: 1–2 bulan'
-    },
-    low: {
-      icon: '🧊',
-      judul: 'Hipotensi (Tekanan Darah Rendah)',
-      isi: `${trendNote}Tekanan darah di bawah normal. Jika disertai gejala pusing, lemas, pucat, atau pandangan gelap, segera istirahat (berbaring) dan minum air yang cukup. Konsultasi ke dokter/klinik jika keluhan berlanjut.`,
-      jadwal: 'Bila ada keluhan'
-    }
+    opt: { icon: '✅', judul: 'Optimal — Pertahankan!', isi: `${trendNote}Tekanan darah optimal. Kontrol ulang 12 bulan.`, jadwal: 'Kontrol: 12 bulan' },
+    nor: { icon: '✅', judul: 'Normal — Jaga Konsistensi', isi: `${trendNote}Tekanan darah normal. Kontrol ulang 6–12 bulan.`, jadwal: 'Kontrol: 6–12 bulan' },
+    pre: { icon: '⚠️', judul: 'Normal-Tinggi — Waspadai', isi: `${trendNote}Modifikasi gaya hidup segera.`, jadwal: 'Kontrol: 3–6 bulan' },
+    ht1: { icon: '🔶', judul: 'Hipertensi Derajat 1', isi: `${trendNote}Diperlukan evaluasi dokter & modifikasi gaya hidup.`, jadwal: 'Kontrol: 1–3 bulan' },
+    ht2: { icon: '🔴', judul: 'Hipertensi Derajat 2', isi: `${trendNote}Wajib terapi antihipertensi.`, jadwal: 'Kontrol: 2–4 minggu' },
+    ht3: { icon: '🚨', judul: 'Hipertensi Derajat 3 — DARURAT!', isi: `${trendNote}SEGERA rujuk ke IGD/RS.`, jadwal: 'SEGERA ke IGD/RS' },
+    iso: { icon: '🔵', judul: 'HT Sistolik Terisolasi', isi: `${trendNote}Evaluasi dokter diperlukan.`, jadwal: 'Kontrol: 1–2 bulan' },
+    low: { icon: '🧊', judul: 'Hipotensi', isi: `${trendNote}Segera istirahat dan minum air cukup.`, jadwal: 'Bila ada keluhan' }
   };
-
   const r = rekom[st.key];
   return `<div class="rekom-box ${st.key}"><div class="rekom-title">${r.icon} ${r.judul}</div><div>${r.isi}</div><div style="margin-top:6px;font-weight:600;font-size:.78rem">📅 ${r.jadwal}</div></div>`;
-}
-
-function fmtDob(d){
-  if(!d) return '-';
-  const raw = String(d).trim();
-  const s = raw.includes('T') ? raw.slice(0, 10) : raw;
-  const p = s.split('-');
-  if(p.length !== 3) return raw;
-  const bulanNama = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-  const blnNum = parseInt(p[1], 10);
-  if(blnNum < 1 || blnNum > 12) return raw;
-  return `${p[2]} ${bulanNama[blnNum]} ${p[0]}`;
 }
 
 function calcAge(dob){
@@ -579,14 +519,10 @@ function calcAge(dob){
   const s = raw.includes('T') ? raw.slice(0, 10) : raw;
   const p = s.split('-');
   if(p.length !== 3) return '-';
-  const bYear = parseInt(p[0], 10);
-  const bMonth = parseInt(p[1], 10) - 1;
-  const bDay = parseInt(p[2], 10);
+  const bYear = parseInt(p[0], 10), bMonth = parseInt(p[1], 10) - 1, bDay = parseInt(p[2], 10);
   const t = new Date();
   let a = t.getFullYear() - bYear;
-  if(t.getMonth() < bMonth || (t.getMonth() === bMonth && t.getDate() < bDay)){
-    a--;
-  }
+  if(t.getMonth() < bMonth || (t.getMonth() === bMonth && t.getDate() < bDay)) a--;
   return a;
 }
 
@@ -598,21 +534,16 @@ function fmt(d){
   if(p.length !== 3) return raw;
   const bulanNama = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
   const blnNum = parseInt(p[1], 10);
-  if(blnNum < 1 || blnNum > 12) return raw;
-  return `${p[2]} ${bulanNama[blnNum]} ${p[0]}`;
+  return blnNum >= 1 && blnNum <= 12 ? `${p[2]} ${bulanNama[blnNum]} ${p[0]}` : raw;
 }
 
-function monthKey(d){
-  return d ? String(d).slice(0, 7) : null;
-}
-
+function monthKey(d){ return d ? String(d).slice(0, 7) : null; }
 function monthLabel(k){
   if(!k) return '';
   const [y, m] = String(k).split('-');
   const bulanNama = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
   const blnIdx = parseInt(m, 10) - 1;
-  if(blnIdx < 0 || blnIdx > 11) return k;
-  return `${bulanNama[blnIdx]} ${y}`;
+  return blnIdx >= 0 && blnIdx <= 11 ? `${bulanNama[blnIdx]} ${y}` : k;
 }
 
 function trendArrow(c, p){
@@ -629,9 +560,8 @@ function pName(pid){
 }
 
 function pExams(pid){
-  return exams
-    .filter(e => String(e.patientId || e.workerId || e.id_pekerja) === String(pid))
-    .sort((a, b) => String(a.examDate || a.date || a.tanggal || '').localeCompare(String(b.examDate || b.date || b.tanggal || '')));
+  return exams.filter(e => String(e.patientId || e.workerId || e.id_pekerja) === String(pid))
+    .sort((a, b) => String(a.examDate || '').localeCompare(String(b.examDate || '')));
 }
 
 function lastExam(pid){
@@ -639,47 +569,26 @@ function lastExam(pid){
   return ex.length ? ex[ex.length - 1] : null;
 }
 
-function vCls(v, hi, md){
-  return v >= hi ? 'v-hi' : v >= md ? 'v-md' : 'v-ok';
-}
+function vCls(v, hi, md){ return v >= hi ? 'v-hi' : v >= md ? 'v-md' : 'v-ok'; }
+function destroyChart(id){ const c = Chart.getChart(id); if(c) c.destroy(); }
 
-function destroyChart(id){
-  const c = Chart.getChart(id);
-  if(c) c.destroy();
-}
-
-document.getElementById('currentDate').textContent = new Date().toLocaleDateString('id-ID', {
-  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-});
-document.getElementById('printDate').textContent = new Date().toLocaleDateString('id-ID', {
-  day: '2-digit', month: 'long', year: 'numeric'
-});
+document.getElementById('currentDate').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+document.getElementById('printDate').textContent = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
 
 const pages = ['dashboard', 'records', 'patients', 'progress', 'monthly', 'followup', 'alcohol'];
-const titles = {
-  dashboard: 'Dashboard',
-  records: 'Input Pemeriksaan',
-  patients: 'Master Data Pekerja',
-  progress: 'Progress Pekerja',
-  monthly: 'Laporan Bulanan',
-  followup: 'Manajemen Follow-Up',
-  alcohol: 'Tes Alkohol (BAC)'
-};
+const titles = { dashboard: 'Dashboard', records: 'Input Pemeriksaan', patients: 'Master Data Pekerja', progress: 'Progress Pekerja', monthly: 'Laporan Bulanan', followup: 'Manajemen Follow-Up', alcohol: 'Tes Alkohol (BAC)' };
 
 function showPage(p){
   pages.forEach(k => {
     const pageEl = document.getElementById('page-' + k);
     if(pageEl) pageEl.style.display = k === p ? 'block' : 'none';
   });
-
   document.querySelectorAll('.nav-item').forEach(n => {
     const targetPage = n.getAttribute('onclick')?.match(/showPage\('([^']+)'\)/)?.[1];
     n.classList.toggle('active', targetPage === p);
   });
-
   const statsArea = document.getElementById('statsArea');
   if(statsArea) statsArea.style.display = p === 'dashboard' ? 'grid' : 'none';
-
   const pageTitle = document.getElementById('pageTitle');
   if(pageTitle) pageTitle.textContent = titles[p] || '';
 
@@ -690,19 +599,10 @@ function showPage(p){
   if(p === 'monthly') renderMonthly();
   if(p === 'followup') renderFollowups();
   if(p === 'alcohol') renderAlcoholPage();
-
   if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
 }
 
-function exportPDF(){
-  const printDate = document.getElementById('printDate');
-  if(printDate){
-    printDate.textContent = new Date().toLocaleDateString('id-ID', {
-      day: '2-digit', month: 'long', year: 'numeric'
-    });
-  }
-  window.print();
-}
+function exportPDF(){ window.print(); }
 
 function renderStats(){
   const allLast = patients.map(p => lastExam(p.id)).filter(Boolean);
@@ -715,13 +615,12 @@ function renderStats(){
 
   const statsArea = document.getElementById('statsArea');
   if(!statsArea) return;
-
   statsArea.innerHTML = `
-    <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">👥</div><div class="stat-info"><h3>Total Pekerja</h3><div class="val">${patients.length}</div><div class="sub">Terdaftar</div></div></div>
-    <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🔴</div><div class="stat-info"><h3>Hipertensi</h3><div class="val" style="color:#dc2626">${ht}</div><div class="sub">Perlu penanganan</div></div></div>
-    <div class="stat-card"><div class="stat-icon" style="background:#dcfce7">🟢</div><div class="stat-info"><h3>Optimal/Normal</h3><div class="val" style="color:#16a34a">${nor}</div><div class="sub">Kondisi baik</div></div></div>
-    <div class="stat-card"><div class="stat-icon" style="background:#fef3c7">🔔</div><div class="stat-info"><h3>Follow-Up</h3><div class="val" style="color:#d97706">${pend}</div><div class="sub">Menunggu</div></div></div>
-    <div class="stat-card" style="border: ${alcFail > 0 ? '1px solid #fecaca' : 'none'}"><div class="stat-icon" style="background:#fce7f3">🍷</div><div class="stat-info"><h3>Tes Alkohol</h3><div class="val">${alcTotal}</div><div class="sub" style="${alcFail > 0 ? 'color:#dc2626;font-weight:bold' : 'color:#16a34a'}">${alcFail > 0 ? '⚠️ ' + alcFail + ' Kasus Fail' : 'Semua Pass ✓'}</div></div></div>`;
+    <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">👥</div><div class="stat-info"><h3>Total Pekerja</h3><div class="val">${patients.length}</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🔴</div><div class="stat-info"><h3>Hipertensi</h3><div class="val" style="color:#dc2626">${ht}</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:#dcfce7">🟢</div><div class="stat-info"><h3>Optimal/Normal</h3><div class="val" style="color:#16a34a">${nor}</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:#fef3c7">🔔</div><div class="stat-info"><h3>Follow-Up</h3><div class="val" style="color:#d97706">${pend}</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:#fce7f3">🍷</div><div class="stat-info"><h3>Tes Alkohol</h3><div class="val">${alcTotal}</div><div class="sub" style="${alcFail > 0 ? 'color:#dc2626;font-weight:bold' : 'color:#16a34a'}">${alcFail > 0 ? '⚠️ ' + alcFail + ' Fail' : 'Semua Pass ✓'}</div></div></div>`;
 }
 
 function renderDashboard(){
@@ -2203,7 +2102,7 @@ function printAlcoholPDF(workerName, workerNik) {
             window.close();
           }, 500);
         }
-      </script>
+      <\/script>
     </body>
     </html>
   `);
