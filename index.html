@@ -3046,6 +3046,33 @@ function shareAlcoholToWhatsApp(workerName, workerNik, alcoholList) {
   const encodedUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
   window.open(encodedUrl, '_blank');
 }
+// ============================================================
+// FUNGSI SHARE WHATSAPP & CETAK PDF TES ALKOHOL
+// ============================================================
+function shareAlcoholToWhatsApp(workerName, workerNik, alcoholList) {
+  if (!alcoholList || alcoholList.length === 0) {
+    alert("Tidak ada riwayat tes alkohol untuk dibagikan.");
+    return;
+  }
+
+  const latest = alcoholList[alcoholList.length - 1];
+  
+  let text = `📋 *LAPORAN TES ALKOHOL (BAC TEST)*\n`;
+  text += `----------------------------------------\n`;
+  text += `👤 *Nama:* ${workerName}\n`;
+  text += `🆔 *NIK:* ${workerNik || '-'}\n`;
+  text += `📅 *Tes Terakhir:* ${latest.examDate || '-'}\n`;
+  text += `🔍 *Status:* ${latest.status || '-'}\n`;
+  text += `📊 *Kadar Alkohol:* ${latest.alcoholLevel || '-'}\n`;
+  text += `📝 *Catatan:* ${latest.notes || '-'}\n`;
+  text += `----------------------------------------\n`;
+  text += `*Total Riwayat Tes:* ${alcoholList.length} kali\n\n`;
+  text += `_Powered by Pausbiru7_`;
+
+  const encodedUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  window.open(encodedUrl, '_blank');
+}
+
 function printAlcoholPDF(workerName, workerNik) {
   // 1. Ambil data alkohol dari localStorage
   let allAlcohol = [];
@@ -3087,7 +3114,7 @@ function printAlcoholPDF(workerName, workerNik) {
     `;
   }).join('');
 
-  // 4. Buka Jendela Cetak Terpisah (Pop-up Window) dengan CSS khusus cetak agar tidak terpotong
+  // 4. Buka Jendela Cetak Terpisah (Pop-up Window) dengan format khusus laporan tes alkohol
   const printWindow = window.open('', '_blank', 'width=900,height=700');
   printWindow.document.write(`
     <!DOCTYPE html>
@@ -3169,9 +3196,7 @@ function printAlcoholPDF(workerName, workerNik) {
   `);
   printWindow.document.close();
 }
-
 // ============================================================
-
 </script>
 </body>
 </html>
