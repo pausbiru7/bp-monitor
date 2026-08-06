@@ -588,7 +588,7 @@ function renderDashboard(){
     const isPass = a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman');
     const badgeCls = isPass ? 'b-nor' : 'b-ht2';
     const pat = patients.find(p => Number(p.id) === Number(a.patientId)) || {};
-    return `<tr><td><strong>${escapeHtml(pat.name || a.patientName || '-')}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
+    return `<tr><td><strong>${escapeHtml(pat.name || '-')}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
   }).join('');
 
   const alcPass = alcoholExams.filter(a => a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman')).length;
@@ -1126,9 +1126,6 @@ function delPatient(id){
   if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
 }
 
-// ══════════════════════════════════════════
-// 📈 PROGRESS PEKERJA (DENGAN LAPORAN PDF)
-// ══════════════════════════════════════════
 function renderProgress(){
   const pageProgress = document.getElementById('page-progress');
   if(!pageProgress) return;
@@ -1329,7 +1326,7 @@ function renderProgressDetail(pid){
   }
 }
 
-// 🖨️ FUNGSI BARU: CETAK PDF LAPORAN TERPADU PEKERJA
+// 🖨️ FUNGSI CETAK PDF LAPORAN PEKERJA
 function printProgressPDF(pid) {
   const p = patients.find(x => Number(x.id) === Number(pid));
   if (!p) return alert("Data pekerja tidak ditemukan.");
@@ -1342,17 +1339,14 @@ function printProgressPDF(pid) {
   const last = pex.length ? pex[pex.length - 1] : null;
   const stLast = last ? getStatus(last.systolic, last.diastolic) : null;
 
-  // Render Baris Tensi
   let bpRows = pex.length > 0 
     ? pex.map((e, i) => `<tr><td style="text-align:center">${i+1}</td><td>${fmt(e.examDate)}</td><td style="text-align:center">${e.systolic} / ${e.diastolic}</td><td style="text-align:center">${e.pulse || '-'}</td><td>${getStatus(e.systolic, e.diastolic).label}</td></tr>`).join('') 
     : `<tr><td colspan="5" style="text-align:center; padding:10px;">Belum ada data pemeriksaan tensi</td></tr>`;
 
-  // Render Baris Alkohol
   let alcRows = pAlcoholList.length > 0 
     ? pAlcoholList.map((a, i) => `<tr><td style="text-align:center">${i+1}</td><td>${fmt(a.examDate)}</td><td style="text-align:center">${a.alcoholLevel}</td><td style="text-align:center; font-weight:bold;">${a.status}</td></tr>`).join('') 
     : `<tr><td colspan="4" style="text-align:center; padding:10px;">Belum ada riwayat tes alkohol</td></tr>`;
 
-  // Template HTML Laporan (Bersih & Profesional)
   const html = `<!DOCTYPE html>
   <html lang="id">
   <head>
@@ -1431,8 +1425,11 @@ function delExamProgress(eid, pid){
   renderStats();
 }
 
+// ══════════════════════════════════════════
+// 🗓️ LAPORAN BULANAN (GABUNGAN TENSI & ALKOHOL)
+// ══════════════════════════════════════════
 function renderMonthly(){
-  const allMonths = [...new Set(exams.map(e => monthKey(e.examDate)).filter(Boolean))].sort();
+  const allMonths = [...new Set([...exams.map(e => monthKey(e.examDate)), ...alcoholExams.map(a => monthKey(a.examDate))].filter(Boolean))].sort();
   const selMonth = allMonths[allMonths.length - 1] || monthKey(getToday());
   renderMonthlyData(selMonth, allMonths);
 }
@@ -1440,13 +1437,22 @@ function renderMonthly(){
 function renderMonthlyData(mk, allMonths){
   const pageMonthly = document.getElementById('page-monthly');
   if(!pageMonthly) return;
-  if(!allMonths) allMonths = [...new Set(exams.map(e => monthKey(e.examDate)).filter(Boolean))].sort();
+  if(!allMonths) allMonths = [...new Set([...exams.map(e => monthKey(e.examDate)), ...alcoholExams.map(a => monthKey(a.examDate))].filter(Boolean))].sort();
   if(!mk) mk = allMonths[allMonths.length - 1] || monthKey(getToday());
 
   const opts = allMonths.map(m => `<option value="${m}" ${m === mk ? 'selected' : ''}>${monthLabel(m)}</option>`).join('');
-  const me = exams.filter(e => monthKey(e.examDate) === mk);
+  
+  // Data Tensi
+  const me = exams.filter(e => monthKey(e.examDate) === mk).sort((a,b)=>String(b.examDate).localeCompare(String(a.examDate)));
   const avgS = me.length ? Math.round(me.reduce((a, e) => a + e.systolic, 0) / me.length) : 0;
   const avgD = me.length ? Math.round(me.reduce((a, e) => a + e.diastolic, 0) / me.length) : 0;
+  
+  // Data Alkohol
+  const meAlc = alcoholExams.filter(a => monthKey(a.examDate) === mk).sort((a,b)=>String(b.examDate).localeCompare(String(a.examDate)));
+  const alcPass = meAlc.filter(a => a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman')).length;
+  const alcFail = meAlc.length - alcPass;
+
+  // Trend 6 Bulan Tensi
   const last6 = allMonths.slice(-6);
   const l6Avgs = last6.map(m => {
     const me2 = exams.filter(e => monthKey(e.examDate) === m);
@@ -1470,22 +1476,42 @@ function renderMonthlyData(mk, allMonths){
     return `<tr><td><strong>${pName(e.patientId)}</strong></td><td>${fmt(e.examDate)}</td><td class="${vCls(e.systolic,140,120)}">${e.systolic}</td><td class="${vCls(e.diastolic,90,80)}">${e.diastolic}</td><td>${trendArrow(e.systolic,prev?.systolic)}</td><td><span class="badge ${st.cls}">${st.label}</span></td></tr>`;
   }).join('');
 
+  const alcRows = meAlc.map(a => {
+    const isPass = a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman');
+    const badgeCls = isPass ? 'b-nor' : 'b-ht2';
+    const pat = patients.find(p => Number(p.id) === Number(a.patientId)) || {};
+    return `<tr><td><strong>${escapeHtml(pat.name || '-')}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
+  }).join('');
+
   pageMonthly.innerHTML = `
-    <div class="month-select"><label style="font-size:.83rem;font-weight:600;color:#475569">Pilih Bulan:</label>
-      <select onchange="renderMonthlyData(this.value)">${opts}</select>
-      <span style="font-size:.8rem;color:#64748b">${me.length} pemeriksaan</span></div>
-    <div class="grid-3" style="margin-bottom:18px">
-      <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">📋</div><div class="stat-info"><h3>Total Periksa</h3><div class="val">${me.length}</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🩺</div><div class="stat-info"><h3>Rata-rata Sistolik</h3><div class="val ${avgS ? vCls(avgS,140,120) : ''}">${avgS || '-'}</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#dbeafe">💙</div><div class="stat-info"><h3>Rata-rata Diastolik</h3><div class="val ${avgD ? vCls(avgD,90,80) : ''}">${avgD || '-'}</div></div></div>
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:16px;">
+      <div class="month-select" style="margin:0;">
+        <label style="font-size:.83rem;font-weight:600;color:#475569">Pilih Bulan:</label>
+        <select onchange="renderMonthlyData(this.value)">${opts}</select>
+      </div>
+      <button class="btn btn-pdf" style="padding: 10px 18px; font-size: 0.9rem;" onclick="printMonthlyPDF('${mk}')">🖨️ Cetak Laporan Bulanan (PDF)</button>
     </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;margin-bottom:18px">
+      <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">📋</div><div class="stat-info"><h3>Total Tensi</h3><div class="val">${me.length}</div><div class="sub">Pemeriksaan</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🩺</div><div class="stat-info"><h3>Rata-rata Sistolik</h3><div class="val ${avgS ? vCls(avgS,140,120) : ''}">${avgS || '-'}</div><div class="sub">Bulan Ini</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#fce7f3">🍷</div><div class="stat-info"><h3>Tes Alkohol</h3><div class="val">${meAlc.length}</div><div class="sub" style="${alcFail > 0 ? 'color:#dc2626;font-weight:bold' : 'color:#16a34a'}">${alcFail > 0 ? '⚠️ ' + alcFail + ' Kasus Fail' : 'Semua Pass ✓'}</div></div></div>
+    </div>
+    
     <div class="grid-2" style="margin-bottom:18px">
       <div class="panel"><div class="panel-head"><h2>📊 Tren Sistolik 6 Bulan Terakhir</h2></div><div class="panel-body"><div class="chart-box"><canvas id="mTrendChart"></canvas></div></div></div>
-      <div class="panel"><div class="panel-head"><h2>🗂 Distribusi Kategori Bulan Ini</h2></div><div class="panel-body"><div class="chart-box"><canvas id="mCatChart"></canvas></div></div></div>
+      <div class="panel"><div class="panel-head"><h2>🗂 Distribusi Tensi Bulan Ini</h2></div><div class="panel-body"><div class="chart-box"><canvas id="mCatChart"></canvas></div></div></div>
     </div>
-    <div class="panel"><div class="panel-head"><h2>📋 Detail Pemeriksaan — ${monthLabel(mk)}</h2></div>
-      <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Trend</th><th>Kategori</th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="6" class="empty">Tidak ada pemeriksaan bulan ini</td></tr>'}</tbody></table></div></div>`;
+
+    <div class="grid-2" style="margin-bottom:18px">
+      <div class="panel"><div class="panel-head"><h2>📋 Detail Tensi — ${monthLabel(mk)}</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Trend</th><th>Kategori</th></tr></thead>
+        <tbody>${rows || '<tr><td colspan="6" class="empty">Tidak ada pemeriksaan tensi bulan ini</td></tr>'}</tbody></table></div></div>
+        
+      <div class="panel"><div class="panel-head"><h2>🍷 Detail Alkohol — ${monthLabel(mk)}</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Nilai BAC</th><th>Distribusi</th></tr></thead>
+        <tbody>${alcRows || '<tr><td colspan="4" class="empty">Tidak ada pemeriksaan alkohol bulan ini</td></tr>'}</tbody></table></div></div>
+    </div>`;
 
   requestAnimationFrame(() => {
     const trendChart = document.getElementById('mTrendChart');
@@ -1511,6 +1537,90 @@ function renderMonthlyData(mk, allMonths){
       });
     }
   });
+}
+
+// 🖨️ FUNGSI CETAK PDF LAPORAN BULANAN
+function printMonthlyPDF(mk) {
+  const me = exams.filter(e => monthKey(e.examDate) === mk).sort((a,b)=>String(a.examDate).localeCompare(String(b.examDate)));
+  const meAlc = alcoholExams.filter(a => monthKey(a.examDate) === mk).sort((a,b)=>String(a.examDate).localeCompare(String(b.examDate)));
+
+  const avgS = me.length ? Math.round(me.reduce((a, e) => a + e.systolic, 0) / me.length) : 0;
+  const avgD = me.length ? Math.round(me.reduce((a, e) => a + e.diastolic, 0) / me.length) : 0;
+  const alcPass = meAlc.filter(a => a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman')).length;
+  const alcFail = meAlc.length - alcPass;
+
+  let bpRows = me.length > 0 
+    ? me.map((e, i) => `<tr><td style="text-align:center">${i+1}</td><td>${fmt(e.examDate)}</td><td>${pName(e.patientId)}</td><td style="text-align:center">${e.systolic} / ${e.diastolic}</td><td style="text-align:center">${e.pulse || '-'}</td><td>${getStatus(e.systolic, e.diastolic).label}</td></tr>`).join('') 
+    : `<tr><td colspan="6" style="text-align:center; padding:10px;">Tidak ada data tensi bulan ini</td></tr>`;
+
+  let alcRows = meAlc.length > 0 
+    ? meAlc.map((a, i) => {
+        const pat = patients.find(p => Number(p.id) === Number(a.patientId)) || {};
+        return `<tr><td style="text-align:center">${i+1}</td><td>${fmt(a.examDate)}</td><td>${pat.name || '-'}</td><td style="text-align:center">${a.alcoholLevel}</td><td style="text-align:center; font-weight:bold;">${a.status}</td></tr>`;
+      }).join('') 
+    : `<tr><td colspan="5" style="text-align:center; padding:10px;">Tidak ada riwayat tes alkohol bulan ini</td></tr>`;
+
+  const html = `<!DOCTYPE html>
+  <html lang="id">
+  <head>
+    <title>Laporan Bulanan - ${monthLabel(mk)}</title>
+    <style>
+      body { font-family: Arial, sans-serif; color: #1e293b; margin: 0; padding: 25px; font-size: 12px; }
+      .header { text-align: center; border-bottom: 3px solid #1e3a5f; padding-bottom: 12px; margin-bottom: 25px; }
+      .header h2 { margin: 0; color: #1e3a5f; font-size: 20px; text-transform: uppercase; }
+      .header p { margin: 5px 0 0; font-size: 12px; color: #64748b; }
+      .summary-box { display: flex; gap: 15px; margin-bottom: 25px; }
+      .s-card { border: 1px solid #cbd5e1; padding: 10px 15px; border-radius: 6px; flex: 1; text-align: center; }
+      .s-val { font-size: 18px; font-weight: bold; color: #1e3a5f; margin: 5px 0; }
+      .s-lbl { font-size: 11px; color: #64748b; text-transform: uppercase; }
+      .section-title { background: #1e3a5f; color: #fff; padding: 6px 10px; font-size: 13px; font-weight: bold; margin-bottom: 10px; border-radius: 4px; }
+      .data-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+      .data-table th, .data-table td { border: 1px solid #cbd5e1; padding: 6px 8px; font-size: 11px; text-align: left; }
+      .data-table th { background: #f1f5f9; color: #475569; }
+      .footer { margin-top: 30px; font-size: 10px; color: #94a3b8; text-align: right; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h2>Laporan Kesehatan & Keselamatan Kerja</h2>
+      <p>Periode: <strong>${monthLabel(mk)}</strong></p>
+    </div>
+    
+    <div class="summary-box">
+      <div class="s-card"><div class="s-lbl">Total Tensi</div><div class="s-val">${me.length}</div></div>
+      <div class="s-card"><div class="s-lbl">Rata-rata (S/D)</div><div class="s-val">${avgS} / ${avgD}</div></div>
+      <div class="s-card"><div class="s-lbl">Total Alkohol</div><div class="s-val">${meAlc.length}</div></div>
+      <div class="s-card"><div class="s-lbl">Kasus Fail (BAC)</div><div class="s-val" style="${alcFail > 0 ? 'color:#dc2626' : 'color:#16a34a'}">${alcFail}</div></div>
+    </div>
+
+    <div class="section-title">A. DAFTAR PEMERIKSAAN TEKANAN DARAH (TENSI)</div>
+    <table class="data-table">
+      <thead><tr><th width="5%">No</th><th width="15%">Tanggal</th><th width="25%">Nama Pekerja</th><th width="15%">Sistolik/Diastolik</th><th width="15%">Nadi</th><th width="25%">Kategori Kemenkes</th></tr></thead>
+      <tbody>${bpRows}</tbody>
+    </table>
+
+    <div class="section-title">B. DAFTAR PEMERIKSAAN ALKOHOL (BAC)</div>
+    <table class="data-table">
+      <thead><tr><th width="5%">No</th><th width="20%">Tanggal</th><th width="35%">Nama Pekerja</th><th width="20%">Nilai BAC</th><th width="20%">Status</th></tr></thead>
+      <tbody>${alcRows}</tbody>
+    </table>
+
+    <div class="footer">
+      Dicetak otomatis dari BP Monitor System pada: <strong>${new Date().toLocaleString('id-ID')}</strong><br>
+      <span style="font-style: italic; margin-top: 4px; display: inline-block;">Powered by Pausbiru7</span>
+    </div>
+    
+    <script>
+      window.onload = function() { 
+        setTimeout(function() { window.print(); window.close(); }, 600); 
+      }
+    <\/script>
+  </body>
+  </html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
 }
 
 function renderFollowups(){
