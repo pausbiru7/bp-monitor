@@ -588,7 +588,7 @@ function renderDashboard(){
     const isPass = a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman');
     const badgeCls = isPass ? 'b-nor' : 'b-ht2';
     const pat = patients.find(p => Number(p.id) === Number(a.patientId)) || {};
-    return `<tr><td><strong>${escapeHtml(pat.name || '-')}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
+    return `<tr><td><strong>${escapeHtml(pat.name || a.patientName || '-')}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
   }).join('');
 
   const alcPass = alcoholExams.filter(a => a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman')).length;
@@ -1405,7 +1405,8 @@ function printProgressPDF(pid) {
     </table>
 
     <div class="footer">
-      Dokumen ini dicetak secara otomatis dari BP Monitor System pada: <strong>${new Date().toLocaleString('id-ID')}</strong>
+      Dokumen ini dicetak secara otomatis dari BP Monitor System pada: <strong>${new Date().toLocaleString('id-ID')}</strong><br>
+      <span style="margin-top: 5px; display: inline-block; font-style: italic;">Powered by Pausbiru7</span>
     </div>
     
     <script>
