@@ -4,9 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BP Monitor — KEPMENKES 4634/2021</title>
-<!-- Pustaka untuk Grafik -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Pustaka untuk Scanner Barcode/QR -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script><style>
 *{margin:0;padding:0;box-sizing:border-box;}
   html { font-size: clamp(12px, 1vw + 10px, 16px); }
@@ -72,9 +70,7 @@ tr:hover td{background:#fafbff;}
 .btn-sm{padding:4px 11px;font-size:.73rem;}
 .month-select{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;}
 .month-select select{padding:7px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.82rem;outline:none;}
-/* CHART CANVAS */
 .chart-box{position:relative;height:260px;}
-/* PROGRESS */
 .progress-card{border:1px solid #e2e8f0;border-radius:11px;padding:14px;margin-bottom:10px;transition:.2s;}
 .progress-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.07);}
 .pc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
@@ -83,7 +79,6 @@ tr:hover td{background:#fafbff;}
 .exam-chip{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px;font-size:.72rem;flex-shrink:0;min-width:80px;text-align:center;}
 .exam-chip.latest{border-color:#2563eb;background:#eff6ff;}
 .ec-date{color:#94a3b8;font-size:.65rem;}.ec-val{font-weight:700;font-size:.85rem;}
-/* REKOMENDASI */
 .rekom-box{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:.8rem;line-height:1.6;}
 .rekom-box.opt{background:#e0f7fa;border-left:3px solid #0891b2;}
 .rekom-box.nor{background:#dcfce7;border-left:3px solid #16a34a;}
@@ -93,7 +88,6 @@ tr:hover td{background:#fafbff;}
 .rekom-box.ht3{background:#f3e8ff;border-left:3px solid #7c3aed;}
 .rekom-box.iso{background:#dbeafe;border-left:3px solid #2563eb;}
 .rekom-title{font-weight:700;margin-bottom:4px;}
-/* FU */
 .fu-card{border:1px solid #e2e8f0;border-radius:11px;padding:13px 15px;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;transition:.2s;}
 .fu-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.07);}
 .fu-card.pending{border-left:4px solid #f59e0b;}.fu-card.done{border-left:4px solid #22c55e;opacity:.7;}
@@ -101,7 +95,6 @@ tr:hover td{background:#fafbff;}
 .fu-date{font-size:.72rem;color:#94a3b8;margin-top:3px;}.fu-actions{display:flex;gap:7px;flex-shrink:0;}
 .empty{text-align:center;padding:36px;color:#94a3b8;font-size:.85rem;}
 
-/* ── LOGIN ── */
 #loginOverlay{position:fixed;inset:0;background:linear-gradient(135deg,#1e3a5f,#2563eb);display:flex;align-items:center;justify-content:center;z-index:9999;}
 .login-box{background:#fff;border-radius:20px;padding:40px 36px;width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);}
 .login-logo{font-size:2.5rem;margin-bottom:8px;}
@@ -119,17 +112,17 @@ tr:hover td{background:#fafbff;}
 .pin-key.del:hover{background:#fecaca;}
 .login-err{color:#dc2626;font-size:.8rem;margin-top:8px;min-height:20px;}
 .login-hint{font-size:.72rem;color:#94a3b8;margin-top:12px;}
-/* CHANGE PIN */
+
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:8888;}
 .modal-box{background:#fff;border-radius:16px;padding:28px;width:340px;text-align:center;}
 .modal-box h3{font-size:1rem;font-weight:700;margin-bottom:16px;}
-/* ── SEARCH / FILTER ── */
+
 .search-bar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
 .search-bar input{padding:8px 13px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.83rem;outline:none;flex:1;min-width:180px;}
 .search-bar input:focus{border-color:#2563eb;}
 .search-bar select{padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.82rem;outline:none;background:#fff;}
 .search-bar select:focus{border-color:#2563eb;}
-/* ── REMINDER BANNER ── */
+
 .reminder-banner{background:linear-gradient(135deg,#fef3c7,#fde68a);border:1.5px solid #f59e0b;border-radius:12px;padding:14px 18px;margin-bottom:18px;}
 .reminder-banner-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
 .reminder-banner-head h3{font-size:.9rem;font-weight:700;color:#92400e;}
@@ -139,7 +132,7 @@ tr:hover td{background:#fafbff;}
 .days-today{background:#fee2e2;color:#dc2626;}
 .days-soon{background:#ffedd5;color:#ea580c;}
 .days-ok{background:#fef9c3;color:#854d0e;}
-/* ── PDF PRINT STYLES ── */
+
 @media print {
   body{display:block;background:#fff;font-size:12px;}
   .sidebar,.topbar,.btn,.btn-pdf,.fu-actions,button{display:none!important;}
@@ -154,7 +147,6 @@ tr:hover td{background:#fafbff;}
 #print-header h2{font-size:1.1rem;color:#1e3a5f;}
 #print-header p{font-size:.8rem;color:#64748b;margin-top:3px;}
   
-  /* ── RESPONSIVE (HP portrait) ─────────────────────────────── */
 @media (max-width: 900px){
   body{flex-direction: column;min-height: 100vh;}
   .sidebar{width: 100%;min-height: auto;flex-direction: row;align-items: center;padding: 8px 10px;}
@@ -188,6 +180,7 @@ table th, table td {white-space: nowrap !important;}
 </style>
 </head>
 <body>
+
 <!-- LOGIN OVERLAY -->
 <div id="loginOverlay">
   <div class="login-box">
@@ -293,7 +286,6 @@ const DEFAULT_PIN = '123456';
 let pinInput = '';
 
 function getPin(){ return localStorage.getItem('bpm_pin') || DEFAULT_PIN; }
-
 function pinPress(digit){
   if(!/^\d$/.test(String(digit))) return;
   if(pinInput.length >= 6) return;
@@ -301,17 +293,8 @@ function pinPress(digit){
   updatePinDots();
   if(pinInput.length === 6){ setTimeout(checkPin, 150); }
 }
-
-function pinDelete(){
-  pinInput = pinInput.slice(0, -1);
-  updatePinDots();
-}
-
-function pinClear(){
-  pinInput = '';
-  updatePinDots();
-}
-
+function pinDelete(){ pinInput = pinInput.slice(0, -1); updatePinDots(); }
+function pinClear(){ pinInput = ''; updatePinDots(); }
 function updatePinDots(err = false){
   for(let i = 0; i < 6; i++){
     const dot = document.getElementById('dot' + i);
@@ -319,7 +302,6 @@ function updatePinDots(err = false){
     dot.className = 'pin-dot' + (i < pinInput.length ? ' filled' : '') + (err ? ' error' : '');
   }
 }
-
 function checkPin(){
   const loginOverlay = document.getElementById('loginOverlay');
   const loginErr = document.getElementById('loginErr');
@@ -329,22 +311,15 @@ function checkPin(){
   } else {
     updatePinDots(true);
     if(loginErr) loginErr.textContent = 'PIN salah! Coba lagi.';
-    setTimeout(() => {
-      pinInput = '';
-      updatePinDots();
-      if(loginErr) loginErr.textContent = '';
-    }, 800);
+    setTimeout(() => { pinInput = ''; updatePinDots(); if(loginErr) loginErr.textContent = ''; }, 800);
   }
 }
-
 function doLogout(){
   if(!confirm('Keluar dari BP Monitor?')) return;
-  pinInput = '';
-  updatePinDots();
+  pinInput = ''; updatePinDots();
   const loginOverlay = document.getElementById('loginOverlay');
   if(loginOverlay) loginOverlay.style.display = 'flex';
 }
-
 function doChangePin(){
   const oldPin = document.getElementById('oldPin');
   const newPin = document.getElementById('newPin');
@@ -352,13 +327,11 @@ function doChangePin(){
   const err = document.getElementById('changePinErr');
   const modal = document.getElementById('changePinModal');
   if(!oldPin || !newPin || !confirmPin || !err || !modal) return;
-
   const old = oldPin.value, nw = newPin.value, cf = confirmPin.value;
   if(old !== getPin()){ err.textContent = 'PIN lama salah!'; return; }
   if(nw.length !== 6){ err.textContent = 'PIN baru harus 6 digit!'; return; }
   if(!/^\d+$/.test(nw)){ err.textContent = 'PIN hanya boleh angka!'; return; }
   if(nw !== cf){ err.textContent = 'Konfirmasi PIN tidak cocok!'; return; }
-
   localStorage.setItem('bpm_pin', nw);
   err.textContent = '';
   oldPin.value = ''; newPin.value = ''; confirmPin.value = '';
@@ -367,7 +340,7 @@ function doChangePin(){
 }
 
 // ══════════════════════════════════════════
-// 🕰 FUNGSI TANGGAL ANTI MUNDUR ZONA WAKTU (FIX POIN 4)
+// 🕰 FUNGSI TANGGAL (FIX POIN 4)
 // ══════════════════════════════════════════
 function getToday() {
   const d = new Date();
@@ -378,63 +351,32 @@ function getToday() {
 }
 
 // ══════════════════════════════════════════
-// 🛠️ AUTO-REPAIR DATA LAMA (FIX POIN 1 & 2 SEPENUHNYA)
+// 🛠️ DATA STANDARISASI: SEMUA MENGGUNAKAN 'patientId'
 // ══════════════════════════════════════════
-
-// 1. Standarisasi Data Pekerja
-let patientsRaw = localStorage.getItem('bpm_patients') || localStorage.getItem('patients') || localStorage.getItem('wh_workers') || '[]';
-let patients = JSON.parse(patientsRaw).map(p => ({
-  id: Number(p.id) || Date.now() + Math.random(),
-  nik: String(p.nik || p.id_pekerja || '').trim(),
-  name: String(p.name || p.nama || '').trim(),
-  dob: p.dob || p.tgl_lahir || '',
-  gender: p.gender || p.jk || 'L',
-  phone: p.phone || p.no_hp || ''
+let patients = JSON.parse(localStorage.getItem('bpm_patients') || localStorage.getItem('patients') || '[]').map(p => ({
+  ...p,
+  id: Number(p.id) || Date.now() + Math.random()
 }));
 
-// 2. Standarisasi Data Tensi & Sinkronkan ID-nya
-let examsRaw = localStorage.getItem('bpm_exams') || localStorage.getItem('exams') || localStorage.getItem('wh_exams') || '[]';
-let exams = JSON.parse(examsRaw).map(e => {
-  let pId = Number(e.patientId || e.workerId || e.id_pekerja);
-  
-  // Perbaiki Mismatch ID berdasarkan NIK atau Nama Pekerja
-  let eNik = String(e.nik || '').trim();
-  let eName = String(e.patientName || e.nama || '').trim().toLowerCase();
-  let match = patients.find(p => (eNik && p.nik === eNik) || (eName && p.name.toLowerCase() === eName));
-  if (match) pId = match.id;
-
-  return { 
-    id: Number(e.id),
-    patientId: pId,
-    systolic: Number(e.systolic),
-    diastolic: Number(e.diastolic),
-    pulse: e.pulse ? Number(e.pulse) : null,
-    examDate: (e.examDate || e.date || e.tanggal || '').slice(0, 10) 
-  };
-});
+let exams = JSON.parse(localStorage.getItem('bpm_exams') || localStorage.getItem('exams') || '[]').map(e => ({ 
+  ...e, 
+  id: Number(e.id),
+  patientId: Number(e.patientId || e.workerId || e.id_pekerja),
+  examDate: (e.examDate || e.date || e.tanggal || '').slice(0, 10) 
+}));
 
 let followups = JSON.parse(localStorage.getItem('bpm_followups') || '[]');
 
-// 3. Standarisasi Data Alkohol & Sinkronkan ID-nya
-let alcRaw = localStorage.getItem('bpm_alcohol') || localStorage.getItem('alcoholExams') || localStorage.getItem('wh_alcohol') || localStorage.getItem('alcohol') || '[]';
-let alcoholExams = JSON.parse(alcRaw).map((a, index) => {
-  let pId = Number(a.patientId || a.workerId || a.id_pekerja || a.id);
-  
-  // Perbaiki Mismatch ID
-  let aNik = String(a.nik || '').trim();
-  let aName = String(a.patientName || a.nama || '').trim().toLowerCase();
-  let match = patients.find(p => (aNik && p.nik === aNik) || (aName && p.name.toLowerCase() === aName));
-  if (match) pId = match.id;
-
+let alcoholExams = JSON.parse(localStorage.getItem('bpm_alcohol') || localStorage.getItem('alcoholExams') || localStorage.getItem('wh_alcohol') || '[]').map((a, index) => {
   let st = a.status || a.result || a.hasil || 'Pass';
   let lvl = a.alcoholLevel || a.val || a.value || a.kadar;
   if (!lvl || lvl === '') {
     lvl = (st.toLowerCase().includes('pass') || st.toLowerCase().includes('aman')) ? '0.00' : '0.05';
   }
-  
   return {
+    ...a,
     id: Number(a.id) || (Date.now() + index),
-    patientId: pId,
+    patientId: Number(a.patientId || a.workerId || a.id_pekerja || a.id),
     examDate: (a.examDate || a.date || a.tanggal || '').slice(0, 10),
     alcoholLevel: lvl,
     status: st
@@ -445,13 +387,6 @@ let nextEid = exams.length ? Math.max(...exams.map(e => +e.id)) + 1 : 1;
 let nextFid = followups.length ? Math.max(...followups.map(f => +f.id)) + 1 : 1;
 let nextPid = patients.length ? Math.max(...patients.map(p => +p.id)) + 1 : 1;
 let nextAid = alcoholExams.length ? Math.max(...alcoholExams.map(a => +a.id)) + 1 : 1;
-
-// Simpan Data Bersih ke LocalStorage
-localStorage.setItem('bpm_patients', JSON.stringify(patients));
-localStorage.setItem('bpm_exams', JSON.stringify(exams));
-localStorage.setItem('bpm_followups', JSON.stringify(followups));
-localStorage.setItem('bpm_alcohol', JSON.stringify(alcoholExams));
-
 
 // ══ KEPMENKES 4634/2021 CLASSIFICATION ════
 function getStatus(s, d){
@@ -470,18 +405,17 @@ function getStatus(s, d){
 function getRekomendasi(s, d, prevS, pex){
   const st = getStatus(s, d);
   const trend = prevS != null ? (s < prevS ? 'turun' : s > prevS ? 'naik' : 'tetap') : null;
-  const trendNote = trend === 'turun' ? 'Tekanan darah menunjukkan perbaikan. ' : trend === 'naik' ? 'Perhatian: tekanan darah meningkat dari pemeriksaan sebelumnya. ' : '';
+  const trendNote = trend === 'turun' ? 'Tekanan darah menunjukkan perbaikan. ' : trend === 'naik' ? 'Perhatian: tekanan darah meningkat dari sebelumnya. ' : '';
   const rekom = {
-    opt: { icon: '✅', judul: 'Optimal — Pertahankan!', isi: `${trendNote}Tekanan darah dalam kondisi optimal. Pertahankan gaya hidup sehat: olahraga teratur, diet rendah garam, hindari stres. Kontrol ulang 12 bulan.`, jadwal: 'Kontrol: 12 bulan' },
-    nor: { icon: '✅', judul: 'Normal — Jaga Konsistensi', isi: `${trendNote}Tekanan darah normal. Lanjutkan pola hidup sehat. Batasi konsumsi garam <5g/hari, olahraga 30 menit/hari. Kontrol ulang 6–12 bulan.`, jadwal: 'Kontrol: 6–12 bulan' },
-    pre: { icon: '⚠️', judul: 'Normal-Tinggi — Waspadai', isi: `${trendNote}Tekanan darah di batas normal-tinggi. Modifikasi gaya hidup segera: kurangi garam, turunkan berat badan jika overweight, olahraga aerobik rutin, batasi alkohol & rokok. Belum perlu obat, namun perlu monitoring ketat.`, jadwal: 'Kontrol: 3–6 bulan' },
-    ht1: { icon: '🔶', judul: 'Hipertensi Derajat 1 — Tindakan Diperlukan', isi: `${trendNote}Diperlukan modifikasi gaya hidup intensif + evaluasi dokter. Pertimbangkan terapi farmakologis jika ada faktor risiko kardiovaskular. Pantau tekanan darah mandiri setiap hari. Batasi garam <5g/hari.`, jadwal: 'Kontrol: 1–3 bulan' },
-    ht2: { icon: '🔴', judul: 'Hipertensi Derajat 2 — Segera Tangani', isi: `${trendNote}Wajib terapi antihipertensi + modifikasi gaya hidup. Rujuk ke dokter spesialis penyakit dalam. Pantau tekanan darah harian. Periksa organ target (jantung, ginjal, mata).`, jadwal: 'Kontrol: 2–4 minggu' },
-    ht3: { icon: '🚨', judul: 'Hipertensi Derajat 3 — DARURAT!', isi: `${trendNote}Tekanan darah sangat tinggi — risiko kerusakan organ akut. SEGERA rujuk ke IGD/RS. Hindari aktivitas berat. Jangan hentikan obat tiba-tiba. Evaluasi tanda-tanda komplikasi (nyeri dada, sesak, gangguan penglihatan).`, jadwal: 'SEGERA ke IGD/RS' },
-    iso: { icon: '🔵', judul: 'HT Sistolik Terisolasi — Perlu Evaluasi', isi: `${trendNote}Tekanan sistolik tinggi namun diastolik normal — sering pada lansia. Evaluasi dokter diperlukan. Perhatikan risiko kardiovaskular. Terapi disesuaikan kondisi pekerja.`, jadwal: 'Kontrol: 1–2 bulan' },
-    low: { icon: '🧊', judul: 'Hipotensi (Tekanan Darah Rendah)', isi: `${trendNote}Tekanan darah di bawah normal. Jika disertai gejala pusing, lemas, pucat, atau pandangan gelap, segera istirahat (berbaring) dan minum air yang cukup. Konsultasi ke dokter/klinik jika keluhan berlanjut.`, jadwal: 'Bila ada keluhan' }
+    opt: { icon: '✅', judul: 'Optimal — Pertahankan!', isi: `${trendNote}Tekanan darah optimal. Kontrol ulang 12 bulan.`, jadwal: 'Kontrol: 12 bulan' },
+    nor: { icon: '✅', judul: 'Normal — Jaga Konsistensi', isi: `${trendNote}Tekanan darah normal. Kontrol ulang 6–12 bulan.`, jadwal: 'Kontrol: 6–12 bulan' },
+    pre: { icon: '⚠️', judul: 'Normal-Tinggi — Waspadai', isi: `${trendNote}Modifikasi gaya hidup segera.`, jadwal: 'Kontrol: 3–6 bulan' },
+    ht1: { icon: '🔶', judul: 'Hipertensi Derajat 1', isi: `${trendNote}Diperlukan evaluasi dokter & modifikasi gaya hidup.`, jadwal: 'Kontrol: 1–3 bulan' },
+    ht2: { icon: '🔴', judul: 'Hipertensi Derajat 2', isi: `${trendNote}Wajib terapi antihipertensi.`, jadwal: 'Kontrol: 2–4 minggu' },
+    ht3: { icon: '🚨', judul: 'Hipertensi Derajat 3 — DARURAT!', isi: `${trendNote}SEGERA rujuk ke IGD/RS.`, jadwal: 'SEGERA ke IGD/RS' },
+    iso: { icon: '🔵', judul: 'HT Sistolik Terisolasi', isi: `${trendNote}Evaluasi dokter diperlukan.`, jadwal: 'Kontrol: 1–2 bulan' },
+    low: { icon: '🧊', judul: 'Hipotensi', isi: `${trendNote}Segera istirahat dan minum air cukup.`, jadwal: 'Bila ada keluhan' }
   };
-
   const r = rekom[st.key];
   return `<div class="rekom-box ${st.key}"><div class="rekom-title">${r.icon} ${r.judul}</div><div>${r.isi}</div><div style="margin-top:6px;font-weight:600;font-size:.78rem">📅 ${r.jadwal}</div></div>`;
 }
@@ -533,7 +467,7 @@ function pName(pid){
 }
 
 function pExams(pid){
-  return exams.filter(e => String(e.patientId) === String(pid))
+  return exams.filter(e => Number(e.patientId) === Number(pid))
     .sort((a, b) => String(a.examDate || '').localeCompare(String(b.examDate || '')));
 }
 
@@ -624,8 +558,8 @@ function renderDashboard(){
   const alcRows = recentAlcohol.map(a => {
     const isPass = a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman');
     const badgeCls = isPass ? 'b-nor' : 'b-ht2';
-    const pat = patients.find(p => String(p.id) === String(a.patientId)) || {};
-    return `<tr><td><strong>${escapeHtml(pat.name || a.patientName || '-')}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
+    const pat = patients.find(p => Number(p.id) === Number(a.patientId)) || {};
+    return `<tr><td><strong>${escapeHtml(pat.name || '-')}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
   }).join('');
 
   const alcPass = alcoholExams.filter(a => a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman')).length;
@@ -807,7 +741,7 @@ function fillPatientInfo(){
   const eAge = document.getElementById('eAge');
   if(!ePid || !eDob || !eAge) return;
   const pid = +ePid.value;
-  const p = patients.find(x => x.id === pid);
+  const p = patients.find(x => Number(x.id) === Number(pid));
   if(!p){
     eDob.value = '';
     eAge.value = '';
@@ -879,7 +813,7 @@ function editExam(id){
   if(existingModal) existingModal.remove();
   const e = exams.find(x => x.id === id);
   if(!e) return;
-  const p = patients.find(x => x.id === e.patientId);
+  const p = patients.find(x => Number(x.id) === Number(e.patientId));
   const pageRecords = document.getElementById('page-records');
   if(!pageRecords) return;
 
@@ -1153,9 +1087,10 @@ function addPatient(){
   
 function delPatient(id){
   if(!confirm('Hapus pekerja dan semua pemeriksaannya?')) return;
-  patients = patients.filter(p => p.id !== id);
-  exams = exams.filter(e => e.patientId !== id);
-  followups = followups.filter(f => f.patientId !== id);
+  patients = patients.filter(p => Number(p.id) !== Number(id));
+  exams = exams.filter(e => Number(e.patientId) !== Number(id));
+  followups = followups.filter(f => Number(f.patientId) !== Number(id));
+  alcoholExams = alcoholExams.filter(a => Number(a.patientId) !== Number(id));
   if(String(editingPatientId) === String(id)) editingPatientId = null;
   save();
   renderPatients();
@@ -1190,7 +1125,7 @@ function renderProgress(){
 }
 
 function renderProgressDetail(pid){
-  const p = patients.find(x => String(x.id) === String(pid));
+  const p = patients.find(x => Number(x.id) === Number(pid));
   if(!p) return;
   const sel = document.getElementById('progressPid');
   if(sel) sel.value = pid;
@@ -1200,9 +1135,8 @@ function renderProgressDetail(pid){
   const badge = document.getElementById('progSummaryBadge');
   if(!container) return;
 
-  // Baca Alkohol yang ID-nya sudah diperbaiki saat load
   const pAlcoholList = alcoholExams
-    .filter(a => String(a.patientId) === String(pid))
+    .filter(a => Number(a.patientId) === Number(pid))
     .sort((a, b) => String(a.examDate || '').localeCompare(String(b.examDate || '')));
 
   const lastAlc = pAlcoholList.length ? pAlcoholList[pAlcoholList.length - 1] : null;
@@ -1704,14 +1638,14 @@ async function fetchAllFromSheets(){
 }
 
 function normalizeSheetsPayload(json){
-  const nextPatients = (json.patients || []).map(p => ({ ...p, id: +p.id, phone: p.phone ? String(p.phone) : '' }));
+  const nextPatients = (json.patients || []).map(p => ({ ...p, id: Number(p.id), phone: p.phone ? String(p.phone) : '' }));
   const nextExams = (json.exams || []).map(e => ({
-    ...e, id: +e.id, patientId: +e.patientId, systolic: +e.systolic, diastolic: +e.diastolic,
-    pulse: e.pulse === '' || e.pulse == null ? null : +e.pulse,
+    ...e, id: Number(e.id), patientId: Number(e.patientId), systolic: Number(e.systolic), diastolic: Number(e.diastolic),
+    pulse: e.pulse === '' || e.pulse == null ? null : Number(e.pulse),
     examDate: e.examDate ? String(e.examDate).slice(0, 10) : ''
   }));
-  const nextFollowups = (json.followups || []).map(f => ({ ...f, id: +f.id, patientId: +f.patientId, dueDate: f.dueDate ? String(f.dueDate).slice(0, 10) : '', status: f.status || 'pending' }));
-  const nextAlcohol = (json.alcoholExams || []).map(a => ({ ...a, id: +a.id, patientId: +a.patientId, examDate: a.examDate ? String(a.examDate).slice(0, 10) : '' }));
+  const nextFollowups = (json.followups || []).map(f => ({ ...f, id: Number(f.id), patientId: Number(f.patientId), dueDate: f.dueDate ? String(f.dueDate).slice(0, 10) : '', status: f.status || 'pending' }));
+  const nextAlcohol = (json.alcoholExams || []).map(a => ({ ...a, id: Number(a.id), patientId: Number(a.patientId), examDate: a.examDate ? String(a.examDate).slice(0, 10) : '' }));
   return { patients: nextPatients, exams: nextExams, followups: nextFollowups, alcoholExams: nextAlcohol };
 }
 
@@ -1889,14 +1823,14 @@ function renderAlcoholRows() {
   if (alcoholExams.length === 0) return '<tr><td colspan="6" class="empty">Belum ada riwayat pemeriksaan alkohol</td></tr>';
   const sorted = [...alcoholExams].sort((a, b) => String(b.examDate).localeCompare(String(a.examDate)));
   return sorted.map(e => {
-    const pat = patients.find(p => String(p.id) === String(e.patientId)) || {};
+    const pat = patients.find(p => Number(p.id) === Number(e.patientId)) || {};
     const isPass = e.status.toLowerCase().includes('pass') || e.status.toLowerCase().includes('aman');
     const badgeCls = isPass ? 'b-nor' : 'b-ht2';
     return `
       <tr>
         <td>${fmt(e.examDate)}</td>
         <td><code>${escapeHtml(pat.nik || pat.id || '-')}</code></td>
-        <td><strong>${escapeHtml(pat.name || e.patientName || 'Tidak dikenal')}</strong></td>
+        <td><strong>${escapeHtml(pat.name || '-')}</strong></td>
         <td><span class="badge ${badgeCls}">${escapeHtml(e.status)}</span></td>
         <td>${escapeHtml(e.alcoholLevel || '-')}</td>
         <td><button class="btn btn-danger btn-sm" onclick="delAlcoholExam(${e.id})" title="Hapus">🗑️</button></td>
@@ -1920,12 +1854,9 @@ function saveAlcoholExam() {
   const examDate = document.getElementById('alcDate').value;
   if (!patientId || !examDate) return alert('Pilih pekerja dan tanggal pemeriksaan terlebih dahulu!');
 
-  const pat = patients.find(p => String(p.id) === String(patientId));
   alcoholExams.push({
     id: nextAid++,
     patientId: Number(patientId),
-    patientName: pat ? pat.name : '',
-    nik: pat ? pat.nik : '',
     status: status,
     alcoholLevel: alcoholLevel || '0.00',
     examDate: examDate
@@ -1938,7 +1869,7 @@ function saveAlcoholExam() {
 
 function delAlcoholExam(id) {
   if (!confirm('Hapus data pemeriksaan alkohol ini?')) return;
-  alcoholExams = alcoholExams.filter(e => String(e.id) !== String(id));
+  alcoholExams = alcoholExams.filter(e => Number(e.id) !== Number(id));
   save();
   renderAlcoholPage();
 }
@@ -1988,18 +1919,14 @@ function handleAlcoholScanResult(codeText) {
 // 📲 FUNGSI SHARE WHATSAPP ALKOHOL
 // ============================================================
 function shareAlcoholToWhatsApp(workerName, workerNik) {
-  const wName = String(workerName || '').trim().toLowerCase();
   const wNik = String(workerNik || '').trim();
+  const wName = String(workerName || '').trim().toLowerCase();
 
   const list = alcoholExams.filter(a => {
-    const aNik = String(a.nik || '').trim();
-    const aName = String(a.patientName || '').trim().toLowerCase();
-    const p = patients.find(x => String(x.id) === String(a.patientId));
+    const p = patients.find(x => Number(x.id) === Number(a.patientId));
     const pNik = p ? String(p.nik || '').trim() : '';
     const pName = p ? String(p.name || '').trim().toLowerCase() : '';
-
-    return (wNik && (aNik === wNik || pNik === wNik)) || 
-           (wName && (aName === wName || pName === wName));
+    return (wNik && pNik === wNik) || (wName && pName === wName);
   }).sort((a, b) => String(a.examDate).localeCompare(String(b.examDate)));
 
   if (list.length === 0) {
@@ -2026,7 +1953,7 @@ function shareAlcoholToWhatsApp(workerName, workerNik) {
   text += `_Sistem Pemantauan Keselamatan Kerja_\n`;
   text += `_Powered by Pausbiru7_`;
 
-  const phone = patients.find(p => String(p.nik).trim() === wNik || String(p.name).trim().toLowerCase() === wName)?.phone;
+  const phone = patients.find(p => (wNik && String(p.nik).trim() === wNik) || (wName && String(p.name).trim().toLowerCase() === wName))?.phone;
   const waUrl = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}` : `https://wa.me/?text=${encodeURIComponent(text)}`;
   
   window.open(waUrl, '_blank');
