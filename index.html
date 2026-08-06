@@ -154,7 +154,6 @@ tr:hover td{background:#fafbff;}
 #print-header h2{font-size:1.1rem;color:#1e3a5f;}
 #print-header p{font-size:.8rem;color:#64748b;margin-top:3px;}
   
-  /* ── RESPONSIVE (HP portrait) ─────────────────────────────── */
 @media (max-width: 900px){
   body{flex-direction: column;min-height: 100vh;}
   .sidebar{width: 100%;min-height: auto;flex-direction: row;align-items: center;padding: 8px 10px;}
@@ -406,6 +405,7 @@ let nextFid = followups.length ? Math.max(...followups.map(f => +f.id)) + 1 : 1;
 let nextPid = patients.length ? Math.max(...patients.map(p => +p.id)) + 1 : 1;
 let nextAid = alcoholExams.length ? Math.max(...alcoholExams.map(a => +a.id)) + 1 : 1;
 
+// ══ KEPMENKES 4634/2021 CLASSIFICATION ════
 function getStatus(s, d){
   s = +s; d = +d;
   if(s >= 180 || d >= 110) return {key:'ht3', label:'Hipertensi Derajat 3', cls:'b-ht3', color:'#7c3aed'};
@@ -418,6 +418,7 @@ function getStatus(s, d){
   return {key:'opt', label:'Optimal', cls:'b-opt', color:'#0891b2'};
 }
 
+// ══ REKOMENDASI OTOMATIS ══════════════════
 function getRekomendasi(s, d, prevS, pex){
   const st = getStatus(s, d);
   const trend = prevS != null ? (s < prevS ? 'turun' : s > prevS ? 'naik' : 'tetap') : null;
@@ -493,9 +494,6 @@ function lastExam(pid){
 function vCls(v, hi, md){ return v >= hi ? 'v-hi' : v >= md ? 'v-md' : 'v-ok'; }
 function destroyChart(id){ const c = Chart.getChart(id); if(c) c.destroy(); }
 
-// ══════════════════════════════════════════
-// 🔍 FILTER DATA UNTUK INPUT PEMERIKSAAN (YANG SEMPAT HILANG)
-// ══════════════════════════════════════════
 const katOpts = `<option value="">Semua Kategori</option>
   <option value="opt">Optimal</option><option value="nor">Normal</option><option value="pre">Normal-Tinggi</option>
   <option value="ht1">Hipertensi Derajat 1</option><option value="ht2">Hipertensi Derajat 2</option><option value="ht3">Hipertensi Derajat 3</option>
@@ -590,7 +588,7 @@ function renderDashboard(){
     const isPass = a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman');
     const badgeCls = isPass ? 'b-nor' : 'b-ht2';
     const pat = patients.find(p => Number(p.id) === Number(a.patientId)) || {};
-    return `<tr><td><strong>${escapeHtml(pat.name || a.patientName || '-')}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
+    return `<tr><td><strong>${escapeHtml(pat.name || '-')}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
   }).join('');
 
   const alcPass = alcoholExams.filter(a => a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman')).length;
@@ -706,9 +704,6 @@ function renderDashboard(){
   });
 }
  
-// ══════════════════════════════════════════
-// 📋 RENDER INPUT PEMERIKSAAN
-// ══════════════════════════════════════════
 function renderRecords(){
   const opts = patients.map(p => `<option value="${p.id}">${p.name} (${p.nik || ''})</option>`).join('');
   const qR = document.getElementById('recSearch')?.value || '';
@@ -1131,6 +1126,9 @@ function delPatient(id){
   if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
 }
 
+// ══════════════════════════════════════════
+// 📈 PROGRESS PEKERJA (DENGAN LAPORAN PDF)
+// ══════════════════════════════════════════
 function renderProgress(){
   const pageProgress = document.getElementById('page-progress');
   if(!pageProgress) return;
@@ -1143,7 +1141,9 @@ function renderProgress(){
 
   pageProgress.innerHTML = `
     <div class="panel" style="margin-bottom:18px">
-      <div class="panel-head"><h2>📈 Progress & Rekomendasi Pekerja</h2></div>
+      <div class="panel-head">
+        <h2>📈 Progress & Rekomendasi Pekerja</h2>
+      </div>
       <div class="panel-body" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
         <div class="fg" style="min-width:220px;margin:0">
           <label>Pilih Pekerja</label>
@@ -1243,6 +1243,13 @@ function renderProgressDetail(pid){
   }
 
   container.innerHTML = `
+    <!-- TOMBOL CETAK PDF (LAPORAN TERPADU) -->
+    <div style="display:flex; justify-content:flex-end; margin-bottom:15px;">
+        <button class="btn btn-pdf" style="padding: 10px 18px; font-size: 0.9rem;" onclick="printProgressPDF(${pid})">
+            🖨️ Cetak Rekam Medis (PDF)
+        </button>
+    </div>
+
     <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;margin-bottom:18px">
       <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">👤</div><div class="stat-info"><h3>Nama</h3><div class="val" style="font-size:1rem">${p.name}</div><div class="sub">NIK: ${p.nik || '-'} · ${calcAge(p.dob)} tahun</div></div></div>
       <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🩺</div><div class="stat-info"><h3>Terakhir (S/D)</h3><div class="val ${last ? vCls(last.systolic,140,120) : ''}" style="font-size:1.2rem">${last ? `${last.systolic}/${last.diastolic}` : '-'}</div><div class="sub">${last ? fmt(last.examDate) : '-'}</div></div></div>
@@ -1321,6 +1328,99 @@ function renderProgressDetail(pid){
     });
   }
 }
+
+// 🖨️ FUNGSI BARU: CETAK PDF LAPORAN TERPADU PEKERJA
+function printProgressPDF(pid) {
+  const p = patients.find(x => Number(x.id) === Number(pid));
+  if (!p) return alert("Data pekerja tidak ditemukan.");
+
+  const pex = pExams(pid);
+  const pAlcoholList = alcoholExams
+    .filter(a => Number(a.patientId) === Number(pid))
+    .sort((a, b) => String(a.examDate || '').localeCompare(String(b.examDate || '')));
+
+  const last = pex.length ? pex[pex.length - 1] : null;
+  const stLast = last ? getStatus(last.systolic, last.diastolic) : null;
+
+  // Render Baris Tensi
+  let bpRows = pex.length > 0 
+    ? pex.map((e, i) => `<tr><td style="text-align:center">${i+1}</td><td>${fmt(e.examDate)}</td><td style="text-align:center">${e.systolic} / ${e.diastolic}</td><td style="text-align:center">${e.pulse || '-'}</td><td>${getStatus(e.systolic, e.diastolic).label}</td></tr>`).join('') 
+    : `<tr><td colspan="5" style="text-align:center; padding:10px;">Belum ada data pemeriksaan tensi</td></tr>`;
+
+  // Render Baris Alkohol
+  let alcRows = pAlcoholList.length > 0 
+    ? pAlcoholList.map((a, i) => `<tr><td style="text-align:center">${i+1}</td><td>${fmt(a.examDate)}</td><td style="text-align:center">${a.alcoholLevel}</td><td style="text-align:center; font-weight:bold;">${a.status}</td></tr>`).join('') 
+    : `<tr><td colspan="4" style="text-align:center; padding:10px;">Belum ada riwayat tes alkohol</td></tr>`;
+
+  // Template HTML Laporan (Bersih & Profesional)
+  const html = `<!DOCTYPE html>
+  <html lang="id">
+  <head>
+    <title>Rekam Medis - ${p.name}</title>
+    <style>
+      body { font-family: Arial, sans-serif; color: #1e293b; margin: 0; padding: 25px; font-size: 13px; }
+      .header { text-align: center; border-bottom: 3px solid #1e3a5f; padding-bottom: 12px; margin-bottom: 25px; }
+      .header h2 { margin: 0; color: #1e3a5f; font-size: 22px; text-transform: uppercase; }
+      .header p { margin: 5px 0 0; font-size: 12px; color: #64748b; }
+      .info-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+      .info-table td { padding: 8px; border-bottom: 1px dashed #e2e8f0; }
+      .section-title { background: #1e3a5f; color: #fff; padding: 8px 12px; font-size: 14px; font-weight: bold; margin-bottom: 12px; border-radius: 4px; }
+      .data-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+      .data-table th, .data-table td { border: 1px solid #cbd5e1; padding: 8px; font-size: 12px; text-align: left; }
+      .data-table th { background: #f1f5f9; color: #475569; }
+      .footer { margin-top: 40px; font-size: 11px; color: #94a3b8; text-align: right; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h2>Laporan Rekam Medis Pekerja</h2>
+      <p>Sistem Pemantauan Kesehatan & Keselamatan Kerja — Sesuai KEPMENKES 4634/2021</p>
+    </div>
+    
+    <table class="info-table">
+      <tr>
+        <td width="20%"><strong>Nama Pekerja</strong></td><td width="30%">: ${p.name}</td>
+        <td width="20%"><strong>Jenis Kelamin</strong></td><td width="30%">: ${p.gender === 'L' ? 'Laki-laki' : 'Perempuan'}</td>
+      </tr>
+      <tr>
+        <td><strong>NIK / No. ID</strong></td><td>: ${p.nik || p.id}</td>
+        <td><strong>Usia</strong></td><td>: ${calcAge(p.dob)} Tahun</td>
+      </tr>
+      <tr>
+        <td><strong>No. HP / WA</strong></td><td>: ${p.phone || '-'}</td>
+        <td><strong>Status Tensi Terakhir</strong></td><td>: ${stLast ? stLast.label : 'Belum ada data'}</td>
+      </tr>
+    </table>
+
+    <div class="section-title">A. RIWAYAT TEKANAN DARAH (TENSI)</div>
+    <table class="data-table">
+      <thead><tr><th width="5%">No</th><th width="20%">Tanggal</th><th width="25%">Sistolik / Diastolik</th><th width="20%">Nadi (bpm)</th><th width="30%">Kategori Kemenkes</th></tr></thead>
+      <tbody>${bpRows}</tbody>
+    </table>
+
+    <div class="section-title">B. RIWAYAT TES ALKOHOL (BAC SCREENING)</div>
+    <table class="data-table">
+      <thead><tr><th width="5%">No</th><th width="25%">Tanggal Pemeriksaan</th><th width="30%">Nilai BAC</th><th width="40%">Status Distribusi</th></tr></thead>
+      <tbody>${alcRows}</tbody>
+    </table>
+
+    <div class="footer">
+      Dokumen ini dicetak secara otomatis dari BP Monitor System pada: <strong>${new Date().toLocaleString('id-ID')}</strong>
+    </div>
+    
+    <script>
+      window.onload = function() { 
+        setTimeout(function() { window.print(); window.close(); }, 600); 
+      }
+    <\/script>
+  </body>
+  </html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+}
+
 
 function delExamProgress(eid, pid){
   if(!confirm('Hapus data pemeriksaan ini?')) return;
