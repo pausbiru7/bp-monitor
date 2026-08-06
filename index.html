@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BP Monitor — KEPMENKES 4634/2021</title>
+<!-- Pustaka untuk Grafik -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Pustaka untuk Scanner Barcode/QR -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script><style>
 *{margin:0;padding:0;box-sizing:border-box;}
   html { font-size: clamp(12px, 1vw + 10px, 16px); }
@@ -70,7 +72,9 @@ tr:hover td{background:#fafbff;}
 .btn-sm{padding:4px 11px;font-size:.73rem;}
 .month-select{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;}
 .month-select select{padding:7px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.82rem;outline:none;}
+/* CHART CANVAS */
 .chart-box{position:relative;height:260px;}
+/* PROGRESS */
 .progress-card{border:1px solid #e2e8f0;border-radius:11px;padding:14px;margin-bottom:10px;transition:.2s;}
 .progress-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.07);}
 .pc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
@@ -79,6 +83,7 @@ tr:hover td{background:#fafbff;}
 .exam-chip{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px;font-size:.72rem;flex-shrink:0;min-width:80px;text-align:center;}
 .exam-chip.latest{border-color:#2563eb;background:#eff6ff;}
 .ec-date{color:#94a3b8;font-size:.65rem;}.ec-val{font-weight:700;font-size:.85rem;}
+/* REKOMENDASI */
 .rekom-box{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:.8rem;line-height:1.6;}
 .rekom-box.opt{background:#e0f7fa;border-left:3px solid #0891b2;}
 .rekom-box.nor{background:#dcfce7;border-left:3px solid #16a34a;}
@@ -88,6 +93,7 @@ tr:hover td{background:#fafbff;}
 .rekom-box.ht3{background:#f3e8ff;border-left:3px solid #7c3aed;}
 .rekom-box.iso{background:#dbeafe;border-left:3px solid #2563eb;}
 .rekom-title{font-weight:700;margin-bottom:4px;}
+/* FU */
 .fu-card{border:1px solid #e2e8f0;border-radius:11px;padding:13px 15px;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;transition:.2s;}
 .fu-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.07);}
 .fu-card.pending{border-left:4px solid #f59e0b;}.fu-card.done{border-left:4px solid #22c55e;opacity:.7;}
@@ -95,6 +101,7 @@ tr:hover td{background:#fafbff;}
 .fu-date{font-size:.72rem;color:#94a3b8;margin-top:3px;}.fu-actions{display:flex;gap:7px;flex-shrink:0;}
 .empty{text-align:center;padding:36px;color:#94a3b8;font-size:.85rem;}
 
+/* ── LOGIN ── */
 #loginOverlay{position:fixed;inset:0;background:linear-gradient(135deg,#1e3a5f,#2563eb);display:flex;align-items:center;justify-content:center;z-index:9999;}
 .login-box{background:#fff;border-radius:20px;padding:40px 36px;width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);}
 .login-logo{font-size:2.5rem;margin-bottom:8px;}
@@ -112,17 +119,17 @@ tr:hover td{background:#fafbff;}
 .pin-key.del:hover{background:#fecaca;}
 .login-err{color:#dc2626;font-size:.8rem;margin-top:8px;min-height:20px;}
 .login-hint{font-size:.72rem;color:#94a3b8;margin-top:12px;}
-
+/* CHANGE PIN */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:8888;}
 .modal-box{background:#fff;border-radius:16px;padding:28px;width:340px;text-align:center;}
 .modal-box h3{font-size:1rem;font-weight:700;margin-bottom:16px;}
-
+/* ── SEARCH / FILTER ── */
 .search-bar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
 .search-bar input{padding:8px 13px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.83rem;outline:none;flex:1;min-width:180px;}
 .search-bar input:focus{border-color:#2563eb;}
 .search-bar select{padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.82rem;outline:none;background:#fff;}
 .search-bar select:focus{border-color:#2563eb;}
-
+/* ── REMINDER BANNER ── */
 .reminder-banner{background:linear-gradient(135deg,#fef3c7,#fde68a);border:1.5px solid #f59e0b;border-radius:12px;padding:14px 18px;margin-bottom:18px;}
 .reminder-banner-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
 .reminder-banner-head h3{font-size:.9rem;font-weight:700;color:#92400e;}
@@ -132,7 +139,7 @@ tr:hover td{background:#fafbff;}
 .days-today{background:#fee2e2;color:#dc2626;}
 .days-soon{background:#ffedd5;color:#ea580c;}
 .days-ok{background:#fef9c3;color:#854d0e;}
-
+/* ── PDF PRINT STYLES ── */
 @media print {
   body{display:block;background:#fff;font-size:12px;}
   .sidebar,.topbar,.btn,.btn-pdf,.fu-actions,button{display:none!important;}
@@ -147,6 +154,7 @@ tr:hover td{background:#fafbff;}
 #print-header h2{font-size:1.1rem;color:#1e3a5f;}
 #print-header p{font-size:.8rem;color:#64748b;margin-top:3px;}
   
+  /* ── RESPONSIVE (HP portrait) ─────────────────────────────── */
 @media (max-width: 900px){
   body{flex-direction: column;min-height: 100vh;}
   .sidebar{width: 100%;min-height: auto;flex-direction: row;align-items: center;padding: 8px 10px;}
@@ -180,7 +188,6 @@ table th, table td {white-space: nowrap !important;}
 </style>
 </head>
 <body>
-
 <!-- LOGIN OVERLAY -->
 <div id="loginOverlay">
   <div class="login-box">
@@ -340,7 +347,7 @@ function doChangePin(){
 }
 
 // ══════════════════════════════════════════
-// 🕰 FUNGSI TANGGAL (FIX POIN 4)
+// 🕰 FUNGSI TANGGAL (FIX POIN 4: ANTI MUNDUR ZONA WAKTU)
 // ══════════════════════════════════════════
 function getToday() {
   const d = new Date();
@@ -348,6 +355,22 @@ function getToday() {
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
+}
+
+// Fungsi canggih mengubah string UTC (dari G-Sheets) ke Lokal WIB/WITA agar tanggal tidak hilang 1 hari
+function fixDate(dStr) {
+  if (!dStr) return '';
+  const s = String(dStr).trim();
+  if (s.includes('T')) {
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+  }
+  return s.slice(0, 10);
 }
 
 // ══════════════════════════════════════════
@@ -362,10 +385,13 @@ let exams = JSON.parse(localStorage.getItem('bpm_exams') || localStorage.getItem
   ...e, 
   id: Number(e.id),
   patientId: Number(e.patientId || e.workerId || e.id_pekerja),
-  examDate: (e.examDate || e.date || e.tanggal || '').slice(0, 10) 
+  examDate: fixDate(e.examDate || e.date || e.tanggal) 
 }));
 
-let followups = JSON.parse(localStorage.getItem('bpm_followups') || '[]');
+let followups = JSON.parse(localStorage.getItem('bpm_followups') || '[]').map(f => ({
+  ...f,
+  dueDate: fixDate(f.dueDate)
+}));
 
 let alcoholExams = JSON.parse(localStorage.getItem('bpm_alcohol') || localStorage.getItem('alcoholExams') || localStorage.getItem('wh_alcohol') || '[]').map((a, index) => {
   let st = a.status || a.result || a.hasil || 'Pass';
@@ -377,7 +403,7 @@ let alcoholExams = JSON.parse(localStorage.getItem('bpm_alcohol') || localStorag
     ...a,
     id: Number(a.id) || (Date.now() + index),
     patientId: Number(a.patientId || a.workerId || a.id_pekerja || a.id),
-    examDate: (a.examDate || a.date || a.tanggal || '').slice(0, 10),
+    examDate: fixDate(a.examDate || a.date || a.tanggal),
     alcoholLevel: lvl,
     status: st
   };
@@ -423,7 +449,12 @@ function getRekomendasi(s, d, prevS, pex){
 function calcAge(dob){
   if(!dob) return '-';
   const raw = String(dob).trim();
-  const s = raw.includes('T') ? raw.slice(0, 10) : raw;
+  let s = raw;
+  if(raw.includes('T')){
+    const dt = new Date(raw);
+    if(!isNaN(dt.getTime())) s = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+    else s = raw.slice(0, 10);
+  }
   const p = s.split('-');
   if(p.length !== 3) return '-';
   const bYear = parseInt(p[0], 10), bMonth = parseInt(p[1], 10) - 1, bDay = parseInt(p[2], 10);
@@ -435,16 +466,15 @@ function calcAge(dob){
 
 function fmt(d){
   if(!d) return '-';
-  const raw = String(d).trim();
-  const s = raw.includes('T') ? raw.slice(0, 10) : raw;
+  let s = fixDate(d);
   const p = s.split('-');
-  if(p.length !== 3) return raw;
+  if(p.length !== 3) return d;
   const bulanNama = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
   const blnNum = parseInt(p[1], 10);
-  return blnNum >= 1 && blnNum <= 12 ? `${p[2]} ${bulanNama[blnNum]} ${p[0]}` : raw;
+  return blnNum >= 1 && blnNum <= 12 ? `${p[2]} ${bulanNama[blnNum]} ${p[0]}` : s;
 }
 
-function monthKey(d){ return d ? String(d).slice(0, 7) : null; }
+function monthKey(d){ return d ? fixDate(d).slice(0, 7) : null; }
 function monthLabel(k){
   if(!k) return '';
   const [y, m] = String(k).split('-');
@@ -910,7 +940,7 @@ function renderPatients(){
     `;
   }).join('');
 
-  const editing = patients.find(p => String(p.id) === String(editingPatientId));
+  const editing = patients.find(p => Number(p.id) === Number(editingPatientId));
   const pagePatients = document.getElementById('page-patients');
   if(!pagePatients) return;
 
@@ -1069,10 +1099,10 @@ function addPatient(){
   if(!nik || !name || !dob) return alert('No. ID/NIK, Nama, dan tanggal lahir wajib diisi!');
 
   if(editingPatientId != null){
-    const idx = patients.findIndex(p => String(p.id) === String(editingPatientId));
+    const idx = patients.findIndex(p => Number(p.id) === Number(editingPatientId));
     if(idx === -1) return alert('Data pekerja tidak ditemukan.');
     patients[idx] = { ...patients[idx], nik, name, dob, gender, phone };
-    followups = followups.map(f => String(f.patientId) === String(editingPatientId) ? { ...f, patientName: name } : f);
+    followups = followups.map(f => Number(f.patientId) === Number(editingPatientId) ? { ...f, patientName: name } : f);
     editingPatientId = null;
     save();
     renderPatients();
@@ -1091,13 +1121,12 @@ function delPatient(id){
   exams = exams.filter(e => Number(e.patientId) !== Number(id));
   followups = followups.filter(f => Number(f.patientId) !== Number(id));
   alcoholExams = alcoholExams.filter(a => Number(a.patientId) !== Number(id));
-  if(String(editingPatientId) === String(id)) editingPatientId = null;
+  if(Number(editingPatientId) === Number(id)) editingPatientId = null;
   save();
   renderPatients();
   if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
 }
 
-// ── PROGRESS PEKERJA DENGAN ID YANG SUDAH DISTANDARISASI ──
 function renderProgress(){
   const pageProgress = document.getElementById('page-progress');
   if(!pageProgress) return;
@@ -1291,7 +1320,7 @@ function renderProgressDetail(pid){
 
 function delExamProgress(eid, pid){
   if(!confirm('Hapus data pemeriksaan ini?')) return;
-  exams = exams.filter(e => e.id !== eid);
+  exams = exams.filter(e => Number(e.id) !== Number(eid));
   save();
   renderProgressDetail(pid);
   renderStats();
@@ -1441,7 +1470,7 @@ function delFollowup(id){
 }
 
 function kirimWA(pid){
-  const p = patients.find(x => x.id === pid);
+  const p = patients.find(x => Number(x.id) === Number(pid));
   if(!p) return;
   const phone = normalizePhone(p.phone);
   if(!phone){
@@ -1553,27 +1582,6 @@ async function loadAndShowReminders(){
     </div>`;
 }
 
-function filterPatients(query, kategori){
-  return patients.filter(p=>{
-    const le = lastExam(p.id);
-    const matchName = !query || p.name.toLowerCase().includes(query.toLowerCase());
-    const matchKat  = !kategori || (le && getStatus(le.systolic,le.diastolic).key===kategori);
-    return matchName && matchKat;
-  });
-}
-function filterExams(query, kategori){
-  return [...exams].sort((a,b)=>b.examDate.localeCompare(a.examDate)).filter(e=>{
-    const p = patients.find(x=>x.id===e.patientId);
-    const matchName = !query || (p && p.name.toLowerCase().includes(query.toLowerCase()));
-    const matchKat  = !kategori || getStatus(e.systolic,e.diastolic).key===kategori;
-    return matchName && matchKat;
-  });
-}
-const katOpts = `<option value="">Semua Kategori</option>
-  <option value="opt">Optimal</option><option value="nor">Normal</option><option value="pre">Normal-Tinggi</option>
-  <option value="ht1">Hipertensi Derajat 1</option><option value="ht2">Hipertensi Derajat 2</option><option value="ht3">Hipertensi Derajat 3</option>
-  <option value="iso">HT Sistolik Terisolasi</option><option value="low">Hipotensi (Darah Rendah)</option>`;
-
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwEgEuZFusctV7hmG0yNobQzJ2JlUR2lSy5XYmkpfro4VvT1nwt8ChqR8_2f9ckAEOl/exec';
 
 function setSyncStatus(state, msg){
@@ -1588,9 +1596,7 @@ function setSyncStatus(state, msg){
   badge.classList.add('sync-local'); icon.textContent = '☁️'; text.textContent = msg || 'Lokal';
 }
 
-function isConfigured(){
-  return Boolean(SCRIPT_URL && SCRIPT_URL !== 'PASTE_WEB_APP_URL_DISINI');
-}
+function isConfigured(){ return Boolean(SCRIPT_URL && SCRIPT_URL !== 'PASTE_WEB_APP_URL_DISINI'); }
 
 function saveLocal(){
   localStorage.setItem('bpm_patients', JSON.stringify(patients));
@@ -1642,10 +1648,10 @@ function normalizeSheetsPayload(json){
   const nextExams = (json.exams || []).map(e => ({
     ...e, id: Number(e.id), patientId: Number(e.patientId), systolic: Number(e.systolic), diastolic: Number(e.diastolic),
     pulse: e.pulse === '' || e.pulse == null ? null : Number(e.pulse),
-    examDate: e.examDate ? String(e.examDate).slice(0, 10) : ''
+    examDate: fixDate(e.examDate)
   }));
-  const nextFollowups = (json.followups || []).map(f => ({ ...f, id: Number(f.id), patientId: Number(f.patientId), dueDate: f.dueDate ? String(f.dueDate).slice(0, 10) : '', status: f.status || 'pending' }));
-  const nextAlcohol = (json.alcoholExams || []).map(a => ({ ...a, id: Number(a.id), patientId: Number(a.patientId), examDate: a.examDate ? String(a.examDate).slice(0, 10) : '' }));
+  const nextFollowups = (json.followups || []).map(f => ({ ...f, id: Number(f.id), patientId: Number(f.patientId), dueDate: fixDate(f.dueDate), status: f.status || 'pending' }));
+  const nextAlcohol = (json.alcoholExams || []).map(a => ({ ...a, id: Number(a.id), patientId: Number(a.patientId), examDate: fixDate(a.examDate) }));
   return { patients: nextPatients, exams: nextExams, followups: nextFollowups, alcoholExams: nextAlcohol };
 }
 
@@ -1774,7 +1780,7 @@ function renderAlcoholPage() {
 
        <div class="form-grid">
           <div class="fg">
-            <label>Cari / Pilih Pekerja (NIK / Nama)</label>
+            <label>Cari / Pilih Pekerja</label>
             <select id="alcPatientId">
               <option value="">-- Pilih Pekerja --</option>
               ${patients.map(p => `<option value="${p.id}">[${p.nik || p.id}] ${p.name}</option>`).join('')}
@@ -1919,15 +1925,13 @@ function handleAlcoholScanResult(codeText) {
 // 📲 FUNGSI SHARE WHATSAPP ALKOHOL
 // ============================================================
 function shareAlcoholToWhatsApp(workerName, workerNik) {
-  const wNik = String(workerNik || '').trim();
-  const wName = String(workerName || '').trim().toLowerCase();
+  const p = patients.find(x => (workerNik && String(x.nik).trim() === String(workerNik).trim()) || (workerName && String(x.name).trim().toLowerCase() === String(workerName).trim().toLowerCase()));
+  if (!p) {
+    alert("Data pekerja tidak ditemukan.");
+    return;
+  }
 
-  const list = alcoholExams.filter(a => {
-    const p = patients.find(x => Number(x.id) === Number(a.patientId));
-    const pNik = p ? String(p.nik || '').trim() : '';
-    const pName = p ? String(p.name || '').trim().toLowerCase() : '';
-    return (wNik && pNik === wNik) || (wName && pName === wName);
-  }).sort((a, b) => String(a.examDate).localeCompare(String(b.examDate)));
+  const list = alcoholExams.filter(a => Number(a.patientId) === Number(p.id)).sort((a, b) => String(a.examDate).localeCompare(String(b.examDate)));
 
   if (list.length === 0) {
     alert("Tidak ada riwayat tes alkohol untuk pekerja ini.");
@@ -1943,8 +1947,8 @@ function shareAlcoholToWhatsApp(workerName, workerNik) {
 
   let text = `📋 *LAPORAN TES ALKOHOL (BAC TEST)*\n`;
   text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-  text += `👤 *Nama:* ${workerName}\n`;
-  text += `🆔 *NIK:* ${workerNik || '-'}\n`;
+  text += `👤 *Nama:* ${p.name}\n`;
+  text += `🆔 *NIK:* ${p.nik || '-'}\n`;
   text += `📅 *Tes Terakhir:* ${fmt(latest.examDate)}\n`;
   text += `🔍 *Status:* ${latest.status}\n`;
   text += `📊 *Kadar BAC:* ${latest.alcoholLevel}\n`;
@@ -1953,9 +1957,7 @@ function shareAlcoholToWhatsApp(workerName, workerNik) {
   text += `_Sistem Pemantauan Keselamatan Kerja_\n`;
   text += `_Powered by Pausbiru7_`;
 
-  const phone = patients.find(p => (wNik && String(p.nik).trim() === wNik) || (wName && String(p.name).trim().toLowerCase() === wName))?.phone;
-  const waUrl = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}` : `https://wa.me/?text=${encodeURIComponent(text)}`;
-  
+  const waUrl = p.phone ? `https://wa.me/${p.phone}?text=${encodeURIComponent(text)}` : `https://wa.me/?text=${encodeURIComponent(text)}`;
   window.open(waUrl, '_blank');
 }
 
