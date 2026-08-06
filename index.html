@@ -1746,7 +1746,7 @@ function getRekomTeks(s, d, prevS){
 }
 
 // ══════════════════════════════════════════
-// 🔔 REMINDER BANNER (H-7)
+// 🔔 REMINDER BANNER (H-7) DENGAN WA BARU
 // ══════════════════════════════════════════
 async function loadAndShowReminders(){
   const container = document.getElementById('reminderBanner');
@@ -1778,7 +1778,10 @@ async function loadAndShowReminders(){
   const items = reminders.map(r => {
     const daysCls = r.daysLeft === 0 ? 'days-today' : r.daysLeft <= 3 ? 'days-soon' : 'days-ok';
     const daysText = r.daysLeft === 0 ? 'Hari ini!' : r.daysLeft === 1 ? 'Besok!' : 'H-' + r.daysLeft;
-    const reminderText = `🔔 *Reminder Follow-Up*\n\nYth. ${r.patientName},\nJadwal kontrol pada *${fmt(r.dueDate)}*.\nAlasan: ${r.reason}\n\nTerima kasih.`;
+    
+    // FORMAT PESAN WA FOLLOW-UP YANG BARU
+    const reminderText = `🔔 *Reminder Follow-Up Kesehatan*\n━━━━━━━━━━━━━━━━━━━━\nYth. Bapak/Ibu ${r.patientName},\n\nMengingatkan bahwa Anda memiliki jadwal kontrol pada:\n📅 *Tanggal:* ${fmt(r.dueDate)}\n📌 *Alasan:* ${r.reason}\n\nHarap menemui tim medis / K3 pada tanggal tersebut.\nTerima kasih atas kerja samanya.\n━━━━━━━━━━━━━━━━━━━━\n_Sistem Pemantauan Keselamatan Kerja_\n_Powered by Pausbiru7_`;
+    
     const waBtn = r.phone ? `<a href="https://wa.me/${r.phone}?text=${encodeURIComponent(reminderText)}" target="_blank" rel="noopener noreferrer" class="btn btn-sm" style="background:#25d366;color:#fff;flex-shrink:0">📲 WA</a>` : '';
 
     return `<div class="reminder-item">
