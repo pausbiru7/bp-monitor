@@ -347,7 +347,7 @@ function doChangePin(){
 }
 
 // ══════════════════════════════════════════
-// 🕰 FUNGSI TANGGAL (FIX POIN 4: ANTI MUNDUR ZONA WAKTU)
+// 🕰 FUNGSI TANGGAL & DATA
 // ══════════════════════════════════════════
 function getToday() {
   const d = new Date();
@@ -357,7 +357,6 @@ function getToday() {
   return `${y}-${m}-${day}`;
 }
 
-// Fungsi canggih mengubah string UTC (dari G-Sheets) ke Lokal WIB/WITA agar tanggal tidak hilang 1 hari
 function fixDate(dStr) {
   if (!dStr) return '';
   const s = String(dStr).trim();
@@ -373,12 +372,8 @@ function fixDate(dStr) {
   return s.slice(0, 10);
 }
 
-// ══════════════════════════════════════════
-// 🛠️ DATA STANDARISASI: SEMUA MENGGUNAKAN 'patientId'
-// ══════════════════════════════════════════
 let patients = JSON.parse(localStorage.getItem('bpm_patients') || localStorage.getItem('patients') || '[]').map(p => ({
-  ...p,
-  id: Number(p.id) || Date.now() + Math.random()
+  ...p, id: Number(p.id) || Date.now() + Math.random()
 }));
 
 let exams = JSON.parse(localStorage.getItem('bpm_exams') || localStorage.getItem('exams') || '[]').map(e => ({ 
@@ -389,16 +384,13 @@ let exams = JSON.parse(localStorage.getItem('bpm_exams') || localStorage.getItem
 }));
 
 let followups = JSON.parse(localStorage.getItem('bpm_followups') || '[]').map(f => ({
-  ...f,
-  dueDate: fixDate(f.dueDate)
+  ...f, dueDate: fixDate(f.dueDate)
 }));
 
 let alcoholExams = JSON.parse(localStorage.getItem('bpm_alcohol') || localStorage.getItem('alcoholExams') || localStorage.getItem('wh_alcohol') || '[]').map((a, index) => {
   let st = a.status || a.result || a.hasil || 'Pass';
   let lvl = a.alcoholLevel || a.val || a.value || a.kadar;
-  if (!lvl || lvl === '') {
-    lvl = (st.toLowerCase().includes('pass') || st.toLowerCase().includes('aman')) ? '0.00' : '0.05';
-  }
+  if (!lvl || lvl === '') lvl = (st.toLowerCase().includes('pass') || st.toLowerCase().includes('aman')) ? '0.00' : '0.05';
   return {
     ...a,
     id: Number(a.id) || (Date.now() + index),
@@ -414,7 +406,6 @@ let nextFid = followups.length ? Math.max(...followups.map(f => +f.id)) + 1 : 1;
 let nextPid = patients.length ? Math.max(...patients.map(p => +p.id)) + 1 : 1;
 let nextAid = alcoholExams.length ? Math.max(...alcoholExams.map(a => +a.id)) + 1 : 1;
 
-// ══ KEPMENKES 4634/2021 CLASSIFICATION ════
 function getStatus(s, d){
   s = +s; d = +d;
   if(s >= 180 || d >= 110) return {key:'ht3', label:'Hipertensi Derajat 3', cls:'b-ht3', color:'#7c3aed'};
@@ -427,7 +418,6 @@ function getStatus(s, d){
   return {key:'opt', label:'Optimal', cls:'b-opt', color:'#0891b2'};
 }
 
-// ══ REKOMENDASI OTOMATIS ══════════════════
 function getRekomendasi(s, d, prevS, pex){
   const st = getStatus(s, d);
   const trend = prevS != null ? (s < prevS ? 'turun' : s > prevS ? 'naik' : 'tetap') : null;
@@ -448,13 +438,7 @@ function getRekomendasi(s, d, prevS, pex){
 
 function calcAge(dob){
   if(!dob) return '-';
-  const raw = String(dob).trim();
-  let s = raw;
-  if(raw.includes('T')){
-    const dt = new Date(raw);
-    if(!isNaN(dt.getTime())) s = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
-    else s = raw.slice(0, 10);
-  }
+  const s = fixDate(String(dob));
   const p = s.split('-');
   if(p.length !== 3) return '-';
   const bYear = parseInt(p[0], 10), bMonth = parseInt(p[1], 10) - 1, bDay = parseInt(p[2], 10);
@@ -508,6 +492,23 @@ function lastExam(pid){
 
 function vCls(v, hi, md){ return v >= hi ? 'v-hi' : v >= md ? 'v-md' : 'v-ok'; }
 function destroyChart(id){ const c = Chart.getChart(id); if(c) c.destroy(); }
+
+// ══════════════════════════════════════════
+// 🔍 FILTER DATA UNTUK INPUT PEMERIKSAAN (YANG SEMPAT HILANG)
+// ══════════════════════════════════════════
+const katOpts = `<option value="">Semua Kategori</option>
+  <option value="opt">Optimal</option><option value="nor">Normal</option><option value="pre">Normal-Tinggi</option>
+  <option value="ht1">Hipertensi Derajat 1</option><option value="ht2">Hipertensi Derajat 2</option><option value="ht3">Hipertensi Derajat 3</option>
+  <option value="iso">HT Sistolik Terisolasi</option><option value="low">Hipotensi (Darah Rendah)</option>`;
+
+function filterExams(query, kategori){
+  return [...exams].sort((a,b) => String(b.examDate).localeCompare(String(a.examDate))).filter(e => {
+    const p = patients.find(x => Number(x.id) === Number(e.patientId));
+    const matchName = !query || (p && String(p.name).toLowerCase().includes(query.toLowerCase()));
+    const matchKat  = !kategori || getStatus(e.systolic, e.diastolic).key === kategori;
+    return matchName && matchKat;
+  });
+}
 
 document.getElementById('currentDate').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -589,7 +590,7 @@ function renderDashboard(){
     const isPass = a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman');
     const badgeCls = isPass ? 'b-nor' : 'b-ht2';
     const pat = patients.find(p => Number(p.id) === Number(a.patientId)) || {};
-    return `<tr><td><strong>${escapeHtml(pat.name || '-')}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
+    return `<tr><td><strong>${escapeHtml(pat.name || a.patientName || '-')}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
   }).join('');
 
   const alcPass = alcoholExams.filter(a => a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman')).length;
@@ -705,6 +706,9 @@ function renderDashboard(){
   });
 }
  
+// ══════════════════════════════════════════
+// 📋 RENDER INPUT PEMERIKSAAN
+// ══════════════════════════════════════════
 function renderRecords(){
   const opts = patients.map(p => `<option value="${p.id}">${p.name} (${p.nik || ''})</option>`).join('');
   const qR = document.getElementById('recSearch')?.value || '';
