@@ -1707,24 +1707,28 @@ function kirimWA(pid){
   const jadwal = jadwalMap[st.key] || '-';
   const pulseText = last.pulse == null || last.pulse === '' ? '-' : last.pulse;
 
-  const pesan = `🩺 *Laporan Tekanan Darah*
-━━━━━━━━━━━━━━━━━━━━
-👤 *Pekerja:* ${p.name}
-🎂 *Usia:* ${calcAge(p.dob)} tahun
-📅 *Tgl Periksa:* ${fmt(last.examDate)}
-*Hasil Terakhir:*
-• Sistolik  : *${last.systolic} mmHg*
-• Diastolik : *${last.diastolic} mmHg*
-• Nadi      : ${pulseText} bpm
-• Kategori  : *${st.label}*
-${trendNote}
-*Riwayat 5 Terakhir:*
-${riwayat}
-*Rekomendasi:*
-${getRekomTeks(last.systolic,last.diastolic,prev?.systolic)}
-📅 *Jadwal Kontrol:* ${jadwal}
-━━━━━━━━━━━━━━━━━━━━
-_KEPMENKES RI No. 4634/2021_`;
+const pesan = `🩺 *Laporan Tekanan Darah* 
+━━━━━━━━━━━━━━━━━━━━ 
+👤 *Pekerja:* ${p.name} 
+🎂 *Usia:* ${calcAge(p.dob)} tahun 
+📅 *Tgl Periksa:* ${fmt(last.examDate)} 
+
+*Hasil Terakhir:* 
+• Sistolik  : *${last.systolic} mmHg* 
+• Diastolik : *${last.diastolic} mmHg* 
+• Nadi      : ${pulseText} bpm 
+• Kategori  : *${st.label}* 
+${trendNote} 
+
+*Riwayat 5 Terakhir:* 
+${riwayat} 
+
+*Rekomendasi:* 
+${getRekomTeks(last.systolic,last.diastolic,prev?.systolic)} 
+📅 *Jadwal Kontrol:* ${jadwal} 
+━━━━━━━━━━━━━━━━━━━━ 
+_KEPMENKES RI No. 4634/2021_
+_Pausbiru Health_`;
 
   window.open(`https://wa.me/${phone}?text=${encodeURIComponent(pesan)}`, '_blank', 'noopener,noreferrer');
 }
