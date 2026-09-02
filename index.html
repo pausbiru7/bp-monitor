@@ -2175,6 +2175,14 @@ function shareAlcoholToWhatsApp(workerName, workerNik) {
   text += `🔍 *Status:* ${latest.status}\n`;
   text += `📊 *Kadar BAC:* ${latest.alcoholLevel}\n`;
   text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+  // --- TAMBAHAN 5 RIWAYAT TERAKHIR MULAI DI SINI ---
+  text += `⏳ *Riwayat 5 Tes Terakhir:*\n`;
+  const riwayat = list.slice(-5).reverse();
+  riwayat.forEach((item, index) => {
+      text += `  ${index + 1}. ${fmt(item.examDate)} | ${item.status} | BAC: ${item.alcoholLevel}\n`;
+  });
+  text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+  // --- SELESAI TAMBAHAN ---
   text += `*💡 Rekomendasi Klinis:*\n${rekomendasi}\n\n`;
   text += `_Sistem Pemantauan Keselamatan Kerja_\n`;
   text += `_Pausbiru Health_`;
