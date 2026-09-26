@@ -1310,13 +1310,6 @@ function renderProgressDetail(pid){
 
     ${pex.length ? `
     <div class="panel" style="margin-bottom:18px">
-      <div class="panel-head"><h2>📅 Semua Riwayat Pemeriksaan Tensi</h2><span style="font-size:.75rem;color:#64748b">${pex.length} data · terbaru di kanan</span></div>
-      <div class="panel-body"><div class="pc-exams" style="gap:8px">${chips}</div></div>
-    </div>
-    ` : ''}
-
-    ${pex.length ? `
-    <div class="panel" style="margin-bottom:18px">
       <div class="panel-head"><h2>📈 Grafik Tren Tekanan Darah</h2></div>
       <div class="panel-body"><div class="chart-box" style="height:280px"><canvas id="progDetailChart"></canvas></div></div>
     </div>
