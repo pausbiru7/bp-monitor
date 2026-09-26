@@ -737,13 +737,19 @@ function renderDashboard(){
       </div>
     </div>
 
+    <!-- TREN BMI & KLASIFIKASI BMI DENGAN REFERENSI -->
     <div class="grid-2" style="margin-bottom:18px">
       <div class="panel">
         <div class="panel-head"><h2>📉 Tren BMI & Asam Urat (6 Bulan)</h2></div>
         <div class="panel-body"><div class="chart-box"><canvas id="dashMcuBmiUricChart"></canvas></div></div>
       </div>
       <div class="panel">
-        <div class="panel-head"><h2>📖 Klasifikasi BMI (WHO Asia Pasifik)</h2></div>
+        <div class="panel-head">
+          <div>
+            <h2>📖 Klasifikasi BMI / IMT</h2>
+            <div style="font-size:0.75rem;color:#64748b;margin-top:2px">Ref: WHO WPRO 2000 & Permenkes RI No.41/2014</div>
+          </div>
+        </div>
         <div style="overflow-x:auto"><table><thead><tr><th>Kategori</th><th>Nilai BMI</th><th>Risiko</th></tr></thead><tbody>
           <tr><td><span class="badge b-pre">Kekurangan Bobot</span></td><td>&lt; 18.5</td><td>Rendah (Butuh Nutrisi)</td></tr>
           <tr><td><span class="badge b-nor">Normal</span></td><td>18.5 – 22.9</td><td>Aman</td></tr>
@@ -753,10 +759,15 @@ function renderDashboard(){
       </div>
     </div>
 
-    <!-- TABEL KLASIFIKASI (GRID-2) -->
+    <!-- TABEL KLASIFIKASI METABOLIK & ALKOHOL DENGAN REFERENSI -->
     <div class="grid-2" style="margin-bottom:18px">
       <div class="panel">
-        <div class="panel-head"><h2>📖 Nilai Rujukan Metabolik (Klinik)</h2></div>
+        <div class="panel-head">
+          <div>
+            <h2>📖 Nilai Rujukan Metabolik</h2>
+            <div style="font-size:0.75rem;color:#64748b;margin-top:2px">Ref: Konsensus PERKENI & NCEP ATP III</div>
+          </div>
+        </div>
         <div style="overflow-x:auto"><table><thead><tr><th>Parameter</th><th>Normal</th><th>Tinggi (Waspada)</th></tr></thead><tbody>
           <tr><td><strong>Gula Darah Sewaktu</strong></td><td>&lt; 140 mg/dL</td><td><span class="badge b-ht2">≥ 140 mg/dL</span></td></tr>
           <tr><td><strong>Kolesterol Total</strong></td><td>&lt; 200 mg/dL</td><td><span class="badge b-ht2">≥ 200 mg/dL</span></td></tr>
@@ -765,21 +776,32 @@ function renderDashboard(){
         </tbody></table></div>
       </div>
       <div class="panel">
-        <div class="panel-head"><h2>📖 Klasifikasi Distribusi Alkohol (BAC)</h2></div>
+        <div class="panel-head">
+          <div>
+            <h2>📖 Standar Toleransi Alkohol K3</h2>
+            <div style="font-size:0.75rem;color:#64748b;margin-top:2px">Ref: Permenakertrans RI No.11/MEN/VI/2005 (Zero Tolerance)</div>
+          </div>
+        </div>
         <div style="overflow-x:auto"><table><thead><tr><th>Distribusi</th><th>Nilai BAC</th><th>Keterangan</th></tr></thead><tbody>
-          <tr><td><span class="badge b-nor">Pass</span></td><td>0.00</td><td>Aman / Layak Kerja</td></tr>
+          <tr><td><span class="badge b-nor">Pass</span></td><td>0.00</td><td>Aman / Layak Kerja (Fit to Work)</td></tr>
           <tr><td><span class="badge b-ht2">Fail</span></td><td>&gt; 0.00</td><td>Tidak Layak Kerja (Tindakan Diperlukan)</td></tr>
         </tbody></table></div>
       </div>
     </div>
 
+    <!-- FOLLOW UP & TENSI DENGAN REFERENSI -->
     <div class="grid-2">
       <div class="panel">
         <div class="panel-head"><h2>🔔 Follow-Up Pending</h2><span style="font-size:.75rem;color:#f59e0b">${pend.length} menunggu</span></div>
         <div class="panel-body">${fuHtml}</div>
       </div>
       <div class="panel">
-        <div class="panel-head"><h2>📖 Klasifikasi Tekanan Darah (KEPMENKES)</h2></div>
+        <div class="panel-head">
+          <div>
+            <h2>📖 Klasifikasi Tekanan Darah</h2>
+            <div style="font-size:0.75rem;color:#64748b;margin-top:2px">Ref: KEPMENKES RI No. HK.01.07/MENKES/4634/2021</div>
+          </div>
+        </div>
         <div style="overflow-x:auto"><table><thead><tr><th>Kategori</th><th>Sistolik</th><th>Diastolik</th><th>Risiko</th></tr></thead><tbody>
           <tr><td><span class="badge b-opt">Optimal</span></td><td>&lt;120</td><td>&lt;80</td><td>Minimal</td></tr>
           <tr><td><span class="badge b-nor">Normal</span></td><td>120–129</td><td>80–84</td><td>Rendah</td></tr>
