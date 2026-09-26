@@ -703,7 +703,7 @@ function renderDashboard(){
       </div>
     </div>
     
-    <!-- TIGA GRAFIK PIE DISTRIBUSI (GRID-3) -->
+   <!-- TIGA GRAFIK PIE DISTRIBUSI (GRID-3) -->
     <div class="grid-3" style="margin-bottom:18px">
       <div class="panel">
         <div class="panel-head"><h2>🥧 Kategori Tensi (BP)</h2></div>
@@ -711,13 +711,7 @@ function renderDashboard(){
       </div>
       <div class="panel">
         <div class="panel-head"><h2>🥧 Tes Alkohol (BAC)</h2></div>
-        <div class="panel-body">
-          <div style="display:flex; justify-content:center; gap:10px; margin-bottom:10px;">
-            <span class="badge b-nor" style="font-size:.85rem">Pass: ${passPct}%</span> 
-            <span class="badge b-ht2" style="font-size:.85rem">Fail: ${failPct}%</span>
-          </div>
-          <div class="chart-box" style="height:185px"><canvas id="dashAlcPieChart"></canvas></div>
-        </div>
+        <div class="panel-body"><div class="chart-box" style="height:220px"><canvas id="dashAlcPieChart"></canvas></div></div>
       </div>
       <div class="panel">
         <div class="panel-head"><h2>🥧 Status BMI (IMT)</h2></div>
@@ -855,7 +849,18 @@ function renderDashboard(){
     if (alcPieCanvas) {
       destroyChart('dashAlcPieChart');
       if (totalAlc > 0) {
-        new Chart(alcPieCanvas, { type: 'doughnut', data: { labels: ['Pass (Aman)', 'Fail (Tidak Layak)'], datasets: [{ data: [alcPass, alcFail], backgroundColor: ['#16a34a', '#dc2626'], borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } } } });
+        new Chart(alcPieCanvas, { 
+          type: 'doughnut', 
+          data: { 
+            labels: [`Pass (Aman): ${passPct}%`, `Fail (Tidak Layak): ${failPct}%`], 
+            datasets: [{ data: [alcPass, alcFail], backgroundColor: ['#16a34a', '#dc2626'], borderWidth: 2 }] 
+          }, 
+          options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } 
+          } 
+        });
       }
     }
 
