@@ -553,8 +553,15 @@ function renderStats(){
   const pre = allLast.filter(e => getStatus(e.systolic, e.diastolic).key === 'pre').length;
   const nor = allLast.filter(e => ['opt', 'nor'].includes(getStatus(e.systolic, e.diastolic).key)).length;
   const pend = followups.filter(f => f.status === 'pending').length;
+  
   const alcTotal = alcoholExams.length;
   const alcFail = alcoholExams.filter(a => a.status.toLowerCase() !== 'pass' && a.status.toLowerCase() !== 'aman').length;
+
+  const mcuTotal = mcuExams.length;
+  const mcuWarning = mcuExams.filter(m => {
+      const bVal = m.bmi ? parseFloat(String(m.bmi).replace(',','.')) : 0;
+      return bVal >= 25; // Menghitung yang Obesitas
+  }).length;
 
   const statsArea = document.getElementById('statsArea');
   if(!statsArea) return;
@@ -563,7 +570,155 @@ function renderStats(){
     <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🔴</div><div class="stat-info"><h3>Hipertensi</h3><div class="val" style="color:#dc2626">${ht}</div><div class="sub">Perlu penanganan</div></div></div>
     <div class="stat-card"><div class="stat-icon" style="background:#dcfce7">🟢</div><div class="stat-info"><h3>Optimal/Normal</h3><div class="val" style="color:#16a34a">${nor}</div><div class="sub">Kondisi baik</div></div></div>
     <div class="stat-card"><div class="stat-icon" style="background:#fef3c7">🔔</div><div class="stat-info"><h3>Follow-Up</h3><div class="val" style="color:#d97706">${pend}</div><div class="sub">Menunggu</div></div></div>
-    <div class="stat-card" style="border: ${alcFail > 0 ? '1px solid #fecaca' : 'none'}"><div class="stat-icon" style="background:#fce7f3">🍷</div><div class="stat-info"><h3>Tes Alkohol</h3><div class="val">${alcTotal}</div><div class="sub" style="${alcFail > 0 ? 'color:#dc2626;font-weight:bold' : 'color:#16a34a'}">${alcFail > 0 ? '⚠️ ' + alcFail + ' Kasus Fail' : 'Semua Pass ✓'}</div></div></div>`;
+    <div class="stat-card" style="border: ${alcFail > 0 ? '1px solid #fecaca' : 'none'}"><div class="stat-icon" style="background:#fce7f3">🍷</div><div class="stat-info"><h3>Tes Alkohol</h3><div class="val">${alcTotal}</div><div class="sub" style="${alcFail > 0 ? 'color:#dc2626;font-weight:bold' : 'color:#16a34a'}">${alcFail > 0 ? '⚠️ ' + alcFail + ' Kasus Fail' : 'Semua Pass ✓'}</div></div></div>
+    <div class="stat-card" style="border: ${mcuWarning > 0 ? '1px solid #fecaca' : 'none'}"><div class="stat-icon" style="background:#e0f2fe">⚖️</div><div class="stat-info"><h3>Data MCU</h3><div class="val">${mcuTotal}</div><div class="sub" style="${mcuWarning > 0 ? 'color:#dc2626;font-weight:bold' : 'color:#64748b'}">${mcuWarning > 0 ? '⚠️ ' + mcuWarning + ' Obesitas' : 'Tersimpan'}</div></div></div>`;
+}
+
+function renderDashboard(){
+  renderStats();
+  const now = new Date();
+  const months = [];
+  for(let i = 5; i >= 0; i--){
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+  }
+  const avgByMonth = months.map(mk => {
+    const me = exams.filter(e => monthKey(e.examDate) === mk);
+    return me.length ? Math.round(me.reduce((a, e) => a + e.systolic, 0) / me.length) : null;
+  });
+
+  const catCount = {opt:0, nor:0, pre:0, ht1:0, ht2:0, ht3:0, iso:0, low:0};
+  patients.map(p => lastExam(p.id)).filter(Boolean).forEach(e => { catCount[getStatus(e.systolic, e.diastolic).key]++; });
+
+  const recent = [...exams].sort((a, b) => String(b.examDate).localeCompare(String(a.examDate))).slice(0, 5);
+  const rows = recent.map(e => {
+    const st = getStatus(e.systolic, e.diastolic);
+    const pex = pExams(e.patientId);
+    const idx = pex.findIndex(x => x.id === e.id);
+    const prev = idx > 0 ? pex[idx - 1] : null;
+    return `<tr><td><strong>${pName(e.patientId)}</strong></td><td>${fmt(e.examDate)}</td><td class="${vCls(e.systolic,140,120)}">${e.systolic}</td><td class="${vCls(e.diastolic,90,80)}">${e.diastolic}</td><td>${trendArrow(e.systolic,prev?.systolic)}</td><td><span class="badge ${st.cls}">${st.label}</span></td></tr>`;
+  }).join('');
+
+  const recentAlcohol = [...alcoholExams].sort((a, b) => String(b.examDate).localeCompare(String(a.examDate))).slice(0, 5);
+  const alcRows = recentAlcohol.map(a => {
+    const isPass = a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman');
+    const badgeCls = isPass ? 'b-nor' : 'b-ht2';
+    const pat = patients.find(p => Number(p.id) === Number(a.patientId)) || {};
+    return `<tr><td><strong>${escapeHtml(pat.name || '-')}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
+  }).join('');
+
+  const recentMcu = [...mcuExams].sort((a, b) => String(b.examDate).localeCompare(String(a.examDate))).slice(0, 5);
+  const mcuRows = recentMcu.map(m => {
+    const pat = patients.find(p => Number(p.id) === Number(m.patientId)) || {};
+    let bmiBadge = '-';
+    if(m.bmi) {
+      const bVal = parseFloat(String(m.bmi).replace(',','.'));
+      if(bVal >= 18.5 && bVal <= 22.9) bmiBadge = `<span class="badge b-nor">${m.bmi}</span>`;
+      else if(bVal >= 25) bmiBadge = `<span class="badge b-ht2">${m.bmi}</span>`;
+      else bmiBadge = `<span class="badge b-pre">${m.bmi}</span>`;
+    }
+    return `<tr><td><strong>${escapeHtml(pat.name || '-')}</strong></td><td>${fmt(m.examDate)}</td><td>${m.weight||'-'}kg / ${m.height||'-'}cm</td><td>${bmiBadge}</td></tr>`;
+  }).join('');
+
+  const alcPass = alcoholExams.filter(a => a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman')).length;
+  const alcFail = alcoholExams.length - alcPass;
+  const totalAlc = alcoholExams.length;
+  const passPct = totalAlc > 0 ? Math.round((alcPass / totalAlc) * 100) : 0;
+  const failPct = totalAlc > 0 ? Math.round((alcFail / totalAlc) * 100) : 0;
+
+  const pend = followups.filter(f => f.status === 'pending');
+  const fuHtml = pend.slice(0, 3).map(f => {
+    return `<div class="fu-card pending"><div><div class="fu-name">${f.patientName}</div><div class="fu-reason">${f.reason}</div><div class="fu-date">📅 ${fmt(f.dueDate)}</div></div><span class="badge b-pending">Menunggu</span></div>`;
+  }).join('') || '<div class="empty">✅ Tidak ada follow-up pending</div>';
+
+  const dashboardEl = document.getElementById('page-dashboard');
+  if(!dashboardEl) return;
+
+  dashboardEl.innerHTML = `
+    <div class="grid-3" style="margin-bottom:18px">
+      <div class="panel">
+        <div class="panel-head"><h2>📋 Pemeriksaan BP Terbaru</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Trend</th><th>Kategori</th></tr></thead><tbody>${rows || '<tr><td colspan="6" class="empty">Belum ada data</td></tr>'}</tbody></table></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>🍷 Pemeriksaan Alkohol Terbaru</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Nilai BAC</th><th>Distribusi</th></tr></thead><tbody>${alcRows || '<tr><td colspan="4" class="empty">Belum ada data pemeriksaan alkohol</td></tr>'}</tbody></table></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>🩸 Pemeriksaan MCU Terbaru</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>BB / TB</th><th>BMI</th></tr></thead><tbody>${mcuRows || '<tr><td colspan="4" class="empty">Belum ada data MCU</td></tr>'}</tbody></table></div>
+      </div>
+    </div>
+    
+    <div class="grid-2" style="margin-bottom:18px">
+      <div class="panel">
+        <div class="panel-head"><h2>🥧 Distribusi Kategori BP (Terakhir)</h2></div>
+        <div class="panel-body"><div class="chart-box"><canvas id="dashPieChart"></canvas></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>🥧 Distribusi Tes Alkohol (Pass vs Fail)</h2></div>
+        <div class="panel-body">
+          <div style="display:flex; justify-content:center; gap:10px; margin-bottom:10px;">
+            <span class="badge b-nor" style="font-size:.85rem">Pass: ${passPct}%</span> 
+            <span class="badge b-ht2" style="font-size:.85rem">Fail: ${failPct}%</span>
+          </div>
+          <div class="chart-box" style="height:220px"><canvas id="dashAlcPieChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-bottom:18px">
+      <div class="panel">
+        <div class="panel-head"><h2>📊 Tren Rata-rata Sistolik (6 Bulan)</h2></div>
+        <div class="panel-body"><div class="chart-box"><canvas id="dashTrendChart"></canvas></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>📖 Klasifikasi Distribusi Alkohol (BAC)</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Distribusi</th><th>Nilai BAC</th><th>Keterangan</th></tr></thead><tbody>
+          <tr><td><span class="badge b-nor">Pass</span></td><td>0.00</td><td>Aman / Layak Kerja</td></tr>
+          <tr><td><span class="badge b-ht2">Fail</span></td><td>&gt; 0.00</td><td>Tidak Layak Kerja (Tindakan Diperlukan)</td></tr>
+        </tbody></table></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><h2>🔔 Follow-Up Pending</h2><span style="font-size:.75rem;color:#f59e0b">${pend.length} menunggu</span></div>
+        <div class="panel-body">${fuHtml}</div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>📖 Klasifikasi Tekanan Darah (KEPMENKES)</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Kategori</th><th>Sistolik</th><th>Diastolik</th><th>Risiko</th></tr></thead><tbody>
+          <tr><td><span class="badge b-opt">Optimal</span></td><td>&lt;120</td><td>&lt;80</td><td>Minimal</td></tr>
+          <tr><td><span class="badge b-nor">Normal</span></td><td>120–129</td><td>80–84</td><td>Rendah</td></tr>
+          <tr><td><span class="badge b-pre">Normal-Tinggi</span></td><td>130–139</td><td>85–89</td><td>Sedang</td></tr>
+          <tr><td><span class="badge b-ht1">HT Derajat 1</span></td><td>140–159</td><td>90–99</td><td>Sedang</td></tr>
+          <tr><td><span class="badge b-ht2">HT Derajat 2</span></td><td>160–179</td><td>100–109</td><td>Tinggi</td></tr>
+          <tr><td><span class="badge b-ht3">HT Derajat 3</span></td><td>≥180</td><td>≥110</td><td>Sangat Tinggi</td></tr>
+        </tbody></table></div>
+      </div>
+    </div>`;
+
+  requestAnimationFrame(() => {
+    // Canvas Inisialisasi Tensi & Pie Alkohol (Sama persis seperti sebelumnya)
+    const trendCanvas = document.getElementById('dashTrendChart');
+    if(trendCanvas){
+      destroyChart('dashTrendChart');
+      new Chart(trendCanvas, { type: 'line', data: { labels: months.map(m => monthLabel(m)), datasets: [{ label: 'Rata-rata Sistolik', data: avgByMonth, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.1)', fill: true, tension: .4, pointRadius: 5, pointBackgroundColor: '#2563eb', spanGaps: true }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 80, max: 200, ticks: { callback: v => v + ' mmHg' } }, x: { grid: { display: false } } } } });
+    }
+    const pieCanvas = document.getElementById('dashPieChart');
+    if(pieCanvas){
+      destroyChart('dashPieChart');
+      const catDefs = [{key:'opt', label:'Optimal', color:'#0891b2'}, {key:'nor', label:'Normal', color:'#16a34a'}, {key:'pre', label:'Normal-Tinggi', color:'#ca8a04'}, {key:'ht1', label:'HT Derajat 1', color:'#ea580c'}, {key:'ht2', label:'HT Derajat 2', color:'#dc2626'}, {key:'ht3', label:'HT Derajat 3', color:'#7c3aed'}, {key:'iso', label:'HT Sistolik Terisolasi', color:'#2563eb'}, {key:'low', label:'Hipotensi', color:'#0369a1'}];
+      const active = catDefs.filter(c => catCount[c.key] > 0);
+      new Chart(pieCanvas, { type: 'doughnut', data: { labels: active.map(c => c.label), datasets: [{ data: active.map(c => catCount[c.key]), backgroundColor: active.map(c => c.color), borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } } } });
+    }
+    const alcPieCanvas = document.getElementById('dashAlcPieChart');
+    if (alcPieCanvas) {
+      destroyChart('dashAlcPieChart');
+      if (totalAlc > 0) {
+        new Chart(alcPieCanvas, { type: 'doughnut', data: { labels: ['Pass (Aman)', 'Fail (Tidak Layak)'], datasets: [{ data: [alcPass, alcFail], backgroundColor: ['#16a34a', '#dc2626'], borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } } });
+      }
+    }
+  });
 }
 
 function renderDashboard(){
@@ -1677,7 +1832,7 @@ function renderMonthly(){
 function renderMonthlyData(mk, allMonths){
   const pageMonthly = document.getElementById('page-monthly');
   if(!pageMonthly) return;
-  if(!allMonths) allMonths = [...new Set([...exams.map(e => monthKey(e.examDate)), ...alcoholExams.map(a => monthKey(a.examDate))].filter(Boolean))].sort();
+  if(!allMonths) allMonths = [...new Set([...exams.map(e => monthKey(e.examDate)), ...alcoholExams.map(a => monthKey(a.examDate)), ...mcuExams.map(m => monthKey(m.examDate))].filter(Boolean))].sort();
   if(!mk) mk = allMonths[allMonths.length - 1] || monthKey(getToday());
 
   const opts = allMonths.map(m => `<option value="${m}" ${m === mk ? 'selected' : ''}>${monthLabel(m)}</option>`).join('');
@@ -1685,14 +1840,14 @@ function renderMonthlyData(mk, allMonths){
   // Data Tensi
   const me = exams.filter(e => monthKey(e.examDate) === mk).sort((a,b)=>String(b.examDate).localeCompare(String(a.examDate)));
   const avgS = me.length ? Math.round(me.reduce((a, e) => a + e.systolic, 0) / me.length) : 0;
-  const avgD = me.length ? Math.round(me.reduce((a, e) => a + e.diastolic, 0) / me.length) : 0;
   
   // Data Alkohol
   const meAlc = alcoholExams.filter(a => monthKey(a.examDate) === mk).sort((a,b)=>String(b.examDate).localeCompare(String(a.examDate)));
-  const alcPass = meAlc.filter(a => a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman')).length;
-  const alcFail = meAlc.length - alcPass;
+  const alcFail = meAlc.filter(a => a.status.toLowerCase() !== 'pass' && a.status.toLowerCase() !== 'aman').length;
 
-  // Trend 6 Bulan Tensi
+  // Data MCU
+  const meMcu = mcuExams.filter(m => monthKey(m.examDate) === mk).sort((a,b)=>String(b.examDate).localeCompare(String(a.examDate)));
+
   const last6 = allMonths.slice(-6);
   const l6Avgs = last6.map(m => {
     const me2 = exams.filter(e => monthKey(e.examDate) === m);
@@ -1701,12 +1856,7 @@ function renderMonthlyData(mk, allMonths){
 
   const catCount = {opt:0, nor:0, pre:0, ht1:0, ht2:0, ht3:0, iso:0, low:0};
   me.forEach(e => { catCount[getStatus(e.systolic, e.diastolic).key]++; });
-
-  const catDefs = [
-    {key:'opt', label:'Optimal', color:'#0891b2'}, {key:'nor', label:'Normal', color:'#16a34a'}, {key:'pre', label:'Normal-Tinggi', color:'#ca8a04'},
-    {key:'ht1', label:'HT Derajat 1', color:'#ea580c'}, {key:'ht2', label:'HT Derajat 2', color:'#dc2626'}, {key:'ht3', label:'HT Derajat 3', color:'#7c3aed'},
-    {key:'iso', label:'HT Sistolik Terisolasi', color:'#2563eb'}, {key:'low', label:'Hipotensi', color:'#0369a1'}
-  ];
+  const catDefs = [{key:'opt', label:'Optimal', color:'#0891b2'}, {key:'nor', label:'Normal', color:'#16a34a'}, {key:'pre', label:'Normal-Tinggi', color:'#ca8a04'}, {key:'ht1', label:'HT Derajat 1', color:'#ea580c'}, {key:'ht2', label:'HT Derajat 2', color:'#dc2626'}, {key:'ht3', label:'HT Derajat 3', color:'#7c3aed'}, {key:'iso', label:'HT Sistolik Terisolasi', color:'#2563eb'}, {key:'low', label:'Hipotensi', color:'#0369a1'}];
 
   const rows = me.map(e => {
     const pex = pExams(e.patientId);
@@ -1719,8 +1869,18 @@ function renderMonthlyData(mk, allMonths){
   const alcRows = meAlc.map(a => {
     const isPass = a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman');
     const badgeCls = isPass ? 'b-nor' : 'b-ht2';
-    const pat = patients.find(p => Number(p.id) === Number(a.patientId)) || {};
-    return `<tr><td><strong>${escapeHtml(pat.name || '-')}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
+    return `<tr><td><strong>${escapeHtml(pName(a.patientId))}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
+  }).join('');
+
+  const mcuRows = meMcu.map(m => {
+    let bmiBadge = '-';
+    if(m.bmi) {
+      const bVal = parseFloat(String(m.bmi).replace(',','.'));
+      if(bVal >= 18.5 && bVal <= 22.9) bmiBadge = `<span class="badge b-nor">${m.bmi}</span>`;
+      else if(bVal >= 25) bmiBadge = `<span class="badge b-ht2">${m.bmi}</span>`;
+      else bmiBadge = `<span class="badge b-pre">${m.bmi}</span>`;
+    }
+    return `<tr><td><strong>${escapeHtml(pName(m.patientId))}</strong></td><td>${fmt(m.examDate)}</td><td>${m.weight||'-'}kg / ${m.height||'-'}cm</td><td>${bmiBadge}</td></tr>`;
   }).join('');
 
   pageMonthly.innerHTML = `
@@ -1734,8 +1894,8 @@ function renderMonthlyData(mk, allMonths){
 
     <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;margin-bottom:18px">
       <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">📋</div><div class="stat-info"><h3>Total Tensi</h3><div class="val">${me.length}</div><div class="sub">Pemeriksaan</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🩺</div><div class="stat-info"><h3>Rata-rata Sistolik</h3><div class="val ${avgS ? vCls(avgS,140,120) : ''}">${avgS || '-'}</div><div class="sub">Bulan Ini</div></div></div>
       <div class="stat-card"><div class="stat-icon" style="background:#fce7f3">🍷</div><div class="stat-info"><h3>Tes Alkohol</h3><div class="val">${meAlc.length}</div><div class="sub" style="${alcFail > 0 ? 'color:#dc2626;font-weight:bold' : 'color:#16a34a'}">${alcFail > 0 ? '⚠️ ' + alcFail + ' Kasus Fail' : 'Semua Pass ✓'}</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#e0f2fe">⚖️</div><div class="stat-info"><h3>Total MCU</h3><div class="val">${meMcu.length}</div><div class="sub">Pemeriksaan</div></div></div>
     </div>
     
     <div class="grid-2" style="margin-bottom:18px">
@@ -1751,6 +1911,12 @@ function renderMonthlyData(mk, allMonths){
       <div class="panel"><div class="panel-head"><h2>🍷 Detail Alkohol — ${monthLabel(mk)}</h2></div>
         <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Nilai BAC</th><th>Distribusi</th></tr></thead>
         <tbody>${alcRows || '<tr><td colspan="4" class="empty">Tidak ada pemeriksaan alkohol bulan ini</td></tr>'}</tbody></table></div></div>
+    </div>
+
+    <div class="panel" style="margin-bottom:18px">
+      <div class="panel-head"><h2>🩸 Detail MCU & Metabolik — ${monthLabel(mk)}</h2></div>
+      <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>BB / TB</th><th>BMI</th></tr></thead>
+      <tbody>${mcuRows || '<tr><td colspan="4" class="empty">Tidak ada pemeriksaan MCU bulan ini</td></tr>'}</tbody></table></div>
     </div>`;
 
   requestAnimationFrame(() => {
@@ -1758,31 +1924,20 @@ function renderMonthlyData(mk, allMonths){
     const catChart = document.getElementById('mCatChart');
     if(trendChart){
       destroyChart('mTrendChart');
-      new Chart(trendChart, {
-        type: 'bar',
-        data: {
-          labels: last6.map(m => monthLabel(m)),
-          datasets: [{ label: 'Rata-rata Sistolik', data: l6Avgs, backgroundColor: l6Avgs.map(v => v == null ? 'rgba(148,163,184,.45)' : v >= 140 ? 'rgba(220,38,38,.7)' : v >= 130 ? 'rgba(202,138,4,.7)' : 'rgba(22,163,74,.7)'), borderRadius: 6 }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 80, max: 200, ticks: { callback: v => v + ' mmHg' } }, x: { grid: { display: false } } } }
-      });
+      new Chart(trendChart, { type: 'bar', data: { labels: last6.map(m => monthLabel(m)), datasets: [{ label: 'Rata-rata Sistolik', data: l6Avgs, backgroundColor: l6Avgs.map(v => v == null ? 'rgba(148,163,184,.45)' : v >= 140 ? 'rgba(220,38,38,.7)' : v >= 130 ? 'rgba(202,138,4,.7)' : 'rgba(22,163,74,.7)'), borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 80, max: 200, ticks: { callback: v => v + ' mmHg' } }, x: { grid: { display: false } } } } });
     }
     if(catChart){
       destroyChart('mCatChart');
       const active = catDefs.filter(c => catCount[c.key] > 0);
-      new Chart(catChart, {
-        type: 'pie',
-        data: { labels: active.map(c => c.label), datasets: [{ data: active.map(c => catCount[c.key]), backgroundColor: active.map(c => c.color), borderWidth: 2 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 10 } } } } }
-      });
+      new Chart(catChart, { type: 'pie', data: { labels: active.map(c => c.label), datasets: [{ data: active.map(c => catCount[c.key]), backgroundColor: active.map(c => c.color), borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 10 } } } } } });
     }
   });
 }
 
-// 🖨️ FUNGSI CETAK PDF LAPORAN BULANAN
 function printMonthlyPDF(mk) {
   const me = exams.filter(e => monthKey(e.examDate) === mk).sort((a,b)=>String(a.examDate).localeCompare(String(b.examDate)));
   const meAlc = alcoholExams.filter(a => monthKey(a.examDate) === mk).sort((a,b)=>String(a.examDate).localeCompare(String(b.examDate)));
+  const meMcu = mcuExams.filter(m => monthKey(m.examDate) === mk).sort((a,b)=>String(a.examDate).localeCompare(String(b.examDate)));
 
   const avgS = me.length ? Math.round(me.reduce((a, e) => a + e.systolic, 0) / me.length) : 0;
   const avgD = me.length ? Math.round(me.reduce((a, e) => a + e.diastolic, 0) / me.length) : 0;
@@ -1794,11 +1949,12 @@ function printMonthlyPDF(mk) {
     : `<tr><td colspan="6" style="text-align:center; padding:10px;">Tidak ada data tensi bulan ini</td></tr>`;
 
   let alcRows = meAlc.length > 0 
-    ? meAlc.map((a, i) => {
-        const pat = patients.find(p => Number(p.id) === Number(a.patientId)) || {};
-        return `<tr><td style="text-align:center">${i+1}</td><td>${fmt(a.examDate)}</td><td>${pat.name || '-'}</td><td style="text-align:center">${a.alcoholLevel}</td><td style="text-align:center; font-weight:bold;">${a.status}</td></tr>`;
-      }).join('') 
+    ? meAlc.map((a, i) => `<tr><td style="text-align:center">${i+1}</td><td>${fmt(a.examDate)}</td><td>${pName(a.patientId)}</td><td style="text-align:center">${a.alcoholLevel}</td><td style="text-align:center; font-weight:bold;">${a.status}</td></tr>`).join('') 
     : `<tr><td colspan="5" style="text-align:center; padding:10px;">Tidak ada riwayat tes alkohol bulan ini</td></tr>`;
+
+  let mcuPdfRows = meMcu.length > 0
+    ? meMcu.map((m, i) => `<tr><td style="text-align:center">${i+1}</td><td>${fmt(m.examDate)}</td><td>${pName(m.patientId)}</td><td style="text-align:center">${m.weight || '-'}/${m.height || '-'}</td><td style="text-align:center">${m.bmi || '-'}</td><td style="text-align:center">${m.glucose || '-'}</td><td style="text-align:center">${m.cholesterol || '-'}</td><td style="text-align:center">${m.uricAcid || '-'}</td></tr>`).join('')
+    : `<tr><td colspan="8" style="text-align:center; padding:10px;">Tidak ada data MCU & Metabolik bulan ini</td></tr>`;
 
   const html = `<!DOCTYPE html>
   <html lang="id">
@@ -1830,7 +1986,7 @@ function printMonthlyPDF(mk) {
       <div class="s-card"><div class="s-lbl">Total Tensi</div><div class="s-val">${me.length}</div></div>
       <div class="s-card"><div class="s-lbl">Rata-rata (S/D)</div><div class="s-val">${avgS} / ${avgD}</div></div>
       <div class="s-card"><div class="s-lbl">Total Alkohol</div><div class="s-val">${meAlc.length}</div></div>
-      <div class="s-card"><div class="s-lbl">Kasus Fail (BAC)</div><div class="s-val" style="${alcFail > 0 ? 'color:#dc2626' : 'color:#16a34a'}">${alcFail}</div></div>
+      <div class="s-card"><div class="s-lbl">Total MCU</div><div class="s-val">${meMcu.length}</div></div>
     </div>
 
     <div class="section-title">A. DAFTAR PEMERIKSAAN TEKANAN DARAH (TENSI)</div>
@@ -1843,6 +1999,12 @@ function printMonthlyPDF(mk) {
     <table class="data-table">
       <thead><tr><th width="5%">No</th><th width="20%">Tanggal</th><th width="35%">Nama Pekerja</th><th width="20%">Nilai BAC</th><th width="20%">Status</th></tr></thead>
       <tbody>${alcRows}</tbody>
+    </table>
+
+    <div class="section-title">C. DAFTAR PEMERIKSAAN MCU & METABOLIK</div>
+    <table class="data-table">
+      <thead><tr><th width="5%">No</th><th width="15%">Tanggal</th><th width="25%">Nama Pekerja</th><th width="12%">BB/TB</th><th width="10%">BMI</th><th width="11%">Gula</th><th width="11%">Kolest.</th><th width="11%">A.Urat</th></tr></thead>
+      <tbody>${mcuPdfRows}</tbody>
     </table>
 
     <div class="footer">
@@ -2470,19 +2632,32 @@ function shareMcuToWhatsApp(pid) {
 }
   
 // ============================================================
-// 🩸 MODUL MCU & METABOLIK (BMI, Gula, Kolesterol, Asam Urat)
+// 🩸 MODUL MCU & METABOLIK (DENGAN SCANNER)
 // ============================================================
+let scanActiveMcu = false;
+let html5QrCodeMcu = null;
 
 function renderMcuPage() {
   const pageMcu = document.getElementById('page-mcu');
   if(!pageMcu) return;
-  
   const opts = patients.map(p => `<option value="${p.id}">[${p.nik || p.id}] ${p.name}</option>`).join('');
   
   pageMcu.innerHTML = `
     <div class="panel">
       <div class="panel-head"><h2>➕ Input Pemeriksaan MCU</h2></div>
       <div class="panel-body">
+        
+        <div style="margin-bottom:15px; display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="toggleMcuScanner()">
+            ${scanActiveMcu ? '⏹ Matikan Kamera' : '📷 Scan QR / NIK Pekerja'}
+          </button>
+        </div>
+
+        <div id="mcuScannerContainer" style="display:${scanActiveMcu ? 'block' : 'none'}; margin-bottom:15px; text-align:center;">
+          <div id="mcu-reader" style="width:100%; max-width:400px; margin:0 auto;"></div>
+          <p style="font-size:.8rem; color:#64748b; margin-top:5px;">Arahkan kamera ke QR Code atau NIK Pekerja</p>
+        </div>
+
         <div class="form-grid">
           <div class="fg">
             <label>Pekerja</label>
@@ -2527,8 +2702,43 @@ function renderMcuPage() {
       </div>
     </div>
   `;
+
+  if (scanActiveMcu) initMcuScanner();
 }
 
+function toggleMcuScanner() {
+  scanActiveMcu = !scanActiveMcu;
+  renderMcuPage();
+}
+
+function initMcuScanner() {
+  if (typeof Html5Qrcode === 'undefined') return;
+  setTimeout(() => {
+    if (!html5QrCodeMcu) html5QrCodeMcu = new Html5Qrcode("mcu-reader");
+    html5QrCodeMcu.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 150 } },
+      (decodedText) => { handleMcuScanResult(decodedText.trim()); },
+      () => {}
+    ).catch(err => { console.error("Gagal membuka kamera:", err); });
+  }, 200);
+}
+
+function handleMcuScanResult(codeText) {
+  const found = patients.find(p => String(p.nik).trim() === codeText || String(p.id) === codeText);
+  if (found) {
+    const selectEl = document.getElementById('mcuPatientId');
+    if (selectEl) {
+      selectEl.value = found.id;
+      if (html5QrCodeMcu && scanActiveMcu) {
+        html5QrCodeMcu.stop().then(() => { scanActiveMcu = false; renderMcuPage(); }).catch(() => { scanActiveMcu = false; renderMcuPage(); });
+      }
+      alert(`Pekerja dikenali: ${found.name}`);
+    }
+  } else {
+    alert(`⚠️ QR Code / NIK "${codeText}" tidak terdaftar di database pekerja!`);
+  }
+}
 function calcBMI() {
   const w = parseFloat(document.getElementById('mcuWeight').value);
   const h = parseFloat(document.getElementById('mcuHeight').value) / 100; 
