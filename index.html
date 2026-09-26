@@ -1341,6 +1341,9 @@ function renderProgressDetail(pid){
       <div class="panel" style="margin-bottom:18px">
         <div class="panel-head">
           <h2>🩸 Riwayat MCU & Metabolik</h2>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-sm" style="background:#25d366;color:#fff" onclick="shareMcuToWhatsApp(${pid})">📲 WA</button>
+          </div>
         </div>
         <div style="overflow-x:auto">
           <table>
@@ -1349,7 +1352,6 @@ function renderProgressDetail(pid){
           </table>
         </div>
       </div>
-    </div>
 
     ${pex.length ? `
     <div class="panel" style="margin-bottom:18px">
@@ -2273,6 +2275,80 @@ function shareAlcoholToWhatsApp(workerName, workerNik) {
   window.open(waUrl, '_blank');
 }
 
+  // ============================================================
+// 📲 FUNGSI SHARE WHATSAPP MCU & METABOLIK
+// ============================================================
+// ============================================================
+// 📲 FUNGSI SHARE WHATSAPP MCU & METABOLIK
+// ============================================================
+function shareMcuToWhatsApp(pid) {
+  const p = patients.find(x => Number(x.id) === Number(pid));
+  if (!p) {
+    alert("Data pekerja tidak ditemukan.");
+    return;
+  }
+
+  const phone = normalizePhone(p.phone);
+  if (!phone) {
+    alert("Pekerja ini belum memiliki nomor HP/WhatsApp.");
+    return;
+  }
+
+  const list = mcuExams.filter(m => Number(m.patientId) === Number(p.id)).sort((a, b) => String(a.examDate).localeCompare(String(b.examDate)));
+
+  if (list.length === 0) {
+    alert("Tidak ada riwayat MCU untuk pekerja ini.");
+    return;
+  }
+
+  const latest = list[list.length - 1];
+
+  // LOGIKA KATEGORI BMI WA
+  let bmiStatus = '';
+  if(latest.bmi) {
+    const bVal = parseFloat(latest.bmi);
+    if(bVal < 18.5) bmiStatus = 'Kekurangan Bobot ⚠️';
+    else if(bVal >= 18.5 && bVal <= 22.9) bmiStatus = 'Normal ✅';
+    else if(bVal >= 23 && bVal <= 24.9) bmiStatus = 'Kelebihan Bobot ⚠️';
+    else bmiStatus = 'Obesitas 🚨';
+  }
+
+  // LOGIKA KATEGORI METABOLIK WA
+  let gluStatus = '';
+  if(latest.glucose) gluStatus = parseFloat(latest.glucose) < 140 ? ' *(Normal ✅)*' : ' *(Tinggi 🚨)*';
+
+  let cholStatus = '';
+  if(latest.cholesterol) cholStatus = parseFloat(latest.cholesterol) < 200 ? ' *(Normal ✅)*' : ' *(Tinggi 🚨)*';
+
+  let uricStatus = '';
+  if(latest.uricAcid) {
+    let uricLimit = p.gender === 'P' ? 6.0 : 7.0;
+    uricStatus = parseFloat(latest.uricAcid) <= uricLimit ? ' *(Normal ✅)*' : ' *(Tinggi 🚨)*';
+  }
+
+  let text = `📋 *LAPORAN MCU & METABOLIK*\n`;
+  text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `👤 *Nama:* ${p.name}\n`;
+  text += `🆔 *NIK:* ${p.nik || '-'}\n`;
+  text += `📅 *Tgl Periksa:* ${fmt(latest.examDate)}\n\n`;
+
+  text += `⚖️ *Body Measurement:*\n`;
+  text += `• Berat Badan: ${latest.weight ? latest.weight + ' kg' : '-'}\n`;
+  text += `• Tinggi Badan: ${latest.height ? latest.height + ' cm' : '-'}\n`;
+  text += `• BMI / IMT: ${latest.bmi ? '*' + latest.bmi + '* (' + bmiStatus + ')' : '-'}\n\n`;
+
+  text += `🩸 *Cek Darah Metabolik:*\n`;
+  text += `• Gula Darah: ${latest.glucose ? latest.glucose + ' mg/dL' + gluStatus : '-'}\n`;
+  text += `• Kolesterol: ${latest.cholesterol ? latest.cholesterol + ' mg/dL' + cholStatus : '-'}\n`;
+  text += `• Asam Urat: ${latest.uricAcid ? latest.uricAcid + ' mg/dL' + uricStatus : '-'}\n`;
+  text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `💡 *Rekomendasi Klinis:*\n`;
+  text += `Harap jaga pola makan sehat, rutin berolahraga, dan pastikan istirahat yang cukup. Konsultasikan dengan tim medis jika terdapat nilai yang di luar batas normal.\n\n`;
+  text += `_Sistem Pemantauan Keselamatan Kerja_\n`;
+  text += `_Pausbiru Health_`;
+
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+}
 // ============================================================
 // 🩸 MODUL MCU & METABOLIK (BMI, Gula, Kolesterol, Asam Urat)
 // ============================================================
