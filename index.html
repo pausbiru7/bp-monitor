@@ -1799,23 +1799,6 @@ function kirimWA(pid){
 function getRekomTeks(s, d, prevS){
   const st = getStatus(s, d);
   const trend = prevS != null ? (s < prevS ? 'Perbaikan. ' : s > prevS ? 'Meningkat. ' : '') : '';
-  const cAwas = String.fromCodePoint(0x26A0, 0xFE0F);
-  const map = {
-    opt: `${trend}Optimal. Pertahankan gaya hidup sehat.`,
-    nor: `${trend}Normal. Lanjutkan pola hidup sehat.`,
-    pre: `${trend}Normal-Tinggi. Modifikasi gaya hidup segera.`,
-    ht1: `${trend}Hipertensi Derajat 1. Evaluasi dokter & modifikasi gaya hidup.`,
-    ht2: `${trend}Hipertensi Derajat 2. Wajib terapi antihipertensi.`,
-    ht3: `${cAwas} Hipertensi Derajat 3 — SEGERA ke IGD/RS!`,
-    iso: `${trend}HT Sistolik Terisolasi. Perlu evaluasi dokter.`,
-    low: `${trend}Hipotensi. Perbanyak minum air & istirahat.`
-  };
-  return map[st.key] || '-';
-}
-
-function getRekomTeks(s, d, prevS){
-  const st = getStatus(s, d);
-  const trend = prevS != null ? (s < prevS ? 'Perbaikan. ' : s > prevS ? 'Meningkat. ' : '') : '';
   const map = {
     opt: `${trend}Optimal. Pertahankan gaya hidup sehat.`,
     nor: `${trend}Normal. Lanjutkan pola hidup sehat.`,
