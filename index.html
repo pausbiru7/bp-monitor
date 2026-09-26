@@ -1890,6 +1890,7 @@ function saveLocal(){
   localStorage.setItem('bpm_exams', JSON.stringify(exams));
   localStorage.setItem('bpm_followups', JSON.stringify(followups));
   localStorage.setItem('bpm_alcohol', JSON.stringify(alcoholExams));
+  localStorage.setItem('bpm_mcu', JSON.stringify(mcuExams)); // <--- TAMBAHAN UNTUK MCU
 }
 
 function save(){
@@ -1953,7 +1954,11 @@ async function verifySheetsData(){
   try {
     const json = await fetchAllFromSheets();
     const remote = normalizeSheetsPayload(json);
-    return remote.patients.length === patients.length && remote.exams.length === exams.length && remote.followups.length === followups.length && (remote.alcoholExams || []).length === alcoholExams.length;
+    return remote.patients.length === patients.length && 
+           remote.exams.length === exams.length && 
+           remote.followups.length === followups.length && 
+           (remote.alcoholExams || []).length === alcoholExams.length &&
+           (remote.mcuExams || []).length === mcuExams.length; // <--- TAMBAHAN UNTUK MCU
   } catch(err){ return false; }
 }
 
@@ -1967,6 +1972,7 @@ async function loadFromSheets(){
     exams = normalized.exams;
     followups = normalized.followups;
     alcoholExams = normalized.alcoholExams;
+    mcuExams = normalized.mcuExams; // <--- INI BIANG KEROKNYA (TAMBAHKAN INI)
     refreshIdCounters();
     saveLocal();
     setSyncStatus('ok', 'Google Sheets ✓');
