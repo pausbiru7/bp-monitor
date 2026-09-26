@@ -1179,7 +1179,13 @@ function renderProgressDetail(pid){
     .filter(a => Number(a.patientId) === Number(pid))
     .sort((a, b) => String(a.examDate || '').localeCompare(String(b.examDate || '')));
 
+  // AMBIL DATA MCU PEKERJA INI
+  const pMcuList = mcuExams
+    .filter(m => Number(m.patientId) === Number(pid))
+    .sort((a, b) => String(a.examDate || '').localeCompare(String(b.examDate || '')));
+
   const lastAlc = pAlcoholList.length ? pAlcoholList[pAlcoholList.length - 1] : null;
+  const lastMcu = pMcuList.length ? pMcuList[pMcuList.length - 1] : null;
 
   if(badge && pex.length){
     const last = pex[pex.length - 1];
@@ -1188,13 +1194,14 @@ function renderProgressDetail(pid){
     const diff = last.systolic - first.systolic;
     const diffHtml = diff === 0 ? '<span class="trend-eq">Tetap</span>' : diff < 0 ? `<span class="trend-dn">▼ Turun ${Math.abs(diff)} mmHg dari awal</span>` : `<span class="trend-up">▲ Naik ${diff} mmHg dari awal</span>`;
     const alcInfoBadge = pAlcoholList.length ? ` · ${pAlcoholList.length} tes alkohol` : '';
-    badge.innerHTML = `<span class="badge ${st.cls}">${st.label}</span>${diffHtml}<span style="font-size:.78rem;color:#64748b">${pex.length} pemeriksaan${alcInfoBadge}</span>`;
+    const mcuInfoBadge = pMcuList.length ? ` · ${pMcuList.length} data MCU` : '';
+    badge.innerHTML = `<span class="badge ${st.cls}">${st.label}</span>${diffHtml}<span style="font-size:.78rem;color:#64748b">${pex.length} pemeriksaan tensi${alcInfoBadge}${mcuInfoBadge}</span>`;
   } else if(badge){
     badge.innerHTML = '';
   }
 
-  if(!pex.length && !pAlcoholList.length){
-    container.innerHTML = `<div class="panel"><div class="panel-body"><div class="empty">📋 ${p.name} belum memiliki data pemeriksaan maupun tes alkohol</div></div></div>`;
+  if(!pex.length && !pAlcoholList.length && !pMcuList.length){
+    container.innerHTML = `<div class="panel"><div class="panel-body"><div class="empty">📋 ${p.name} belum memiliki data pemeriksaan medis apapun.</div></div></div>`;
     return;
   }
 
@@ -1239,14 +1246,50 @@ function renderProgressDetail(pid){
     </tr>`;
   }).join('') : '<tr><td colspan="4" class="empty">Belum ada riwayat tes alkohol</td></tr>';
 
+  // RENDER TABEL MCU
+  const mcuRowsHtml = pMcuList.length ? pMcuList.slice().reverse().map((mcu, idx) => {
+    let bmiBadge = '-';
+    if(mcu.bmi) {
+      const bVal = parseFloat(mcu.bmi);
+      if(bVal >= 18.5 && bVal <= 22.9) bmiBadge = `<span class="badge b-nor">${mcu.bmi}</span>`;
+      else if(bVal >= 25) bmiBadge = `<span class="badge b-ht2">${mcu.bmi}</span>`;
+      else bmiBadge = `<span class="badge b-pre">${mcu.bmi}</span>`;
+    }
+    const gluBadge = !mcu.glucose ? '-' : (mcu.glucose < 140 ? `<span class="badge b-nor">${mcu.glucose}</span>` : `<span class="badge b-ht2">${mcu.glucose}</span>`);
+    const cholBadge = !mcu.cholesterol ? '-' : (mcu.cholesterol < 200 ? `<span class="badge b-nor">${mcu.cholesterol}</span>` : `<span class="badge b-ht2">${mcu.cholesterol}</span>`);
+    let uricLimit = p.gender === 'P' ? 6.0 : 7.0;
+    const uricBadge = !mcu.uricAcid ? '-' : (mcu.uricAcid <= uricLimit ? `<span class="badge b-nor">${mcu.uricAcid}</span>` : `<span class="badge b-ht2">${mcu.uricAcid}</span>`);
+
+    return `<tr>
+      <td>#${pMcuList.length - idx}</td>
+      <td>${fmt(mcu.examDate)}</td>
+      <td>${mcu.weight || '-'}kg / ${mcu.height || '-'}cm</td>
+      <td>${bmiBadge}</td>
+      <td>${gluBadge}</td>
+      <td>${cholBadge}</td>
+      <td>${uricBadge}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="7" class="empty">Belum ada riwayat MCU & Metabolik</td></tr>';
+
+  // WIDGET CARD ALKOHOL
   let bacValText = '-';
-  let bacSubText = 'Belum pernah tes';
+  let bacSubText = 'Belum tes';
   let bacColor = '#64748b';
   if (lastAlc) {
     const isPass = lastAlc.status.toLowerCase().includes('pass') || lastAlc.status.toLowerCase().includes('aman');
     bacValText = lastAlc.status;
     bacSubText = fmt(lastAlc.examDate);
     bacColor = isPass ? '#059669' : '#dc2626';
+  }
+
+  // WIDGET CARD MCU
+  let mcuValText = '-';
+  let mcuSubText = 'Belum MCU';
+  let mcuColor = '#64748b';
+  if (lastMcu) {
+    mcuValText = `BMI: ${lastMcu.bmi || '-'}`;
+    mcuSubText = fmt(lastMcu.examDate);
+    mcuColor = '#0284c7';
   }
 
   container.innerHTML = `
@@ -1257,11 +1300,12 @@ function renderProgressDetail(pid){
         </button>
     </div>
 
-    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;margin-bottom:18px">
-      <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">👤</div><div class="stat-info"><h3>Nama</h3><div class="val" style="font-size:1rem">${p.name}</div><div class="sub">NIK: ${p.nik || '-'} · ${calcAge(p.dob)} tahun</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🩺</div><div class="stat-info"><h3>Terakhir (S/D)</h3><div class="val ${last ? vCls(last.systolic,140,120) : ''}" style="font-size:1.2rem">${last ? `${last.systolic}/${last.diastolic}` : '-'}</div><div class="sub">${last ? fmt(last.examDate) : '-'}</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:${stLast ? stLast.color + '22' : '#f1f5f9'}">📊</div><div class="stat-info"><h3>Kategori Saat Ini</h3><div class="val" style="font-size:.95rem;color:${stLast ? stLast.color : '#64748b'}">${stLast ? stLast.label : '-'}</div><div class="sub">${pex.length} pemeriksaan</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#e0f2fe">🍺</div><div class="stat-info"><h3>Terakhir BAC Test</h3><div class="val" style="font-size:1.1rem;color:${bacColor}">${bacValText}</div><div class="sub">${bacSubText}</div></div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;margin-bottom:18px">
+      <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">👤</div><div class="stat-info"><h3>Nama</h3><div class="val" style="font-size:1rem">${p.name}</div><div class="sub">NIK: ${p.nik || '-'} · ${calcAge(p.dob)} thn</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🩺</div><div class="stat-info"><h3>Tensi (S/D)</h3><div class="val ${last ? vCls(last.systolic,140,120) : ''}" style="font-size:1.2rem">${last ? `${last.systolic}/${last.diastolic}` : '-'}</div><div class="sub">${last ? fmt(last.examDate) : '-'}</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:${stLast ? stLast.color + '22' : '#f1f5f9'}">📊</div><div class="stat-info"><h3>Kategori Tensi</h3><div class="val" style="font-size:.95rem;color:${stLast ? stLast.color : '#64748b'}">${stLast ? stLast.label : '-'}</div><div class="sub">${pex.length} pemeriksaan</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#e0f2fe">⚖️</div><div class="stat-info"><h3>Terakhir MCU</h3><div class="val" style="font-size:1.1rem;color:${mcuColor}">${mcuValText}</div><div class="sub">${mcuSubText}</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#fce7f3">🍺</div><div class="stat-info"><h3>Tes Alkohol</h3><div class="val" style="font-size:1.1rem;color:${bacColor}">${bacValText}</div><div class="sub">${bacSubText}</div></div></div>
     </div>
 
     ${pex.length ? `
@@ -1278,18 +1322,32 @@ function renderProgressDetail(pid){
     </div>
     ` : ''}
 
-    <div class="panel" style="margin-bottom:18px">
-      <div class="panel-head">
-        <h2>🍺 Riwayat Tes Alkohol (Alcohol Screening)</h2>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-sm" style="background:#25d366;color:#fff" onclick="shareAlcoholToWhatsApp('${p.name}', '${p.nik}')">📲 Kirim ke WA</button>
+    <div class="grid-2">
+      <div class="panel" style="margin-bottom:18px">
+        <div class="panel-head">
+          <h2>🍺 Riwayat Tes Alkohol</h2>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-sm" style="background:#25d366;color:#fff" onclick="shareAlcoholToWhatsApp('${p.name}', '${p.nik}')">📲 WA</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>No</th><th>Tanggal</th><th>Hasil Tes</th><th>Nilai BAC</th></tr></thead>
+            <tbody>${alcoholRows}</tbody>
+          </table>
         </div>
       </div>
-      <div style="overflow-x:auto">
-        <table>
-          <thead><tr><th>No</th><th>Tanggal</th><th>Hasil Tes</th><th>Nilai BAC</th></tr></thead>
-          <tbody>${alcoholRows}</tbody>
-        </table>
+
+      <div class="panel" style="margin-bottom:18px">
+        <div class="panel-head">
+          <h2>🩸 Riwayat MCU & Metabolik</h2>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>No</th><th>Tanggal</th><th>BB / TB</th><th>BMI</th><th>Gula</th><th>Kol.</th><th>A.Urat</th></tr></thead>
+            <tbody>${mcuRowsHtml}</tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -1336,7 +1394,7 @@ function renderProgressDetail(pid){
   }
 }
 
-// 🖨️ FUNGSI CETAK PDF LAPORAN PEKERJA
+// 🖨️ FUNGSI CETAK PDF LAPORAN PEKERJA (TERBARU)
 function printProgressPDF(pid) {
   const p = patients.find(x => Number(x.id) === Number(pid));
   if (!p) return alert("Data pekerja tidak ditemukan.");
@@ -1344,6 +1402,10 @@ function printProgressPDF(pid) {
   const pex = pExams(pid);
   const pAlcoholList = alcoholExams
     .filter(a => Number(a.patientId) === Number(pid))
+    .sort((a, b) => String(a.examDate || '').localeCompare(String(b.examDate || '')));
+  
+  const pMcuList = mcuExams
+    .filter(m => Number(m.patientId) === Number(pid))
     .sort((a, b) => String(a.examDate || '').localeCompare(String(b.examDate || '')));
 
   const last = pex.length ? pex[pex.length - 1] : null;
@@ -1356,6 +1418,10 @@ function printProgressPDF(pid) {
   let alcRows = pAlcoholList.length > 0 
     ? pAlcoholList.map((a, i) => `<tr><td style="text-align:center">${i+1}</td><td>${fmt(a.examDate)}</td><td style="text-align:center">${a.alcoholLevel}</td><td style="text-align:center; font-weight:bold;">${a.status}</td></tr>`).join('') 
     : `<tr><td colspan="4" style="text-align:center; padding:10px;">Belum ada riwayat tes alkohol</td></tr>`;
+
+  let mcuPdfRows = pMcuList.length > 0
+    ? pMcuList.map((m, i) => `<tr><td style="text-align:center">${i+1}</td><td>${fmt(m.examDate)}</td><td style="text-align:center">${m.weight || '-'}/${m.height || '-'}</td><td style="text-align:center">${m.bmi || '-'}</td><td style="text-align:center">${m.glucose || '-'}</td><td style="text-align:center">${m.cholesterol || '-'}</td><td style="text-align:center">${m.uricAcid || '-'}</td></tr>`).join('')
+    : `<tr><td colspan="7" style="text-align:center; padding:10px;">Belum ada data MCU & Metabolik</td></tr>`;
 
   const html = `<!DOCTYPE html>
   <html lang="id">
@@ -1408,6 +1474,12 @@ function printProgressPDF(pid) {
       <tbody>${alcRows}</tbody>
     </table>
 
+    <div class="section-title">C. RIWAYAT MCU & METABOLIK</div>
+    <table class="data-table">
+      <thead><tr><th width="5%">No</th><th width="20%">Tanggal</th><th width="15%">BB/TB</th><th width="15%">BMI</th><th width="15%">Gula Darah</th><th width="15%">Kolesterol</th><th width="15%">Asam Urat</th></tr></thead>
+      <tbody>${mcuPdfRows}</tbody>
+    </table>
+
     <div class="footer">
       Dokumen ini dicetak secara otomatis dari BP Monitor System pada: <strong>${new Date().toLocaleString('id-ID')}</strong><br>
       <span style="margin-top: 5px; display: inline-block; font-style: italic;">Powered by Pausbiru7</span>
@@ -1417,7 +1489,7 @@ function printProgressPDF(pid) {
       window.onload = function() { 
         setTimeout(function() { window.print(); window.close(); }, 600); 
       }
-    <\/script>
+    </script>
   </body>
   </html>`;
 
