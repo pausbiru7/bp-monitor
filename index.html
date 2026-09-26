@@ -1179,7 +1179,6 @@ function renderProgressDetail(pid){
     .filter(a => Number(a.patientId) === Number(pid))
     .sort((a, b) => String(a.examDate || '').localeCompare(String(b.examDate || '')));
 
-  // AMBIL DATA MCU PEKERJA INI
   const pMcuList = mcuExams
     .filter(m => Number(m.patientId) === Number(pid))
     .sort((a, b) => String(a.examDate || '').localeCompare(String(b.examDate || '')));
@@ -1209,16 +1208,6 @@ function renderProgressDetail(pid){
   const stLast = last ? getStatus(last.systolic, last.diastolic) : null;
   const prevS = pex.length > 1 ? pex[pex.length - 2].systolic : null;
 
-  const chips = pex.map((e, i, arr) => {
-    const isLatest = i === arr.length - 1;
-    const st = getStatus(e.systolic, e.diastolic);
-    return `<div class="exam-chip ${isLatest ? 'latest' : ''}" style="min-width:90px">
-      <div class="ec-date">${fmt(e.examDate)}</div>
-      <div class="ec-val" style="color:${st.color}">${e.systolic}/${e.diastolic}</div>
-      <span class="badge ${st.cls}" style="font-size:.6rem;padding:2px 7px">${st.label}</span>
-    </div>`;
-  }).join('');
-
   const rows = pex.slice().reverse().map((e, i, arr) => {
     const prev2 = arr[i + 1] || null;
     const st = getStatus(e.systolic, e.diastolic);
@@ -1235,33 +1224,36 @@ function renderProgressDetail(pid){
     </tr>`;
   }).join('');
 
-  const alcoholRows = pAlcoholList.length ? pAlcoholList.slice().reverse().map((alc, idx) => {
+  // Hapus kolom "No" di tabel Alkohol
+  const alcoholRows = pAlcoholList.length ? pAlcoholList.slice().reverse().map((alc) => {
     const isPass = alc.status.toLowerCase().includes('pass') || alc.status.toLowerCase().includes('aman');
     const badgeColor = isPass ? 'background:#d1fae5;color:#065f46;' : 'background:#fee2e2;color:#991b1b;';
     return `<tr>
-      <td>#${pAlcoholList.length - idx}</td>
       <td>${fmt(alc.examDate)}</td>
       <td><span style="padding:3px 8px;border-radius:4px;font-size:0.75rem;font-weight:600;${badgeColor}">${alc.status}</span></td>
       <td>${alc.alcoholLevel || '-'}</td>
     </tr>`;
-  }).join('') : '<tr><td colspan="4" class="empty">Belum ada riwayat tes alkohol</td></tr>';
+  }).join('') : '<tr><td colspan="3" class="empty">Belum ada riwayat tes alkohol</td></tr>';
 
-  // RENDER TABEL MCU
-  const mcuRowsHtml = pMcuList.length ? pMcuList.slice().reverse().map((mcu, idx) => {
+  // Hapus kolom "No" di tabel MCU
+  const mcuRowsHtml = pMcuList.length ? pMcuList.slice().reverse().map((mcu) => {
     let bmiBadge = '-';
     if(mcu.bmi) {
-      const bVal = parseFloat(mcu.bmi);
+      const bVal = parseFloat(String(mcu.bmi).replace(',','.'));
       if(bVal >= 18.5 && bVal <= 22.9) bmiBadge = `<span class="badge b-nor">${mcu.bmi}</span>`;
       else if(bVal >= 25) bmiBadge = `<span class="badge b-ht2">${mcu.bmi}</span>`;
       else bmiBadge = `<span class="badge b-pre">${mcu.bmi}</span>`;
     }
-    const gluBadge = !mcu.glucose ? '-' : (mcu.glucose < 140 ? `<span class="badge b-nor">${mcu.glucose}</span>` : `<span class="badge b-ht2">${mcu.glucose}</span>`);
-    const cholBadge = !mcu.cholesterol ? '-' : (mcu.cholesterol < 200 ? `<span class="badge b-nor">${mcu.cholesterol}</span>` : `<span class="badge b-ht2">${mcu.cholesterol}</span>`);
+    const gluVal = mcu.glucose ? parseFloat(String(mcu.glucose).replace(',','.')) : 0;
+    const cholVal = mcu.cholesterol ? parseFloat(String(mcu.cholesterol).replace(',','.')) : 0;
+    const uricVal = mcu.uricAcid ? parseFloat(String(mcu.uricAcid).replace(',','.')) : 0;
+
+    const gluBadge = !mcu.glucose ? '-' : (gluVal < 140 ? `<span class="badge b-nor">${mcu.glucose}</span>` : `<span class="badge b-ht2">${mcu.glucose}</span>`);
+    const cholBadge = !mcu.cholesterol ? '-' : (cholVal < 200 ? `<span class="badge b-nor">${mcu.cholesterol}</span>` : `<span class="badge b-ht2">${mcu.cholesterol}</span>`);
     let uricLimit = p.gender === 'P' ? 6.0 : 7.0;
-    const uricBadge = !mcu.uricAcid ? '-' : (mcu.uricAcid <= uricLimit ? `<span class="badge b-nor">${mcu.uricAcid}</span>` : `<span class="badge b-ht2">${mcu.uricAcid}</span>`);
+    const uricBadge = !mcu.uricAcid ? '-' : (uricVal <= uricLimit ? `<span class="badge b-nor">${mcu.uricAcid}</span>` : `<span class="badge b-ht2">${mcu.uricAcid}</span>`);
 
     return `<tr>
-      <td>#${pMcuList.length - idx}</td>
       <td>${fmt(mcu.examDate)}</td>
       <td>${mcu.weight || '-'}kg / ${mcu.height || '-'}cm</td>
       <td>${bmiBadge}</td>
@@ -1269,9 +1261,8 @@ function renderProgressDetail(pid){
       <td>${cholBadge}</td>
       <td>${uricBadge}</td>
     </tr>`;
-  }).join('') : '<tr><td colspan="7" class="empty">Belum ada riwayat MCU & Metabolik</td></tr>';
+  }).join('') : '<tr><td colspan="6" class="empty">Belum ada riwayat MCU & Metabolik</td></tr>';
 
-  // WIDGET CARD ALKOHOL
   let bacValText = '-';
   let bacSubText = 'Belum tes';
   let bacColor = '#64748b';
@@ -1282,7 +1273,6 @@ function renderProgressDetail(pid){
     bacColor = isPass ? '#059669' : '#dc2626';
   }
 
-  // WIDGET CARD MCU
   let mcuValText = '-';
   let mcuSubText = 'Belum MCU';
   let mcuColor = '#64748b';
@@ -1293,7 +1283,6 @@ function renderProgressDetail(pid){
   }
 
   container.innerHTML = `
-    <!-- TOMBOL CETAK PDF (LAPORAN TERPADU) -->
     <div style="display:flex; justify-content:flex-end; margin-bottom:15px;">
         <button class="btn btn-pdf" style="padding: 10px 18px; font-size: 0.9rem;" onclick="printProgressPDF(${pid})">
             🖨️ Cetak Rekam Medis (PDF)
@@ -1315,6 +1304,20 @@ function renderProgressDetail(pid){
     </div>
     ` : ''}
 
+    <div class="grid-2" style="margin-bottom:18px">
+      ${pAlcoholList.length ? `
+      <div class="panel">
+        <div class="panel-head"><h2>📉 Tren Nilai BAC (Alkohol)</h2></div>
+        <div class="panel-body"><div class="chart-box" style="height:220px"><canvas id="progAlcChart"></canvas></div></div>
+      </div>` : ''}
+      
+      ${pMcuList.length ? `
+      <div class="panel">
+        <div class="panel-head"><h2>📊 Tren Gula & Kolesterol (MCU)</h2></div>
+        <div class="panel-body"><div class="chart-box" style="height:220px"><canvas id="progMcuChart"></canvas></div></div>
+      </div>` : ''}
+    </div>
+
     <div class="grid-2">
       <div class="panel" style="margin-bottom:18px">
         <div class="panel-head">
@@ -1325,7 +1328,7 @@ function renderProgressDetail(pid){
         </div>
         <div style="overflow-x:auto">
           <table>
-            <thead><tr><th>No</th><th>Tanggal</th><th>Hasil Tes</th><th>Nilai BAC</th></tr></thead>
+            <thead><tr><th>Tanggal</th><th>Hasil Tes</th><th>Nilai BAC</th></tr></thead>
             <tbody>${alcoholRows}</tbody>
           </table>
         </div>
@@ -1340,11 +1343,12 @@ function renderProgressDetail(pid){
         </div>
         <div style="overflow-x:auto">
           <table>
-            <thead><tr><th>No</th><th>Tanggal</th><th>BB / TB</th><th>BMI</th><th>Gula</th><th>Kol.</th><th>A.Urat</th></tr></thead>
+            <thead><tr><th>Tanggal</th><th>BB / TB</th><th>BMI</th><th>Gula</th><th>Kol.</th><th>A.Urat</th></tr></thead>
             <tbody>${mcuRowsHtml}</tbody>
           </table>
         </div>
       </div>
+    </div>
 
     ${pex.length ? `
     <div class="panel" style="margin-bottom:18px">
@@ -1365,28 +1369,75 @@ function renderProgressDetail(pid){
     </div>
     ` : ''}`;
 
-  if (pex.length) {
-    requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    if (pex.length) {
       const chartEl = document.getElementById('progDetailChart');
-      if(!chartEl) return;
-      destroyChart('progDetailChart');
-      new Chart(chartEl, {
-        type: 'line',
-        data: {
-          labels: pex.map(e => fmt(e.examDate)),
-          datasets: [
-            { label: 'Sistolik', data: pex.map(e => e.systolic), borderColor: '#dc2626', backgroundColor: 'rgba(220,38,38,.08)', tension: .4, fill: true, pointRadius: 5, pointBackgroundColor: '#dc2626' },
-            { label: 'Diastolik', data: pex.map(e => e.diastolic), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', tension: .4, fill: true, pointRadius: 5, pointBackgroundColor: '#2563eb' }
-          ]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { position: 'top' } },
-          scales: { y: { min: 50, max: 220, ticks: { callback: v => v + ' mmHg' } }, x: { grid: { display: false } } }
-        }
-      });
-    });
-  }
+      if(chartEl) {
+        destroyChart('progDetailChart');
+        new Chart(chartEl, {
+          type: 'line',
+          data: {
+            labels: pex.map(e => fmt(e.examDate)),
+            datasets: [
+              { label: 'Sistolik', data: pex.map(e => e.systolic), borderColor: '#dc2626', backgroundColor: 'rgba(220,38,38,.08)', tension: .4, fill: true, pointRadius: 5, pointBackgroundColor: '#dc2626' },
+              { label: 'Diastolik', data: pex.map(e => e.diastolic), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', tension: .4, fill: true, pointRadius: 5, pointBackgroundColor: '#2563eb' }
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'top' } },
+            scales: { y: { min: 50, max: 220, ticks: { callback: v => v + ' mmHg' } }, x: { grid: { display: false } } }
+          }
+        });
+      }
+    }
+
+    if (pAlcoholList.length) {
+      const alcChartEl = document.getElementById('progAlcChart');
+      if(alcChartEl) {
+        destroyChart('progAlcChart');
+        new Chart(alcChartEl, {
+          type: 'bar',
+          data: {
+            labels: pAlcoholList.map(a => fmt(a.examDate)),
+            datasets: [{
+              label: 'Nilai BAC',
+              data: pAlcoholList.map(a => parseFloat(a.alcoholLevel) || 0),
+              backgroundColor: pAlcoholList.map(a => (parseFloat(a.alcoholLevel) || 0) > 0 ? '#dc2626' : '#16a34a'),
+              borderRadius: 4
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true }, x: { grid: { display: false } } }
+          }
+        });
+      }
+    }
+
+    if (pMcuList.length) {
+      const mcuChartEl = document.getElementById('progMcuChart');
+      if(mcuChartEl) {
+        destroyChart('progMcuChart');
+        new Chart(mcuChartEl, {
+          type: 'line',
+          data: {
+            labels: pMcuList.map(m => fmt(m.examDate)),
+            datasets: [
+              { label: 'Gula Darah', data: pMcuList.map(m => parseFloat(String(m.glucose).replace(',','.')) || null), borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: 0.4, spanGaps: true, pointRadius: 4 },
+              { label: 'Kolesterol', data: pMcuList.map(m => parseFloat(String(m.cholesterol).replace(',','.')) || null), borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', tension: 0.4, spanGaps: true, pointRadius: 4 }
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: {size: 11} } } },
+            scales: { y: { beginAtZero: false }, x: { grid: { display: false } } }
+          }
+        });
+      }
+    }
+  });
 }
 
 // 🖨️ FUNGSI CETAK PDF LAPORAN PEKERJA (TERBARU)
