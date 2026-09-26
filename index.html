@@ -1672,30 +1672,6 @@ function renderProgressDetail(pid){
   });
 }
 
-    if (pMcuList.length) {
-      const mcuChartEl = document.getElementById('progMcuChart');
-      if(mcuChartEl) {
-        destroyChart('progMcuChart');
-        new Chart(mcuChartEl, {
-          type: 'line',
-          data: {
-            labels: pMcuList.map(m => fmt(m.examDate)),
-            datasets: [
-              { label: 'Gula Darah', data: pMcuList.map(m => parseFloat(String(m.glucose).replace(',','.')) || null), borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: 0.4, spanGaps: true, pointRadius: 4 },
-              { label: 'Kolesterol', data: pMcuList.map(m => parseFloat(String(m.cholesterol).replace(',','.')) || null), borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', tension: 0.4, spanGaps: true, pointRadius: 4 }
-            ]
-          },
-          options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: {size: 11} } } },
-            scales: { y: { beginAtZero: false }, x: { grid: { display: false } } }
-          }
-        });
-      }
-    }
-  });
-}
-
 // 🖨️ FUNGSI CETAK PDF LAPORAN PEKERJA (TERBARU)
 function printProgressPDF(pid) {
   const p = patients.find(x => Number(x.id) === Number(pid));
