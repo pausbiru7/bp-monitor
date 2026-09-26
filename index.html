@@ -1901,11 +1901,18 @@ function save(){
 function syncToSheets(verify = false){
   if(!isConfigured()){ setSyncStatus('local', 'Mode Lokal'); return Promise.resolve(false); }
   setSyncStatus('loading', verify ? 'Sync & verifikasi...' : 'Mengirim...');
+
+  // ▼ PERBAIKAN: Ubah titik jadi koma saat dikirim ke Sheets agar tidak jadi tanggal ▼
+  const safeMcuExams = mcuExams.map(m => ({
+    ...m,
+    bmi: m.bmi ? String(m.bmi).replace('.', ',') : null,
+    uricAcid: m.uricAcid ? String(m.uricAcid).replace('.', ',') : null
+  }));
+
   return fetch(SCRIPT_URL, {
     method: 'POST', mode: 'no-cors',
     headers: { 'Content-Type': 'application/json' },
-    // ▼ BARIS DI BAWAH INI YANG DITAMBAHKAN mcuExams ▼
-    body: JSON.stringify({ action: 'sync_all', patients, exams, followups, alcoholExams, mcuExams })
+    body: JSON.stringify({ action: 'sync_all', patients, exams, followups, alcoholExams, mcuExams: safeMcuExams })
   }).then(async () => {
     if(!verify){
       setSyncStatus('ok', 'Terkirim');
@@ -1938,8 +1945,15 @@ function normalizeSheetsPayload (json ) {
   const nextFollowups = (json . followups || [] ) . map (f => ({... f , id : Number (f . id ) , patientId : Number (f . patientId ) , dueDate : fixDate (f . dueDate ) , status : f . status || 'pending' } ) ) ; 
   const nextAlcohol = (json . alcoholExams || [] ) . map (a => ({... a , id : Number (a . id ) , patientId : Number (a . patientId ) , examDate : fixDate (a . examDate ) } ) ) ; 
   
-  // ▼ DUA BARIS DI BAWAH INI TAMBAHAN UNTUK MCU ▼
-  const nextMcu = (json.mcuExams || []).map(m => ({ ...m, id: Number(m.id), patientId: Number(m.patientId), examDate: fixDate(m.examDate) }));
+  // ▼ PERBAIKAN: Ubah koma kembali menjadi titik agar bisa dihitung oleh sistem ▼
+  const nextMcu = (json.mcuExams || []).map(m => ({ 
+    ...m, 
+    id: Number(m.id), 
+    patientId: Number(m.patientId), 
+    examDate: fixDate(m.examDate),
+    bmi: m.bmi ? String(m.bmi).replace(',', '.') : null,
+    uricAcid: m.uricAcid ? String(m.uricAcid).replace(',', '.') : null
+  }));
   return {patients : nextPatients , exams : nextExams , followups : nextFollowups , alcoholExams : nextAlcohol, mcuExams: nextMcu } ; 
 }
 
