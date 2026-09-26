@@ -1775,15 +1775,10 @@ function kirimWA(pid){
   const p = patients.find(x => Number(x.id) === Number(pid));
   if(!p) return;
   const phone = normalizePhone(p.phone);
-  if(!phone){
-    alert('Pekerja ini belum memiliki nomor HP/WhatsApp.');
-    return;
-  }
+  if(!phone) return alert('Pekerja ini belum memiliki nomor HP/WhatsApp.');
   const pex = pExams(pid);
-  if(!pex.length){
-    alert('Belum ada data pemeriksaan.');
-    return;
-  }
+  if(!pex.length) return alert('Belum ada data pemeriksaan.');
+  
   const last = pex[pex.length - 1];
   const st = getStatus(last.systolic, last.diastolic);
   const prev = pex.length > 1 ? pex[pex.length - 2] : null;
@@ -1791,33 +1786,31 @@ function kirimWA(pid){
   const trendNote = diff === null ? '' : diff < 0 ? `Turun ${Math.abs(diff)} mmHg. ` : diff > 0 ? `Naik ${diff} mmHg. ` : 'Stabil. ';
   const riwayat = pex.slice(-5).map(e => `  • ${fmt(e.examDate)}: ${e.systolic}/${e.diastolic} mmHg (${getStatus(e.systolic,e.diastolic).label})`).join('\n');
   const jadwalMap = { opt: '12 bulan', nor: '6–12 bulan', pre: '3–6 bulan', ht1: '1–3 bulan', ht2: '2–4 minggu', ht3: 'SEGERA ke IGD/RS', iso: '1–2 bulan' };
-  const jadwal = jadwalMap[st.key] || '-';
-  const pulseText = last.pulse == null || last.pulse === '' ? '-' : last.pulse;
+  
+  const cSteto = String.fromCodePoint(0x1FA7A);
+  const cOrang = String.fromCodePoint(0x1F464);
+  const cKue = String.fromCodePoint(0x1F382);
+  const cKal = String.fromCodePoint(0x1F4C5);
+  
+  const pesan = `${cSteto} *Laporan Tekanan Darah* \n━━━━━━━━━━━━━━━━━━━━ \n${cOrang} *Pekerja:* ${p.name} \n${cKue} *Usia:* ${calcAge(p.dob)} tahun \n${cKal} *Tgl Periksa:* ${fmt(last.examDate)} \n\n*Hasil Terakhir:* \n• Sistolik  : *${last.systolic} mmHg* \n• Diastolik : *${last.diastolic} mmHg* \n• Nadi      : ${last.pulse || '-'} bpm \n• Kategori  : *${st.label}* \n${trendNote} \n\n*Riwayat 5 Terakhir:* \n${riwayat} \n\n*Rekomendasi:* \n${getRekomTeks(last.systolic,last.diastolic,prev?.systolic)} \n${cKal} *Jadwal Kontrol:* ${jadwalMap[st.key] || '-'} \n━━━━━━━━━━━━━━━━━━━━ \n_Sistem Pemantauan Fit To Work_\n_Pausbiru Health_`;
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(pesan)}`, '_blank');
+}
 
-const pesan = `\uD83E\uDE7A *Laporan Tekanan Darah* 
-━━━━━━━━━━━━━━━━━━━━ 
-\uD83D\uDC64 *Pekerja:* ${p.name} 
-\uD83C\uDF82 *Usia:* ${calcAge(p.dob)} tahun 
-\uD83D\uDCC5 *Tgl Periksa:* ${fmt(last.examDate)} 
-
-*Hasil Terakhir:* 
-• Sistolik  : *${last.systolic} mmHg* 
-• Diastolik : *${last.diastolic} mmHg* 
-• Nadi      : ${pulseText} bpm 
-• Kategori  : *${st.label}* 
-${trendNote} 
-
-*Riwayat 5 Terakhir:* 
-${riwayat} 
-
-*Rekomendasi:* 
-${getRekomTeks(last.systolic,last.diastolic,prev?.systolic)} 
-\uD83D\uDCC5 *Jadwal Kontrol:* ${jadwal} 
-━━━━━━━━━━━━━━━━━━━━ 
-_Sistem Pemantauan Fit to Work_
-_Pausbiru Health_`;
-
-  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(pesan)}`, '_blank', 'noopener,noreferrer');
+function getRekomTeks(s, d, prevS){
+  const st = getStatus(s, d);
+  const trend = prevS != null ? (s < prevS ? 'Perbaikan. ' : s > prevS ? 'Meningkat. ' : '') : '';
+  const cAwas = String.fromCodePoint(0x26A0, 0xFE0F);
+  const map = {
+    opt: `${trend}Optimal. Pertahankan gaya hidup sehat.`,
+    nor: `${trend}Normal. Lanjutkan pola hidup sehat.`,
+    pre: `${trend}Normal-Tinggi. Modifikasi gaya hidup segera.`,
+    ht1: `${trend}Hipertensi Derajat 1. Evaluasi dokter & modifikasi gaya hidup.`,
+    ht2: `${trend}Hipertensi Derajat 2. Wajib terapi antihipertensi.`,
+    ht3: `${cAwas} Hipertensi Derajat 3 — SEGERA ke IGD/RS!`,
+    iso: `${trend}HT Sistolik Terisolasi. Perlu evaluasi dokter.`,
+    low: `${trend}Hipotensi. Perbanyak minum air & istirahat.`
+  };
+  return map[st.key] || '-';
 }
 
 function getRekomTeks(s, d, prevS){
@@ -1870,10 +1863,11 @@ async function loadAndShowReminders(){
     const daysCls = r.daysLeft === 0 ? 'days-today' : r.daysLeft <= 3 ? 'days-soon' : 'days-ok';
     const daysText = r.daysLeft === 0 ? 'Hari ini!' : r.daysLeft === 1 ? 'Besok!' : 'H-' + r.daysLeft;
     
-    // FORMAT PESAN WA FOLLOW-UP YANG BARU
-    // FORMAT PESAN WA FOLLOW-UP YANG BARU (UNICODE SAFE)
-    const reminderText = `\uD83D\uDD14 *Reminder Follow-Up Kesehatan*\n━━━━━━━━━━━━━━━━━━━━\nYth. Bapak/Ibu ${r.patientName},\n\nMengingatkan bahwa Anda memiliki jadwal kontrol pada:\n\uD83D\uDCC5 *Tanggal:* ${fmt(r.dueDate)}\n\uD83D\uDCCC *Alasan:* ${r.reason}\n\nHarap menemui tim medis / K3 pada tanggal tersebut.\nTerima kasih atas kerja samanya.\n━━━━━━━━━━━━━━━━━━━━\n_Sistem Pemantauan Fit to Work_\n_Pausbiru Health_`;
-    
+   // FORMAT PESAN WA FOLLOW-UP YANG BARU (UNICODE SAFE)
+    const cBel = String.fromCodePoint(0x1F514);
+    const cKal = String.fromCodePoint(0x1F4C5);
+    const cPin = String.fromCodePoint(0x1F4CC);
+    const reminderText = `${cBel} *Reminder Follow-Up Kesehatan*\n━━━━━━━━━━━━━━━━━━━━\nYth. Bapak/Ibu ${r.patientName},\n\nMengingatkan bahwa Anda memiliki jadwal kontrol pada:\n${cKal} *Tanggal:* ${fmt(r.dueDate)}\n${cPin} *Alasan:* ${r.reason}\n\nHarap menemui tim medis / K3 pada tanggal tersebut.\nTerima kasih atas kerja samanya.\n━━━━━━━━━━━━━━━━━━━━\n_Sistem Pemantauan Fit To Work_\n_Pausbiru Health_`;
     const waBtn = r.phone ? `<a href="https://wa.me/${r.phone}?text=${encodeURIComponent(reminderText)}" target="_blank" rel="noopener noreferrer" class="btn btn-sm" style="background:#25d366;color:#fff;flex-shrink:0">📲 WA</a>` : '';
 
     return `<div class="reminder-item">
@@ -2236,121 +2230,86 @@ function handleAlcoholScanResult(codeText) {
 // ============================================================
 function shareAlcoholToWhatsApp(workerName, workerNik) {
   const p = patients.find(x => (workerNik && String(x.nik).trim() === String(workerNik).trim()) || (workerName && String(x.name).trim().toLowerCase() === String(workerName).trim().toLowerCase()));
-  if (!p) {
-    alert("Data pekerja tidak ditemukan.");
-    return;
-  }
-
+  if (!p) return alert("Data pekerja tidak ditemukan.");
   const list = alcoholExams.filter(a => Number(a.patientId) === Number(p.id)).sort((a, b) => String(a.examDate).localeCompare(String(b.examDate)));
-
-  if (list.length === 0) {
-    alert("Tidak ada riwayat tes alkohol untuk pekerja ini.");
-    return;
-  }
+  if (list.length === 0) return alert("Tidak ada riwayat tes alkohol untuk pekerja ini.");
 
   const latest = list[list.length - 1];
   const isPass = latest.status.toLowerCase().includes('pass') || latest.status.toLowerCase().includes('aman');
   
-  const rekomendasi = isPass 
-    ? "\u2705 Pekerja dalam kondisi *AMAN* dan *LAYAK KERJA*. Pertahankan gaya hidup sehat dan patuhi aturan perusahaan." 
-    : "\uD83D\uDEA8 Pekerja terindikasi mengonsumsi alkohol dan dinyatakan *TIDAK LAYAK BEKERJA* hari ini. Harap segera melapor ke atasan untuk tindak lanjut sesuai SOP K3!";
+  const cCek = String.fromCodePoint(0x2705);
+  const cBahaya = String.fromCodePoint(0x1F6A8);
+  const cPapan = String.fromCodePoint(0x1F4CB);
+  const cOrang = String.fromCodePoint(0x1F464);
+  const cId = String.fromCodePoint(0x1F194);
+  const cKal = String.fromCodePoint(0x1F4C5);
+  const cKaca = String.fromCodePoint(0x1F50D);
+  const cGrafik = String.fromCodePoint(0x1F4CA);
+  const cWaktu = String.fromCodePoint(0x23F3, 0xFE0F);
+  const cLampu = String.fromCodePoint(0x1F4A1);
 
-  let text = `\uD83D\uDCCB *LAPORAN TES ALKOHOL (BAC TEST)*\n`;
-  text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-  text += `\uD83D\uDC64 *Nama:* ${p.name}\n`;
-  text += `\uD83C\uDD94 *NIK:* ${p.nik || '-'}\n`;
-  text += `\uD83D\uDCC5 *Tes Terakhir:* ${fmt(latest.examDate)}\n`;
-  text += `\uD83D\uDD0D *Status:* ${latest.status}\n`;
-  text += `\uD83D\uDCCA *Kadar BAC:* ${latest.alcoholLevel}\n`;
-  text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-  text += `\u23F3 *Riwayat 5 Tes Terakhir:*\n`;
+  const rekomendasi = isPass ? `${cCek} Pekerja dalam kondisi *AMAN* dan *LAYAK KERJA*. Pertahankan gaya hidup sehat dan patuhi aturan perusahaan.` : `${cBahaya} Pekerja terindikasi mengonsumsi alkohol dan dinyatakan *TIDAK LAYAK BEKERJA* hari ini. Harap segera melapor ke atasan untuk tindak lanjut!`;
+
+  let text = `${cPapan} *LAPORAN TES ALKOHOL (BAC TEST)*\n━━━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `${cOrang} *Nama:* ${p.name}\n${cId} *NIK:* ${p.nik || '-'}\n${cKal} *Tes Terakhir:* ${fmt(latest.examDate)}\n`;
+  text += `${cKaca} *Status:* ${latest.status}\n${cGrafik} *Kadar BAC:* ${latest.alcoholLevel}\n━━━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `${cWaktu} *Riwayat 5 Tes Terakhir:*\n`;
   const riwayat = list.slice(-5).reverse();
-  riwayat.forEach((item, index) => {
-      text += `  ${index + 1}. ${fmt(item.examDate)} | ${item.status} | BAC: ${item.alcoholLevel}\n`;
-  });
-  text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-  text += `\uD83D\uDCA1 *Rekomendasi Klinis:*\n${rekomendasi}\n\n`;
-  text += `_Sistem Pemantauan Fit To Work_\n`;
-  text += `_Pausbiru Health_`;
+  riwayat.forEach((item, index) => { text += `  ${index + 1}. ${fmt(item.examDate)} | ${item.status} | BAC: ${item.alcoholLevel}\n`; });
+  text += `━━━━━━━━━━━━━━━━━━━━━━\n${cLampu} *Rekomendasi Klinis:*\n${rekomendasi}\n\n_Sistem Pemantauan Fit To Work_\n_Pausbiru Health_`;
 
   const waUrl = p.phone ? `https://wa.me/${p.phone}?text=${encodeURIComponent(text)}` : `https://wa.me/?text=${encodeURIComponent(text)}`;
   window.open(waUrl, '_blank');
 }
 
-  // ============================================================
-// 📲 FUNGSI SHARE WHATSAPP MCU & METABOLIK
 // ============================================================
-// ============================================================
-// 📲 FUNGSI SHARE WHATSAPP MCU & METABOLIK
+// 📲 FUNGSI SHARE WHATSAPP MCU & METABOLIK (UNICODE SAFE)
 // ============================================================
 function shareMcuToWhatsApp(pid) {
   const p = patients.find(x => Number(x.id) === Number(pid));
-  if (!p) {
-    alert("Data pekerja tidak ditemukan.");
-    return;
-  }
-
+  if (!p) return alert("Data pekerja tidak ditemukan.");
   const phone = normalizePhone(p.phone);
-  if (!phone) {
-    alert("Pekerja ini belum memiliki nomor HP/WhatsApp.");
-    return;
-  }
-
+  if (!phone) return alert("Pekerja ini belum memiliki nomor HP/WhatsApp.");
   const list = mcuExams.filter(m => Number(m.patientId) === Number(p.id)).sort((a, b) => String(a.examDate).localeCompare(String(b.examDate)));
-
-  if (list.length === 0) {
-    alert("Tidak ada riwayat MCU untuk pekerja ini.");
-    return;
-  }
+  if (list.length === 0) return alert("Tidak ada riwayat MCU untuk pekerja ini.");
 
   const latest = list[list.length - 1];
+  
+  // GENERATOR EMOJI ANTI-GAGAL
+  const cCek = String.fromCodePoint(0x2705);
+  const cAwas = String.fromCodePoint(0x26A0, 0xFE0F);
+  const cBahaya = String.fromCodePoint(0x1F6A8);
+  const cPapan = String.fromCodePoint(0x1F4CB);
+  const cOrang = String.fromCodePoint(0x1F464);
+  const cId = String.fromCodePoint(0x1F194);
+  const cKal = String.fromCodePoint(0x1F4C5);
+  const cTimbang = String.fromCodePoint(0x2696, 0xFE0F);
+  const cDarah = String.fromCodePoint(0x1FA78);
+  const cLampu = String.fromCodePoint(0x1F4A1);
 
-  // LOGIKA KATEGORI BMI WA
   let bmiStatus = '';
   if(latest.bmi) {
     const bVal = parseFloat(latest.bmi);
-    if(bVal < 18.5) bmiStatus = 'Kekurangan Bobot ⚠️';
-    else if(bVal >= 18.5 && bVal <= 22.9) bmiStatus = 'Normal ✅';
-    else if(bVal >= 23 && bVal <= 24.9) bmiStatus = 'Kelebihan Bobot ⚠️';
-    else bmiStatus = 'Obesitas 🚨';
+    if(bVal < 18.5) bmiStatus = `Kekurangan Bobot ${cAwas}`;
+    else if(bVal >= 18.5 && bVal <= 22.9) bmiStatus = `Normal ${cCek}`;
+    else if(bVal >= 23 && bVal <= 24.9) bmiStatus = `Kelebihan Bobot ${cAwas}`;
+    else bmiStatus = `Obesitas ${cBahaya}`;
   }
 
-  // LOGIKA KATEGORI METABOLIK WA
-  let gluStatus = '';
-  if(latest.glucose) gluStatus = parseFloat(latest.glucose) < 140 ? ' *(Normal ✅)*' : ' *(Tinggi 🚨)*';
+  let gluStatus = latest.glucose ? (parseFloat(latest.glucose) < 140 ? ` *(Normal ${cCek})*` : ` *(Tinggi ${cBahaya})*`) : '-';
+  let cholStatus = latest.cholesterol ? (parseFloat(latest.cholesterol) < 200 ? ` *(Normal ${cCek})*` : ` *(Tinggi ${cBahaya})*`) : '-';
+  let uricLimit = p.gender === 'P' ? 6.0 : 7.0;
+  let uricStatus = latest.uricAcid ? (parseFloat(latest.uricAcid) <= uricLimit ? ` *(Normal ${cCek})*` : ` *(Tinggi ${cBahaya})*`) : '-';
 
-  let cholStatus = '';
-  if(latest.cholesterol) cholStatus = parseFloat(latest.cholesterol) < 200 ? ' *(Normal ✅)*' : ' *(Tinggi 🚨)*';
+  let text = `${cPapan} *LAPORAN MCU & METABOLIK*\n━━━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `${cOrang} *Nama:* ${p.name}\n${cId} *NIK:* ${p.nik || '-'}\n${cKal} *Tgl Periksa:* ${fmt(latest.examDate)}\n\n`;
+  text += `${cTimbang} *Body Measurement:*\n• Berat Badan: ${latest.weight ? latest.weight + ' kg' : '-'}\n• Tinggi Badan: ${latest.height ? latest.height + ' cm' : '-'}\n• BMI / IMT: ${latest.bmi ? '*' + latest.bmi + '* (' + bmiStatus + ')' : '-'}\n\n`;
+  text += `${cDarah} *Cek Darah Metabolik:*\n• Gula Darah: ${latest.glucose ? latest.glucose + ' mg/dL' + gluStatus : '-'}\n• Kolesterol: ${latest.cholesterol ? latest.cholesterol + ' mg/dL' + cholStatus : '-'}\n• Asam Urat: ${latest.uricAcid ? latest.uricAcid + ' mg/dL' + uricStatus : '-'}\n━━━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `${cLampu} *Rekomendasi Klinis:*\nHarap jaga pola makan sehat, rutin berolahraga, dan pastikan istirahat yang cukup. Konsultasikan dengan tim medis jika terdapat nilai yang di luar batas normal.\n\n_Sistem Pemantauan Fit To Work_\n_Pausbiru Health_`;
 
-  let uricStatus = '';
-  if(latest.uricAcid) {
-    let uricLimit = p.gender === 'P' ? 6.0 : 7.0;
-    uricStatus = parseFloat(latest.uricAcid) <= uricLimit ? ' *(Normal ✅)*' : ' *(Tinggi 🚨)*';
-  }
-
-  let text = `📋 *LAPORAN MCU & METABOLIK*\n`;
-  text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-  text += `👤 *Nama:* ${p.name}\n`;
-  text += `🆔 *NIK:* ${p.nik || '-'}\n`;
-  text += `📅 *Tgl Periksa:* ${fmt(latest.examDate)}\n\n`;
-
-  text += `⚖️ *Body Measurement:*\n`;
-  text += `• Berat Badan: ${latest.weight ? latest.weight + ' kg' : '-'}\n`;
-  text += `• Tinggi Badan: ${latest.height ? latest.height + ' cm' : '-'}\n`;
-  text += `• BMI / IMT: ${latest.bmi ? '*' + latest.bmi + '* (' + bmiStatus + ')' : '-'}\n\n`;
-
-  text += `🩸 *Cek Darah Metabolik:*\n`;
-  text += `• Gula Darah: ${latest.glucose ? latest.glucose + ' mg/dL' + gluStatus : '-'}\n`;
-  text += `• Kolesterol: ${latest.cholesterol ? latest.cholesterol + ' mg/dL' + cholStatus : '-'}\n`;
-  text += `• Asam Urat: ${latest.uricAcid ? latest.uricAcid + ' mg/dL' + uricStatus : '-'}\n`;
-  text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-  text += `💡 *Rekomendasi Klinis:*\n`;
-  text += `Harap jaga pola makan sehat, rutin berolahraga, dan pastikan istirahat yang cukup. Konsultasikan dengan tim medis jika terdapat nilai yang di luar batas normal.\n\n`;
-  text += `_Sistem Pemantauan Keselamatan Kerja_\n`;
-  text += `_Pausbiru Health_`;
-
-  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
 }
+  
 // ============================================================
 // 🩸 MODUL MCU & METABOLIK (BMI, Gula, Kolesterol, Asam Urat)
 // ============================================================
