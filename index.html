@@ -1768,6 +1768,9 @@ function delFollowup(id){
   if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
 }
 
+// ============================================================
+// 📲 FUNGSI SHARE WHATSAPP TENSI DARAH (UNICODE SAFE)
+// ============================================================
 function kirimWA(pid){
   const p = patients.find(x => Number(x.id) === Number(pid));
   if(!p) return;
@@ -1791,11 +1794,11 @@ function kirimWA(pid){
   const jadwal = jadwalMap[st.key] || '-';
   const pulseText = last.pulse == null || last.pulse === '' ? '-' : last.pulse;
 
-const pesan = `🩺 *Laporan Tekanan Darah* 
+const pesan = `\uD83E\uDE7A *Laporan Tekanan Darah* 
 ━━━━━━━━━━━━━━━━━━━━ 
-👤 *Pekerja:* ${p.name} 
-🎂 *Usia:* ${calcAge(p.dob)} tahun 
-📅 *Tgl Periksa:* ${fmt(last.examDate)} 
+\uD83D\uDC64 *Pekerja:* ${p.name} 
+\uD83C\uDF82 *Usia:* ${calcAge(p.dob)} tahun 
+\uD83D\uDCC5 *Tgl Periksa:* ${fmt(last.examDate)} 
 
 *Hasil Terakhir:* 
 • Sistolik  : *${last.systolic} mmHg* 
@@ -1809,9 +1812,9 @@ ${riwayat}
 
 *Rekomendasi:* 
 ${getRekomTeks(last.systolic,last.diastolic,prev?.systolic)} 
-📅 *Jadwal Kontrol:* ${jadwal} 
+\uD83D\uDCC5 *Jadwal Kontrol:* ${jadwal} 
 ━━━━━━━━━━━━━━━━━━━━ 
-_KEPMENKES RI No. 4634/2021_
+_Sistem Pemantauan Fit to Work_
 _Pausbiru Health_`;
 
   window.open(`https://wa.me/${phone}?text=${encodeURIComponent(pesan)}`, '_blank', 'noopener,noreferrer');
@@ -1826,7 +1829,7 @@ function getRekomTeks(s, d, prevS){
     pre: `${trend}Normal-Tinggi. Modifikasi gaya hidup segera.`,
     ht1: `${trend}Hipertensi Derajat 1. Evaluasi dokter & modifikasi gaya hidup.`,
     ht2: `${trend}Hipertensi Derajat 2. Wajib terapi antihipertensi.`,
-    ht3: `${trend}⚠️ Hipertensi Derajat 3 — SEGERA ke IGD/RS!`,
+    ht3: `${trend}\u26A0\uFE0F Hipertensi Derajat 3 — SEGERA ke IGD/RS!`,
     iso: `${trend}HT Sistolik Terisolasi. Perlu evaluasi dokter.`,
     low: `${trend}Hipotensi. Perbanyak minum air & istirahat.`
   };
@@ -1868,7 +1871,8 @@ async function loadAndShowReminders(){
     const daysText = r.daysLeft === 0 ? 'Hari ini!' : r.daysLeft === 1 ? 'Besok!' : 'H-' + r.daysLeft;
     
     // FORMAT PESAN WA FOLLOW-UP YANG BARU
-    const reminderText = `🔔 *Reminder Follow-Up Kesehatan*\n━━━━━━━━━━━━━━━━━━━━\nYth. Bapak/Ibu ${r.patientName},\n\nMengingatkan bahwa Anda memiliki jadwal kontrol pada:\n📅 *Tanggal:* ${fmt(r.dueDate)}\n📌 *Alasan:* ${r.reason}\n\nHarap menemui tim medis / K3 pada tanggal tersebut.\nTerima kasih atas kerja samanya.\n━━━━━━━━━━━━━━━━━━━━\n_Sistem Pemantauan Keselamatan Kerja_\n_Pausbiru Health_`;
+    // FORMAT PESAN WA FOLLOW-UP YANG BARU (UNICODE SAFE)
+    const reminderText = `\uD83D\uDD14 *Reminder Follow-Up Kesehatan*\n━━━━━━━━━━━━━━━━━━━━\nYth. Bapak/Ibu ${r.patientName},\n\nMengingatkan bahwa Anda memiliki jadwal kontrol pada:\n\uD83D\uDCC5 *Tanggal:* ${fmt(r.dueDate)}\n\uD83D\uDCCC *Alasan:* ${r.reason}\n\nHarap menemui tim medis / K3 pada tanggal tersebut.\nTerima kasih atas kerja samanya.\n━━━━━━━━━━━━━━━━━━━━\n_Sistem Pemantauan Fit to Work_\n_Pausbiru Health_`;
     
     const waBtn = r.phone ? `<a href="https://wa.me/${r.phone}?text=${encodeURIComponent(reminderText)}" target="_blank" rel="noopener noreferrer" class="btn btn-sm" style="background:#25d366;color:#fff;flex-shrink:0">📲 WA</a>` : '';
 
@@ -2228,7 +2232,7 @@ function handleAlcoholScanResult(codeText) {
 }
 
 // ============================================================
-// 📲 FUNGSI SHARE WHATSAPP ALKOHOL
+// 📲 FUNGSI SHARE WHATSAPP ALKOHOL (UNICODE SAFE)
 // ============================================================
 function shareAlcoholToWhatsApp(workerName, workerNik) {
   const p = patients.find(x => (workerNik && String(x.nik).trim() === String(workerNik).trim()) || (workerName && String(x.name).trim().toLowerCase() === String(workerName).trim().toLowerCase()));
@@ -2248,27 +2252,25 @@ function shareAlcoholToWhatsApp(workerName, workerNik) {
   const isPass = latest.status.toLowerCase().includes('pass') || latest.status.toLowerCase().includes('aman');
   
   const rekomendasi = isPass 
-    ? "✅ Pekerja dalam kondisi *AMAN* dan *LAYAK KERJA*. Pertahankan gaya hidup sehat dan patuhi aturan perusahaan." 
-    : "🚨 Pekerja terindikasi mengonsumsi alkohol dan dinyatakan *TIDAK LAYAK BEKERJA* hari ini. Harap segera melapor ke atasan untuk tindak lanjut sesuai SOP K3!";
+    ? "\u2705 Pekerja dalam kondisi *AMAN* dan *LAYAK KERJA*. Pertahankan gaya hidup sehat dan patuhi aturan perusahaan." 
+    : "\uD83D\uDEA8 Pekerja terindikasi mengonsumsi alkohol dan dinyatakan *TIDAK LAYAK BEKERJA* hari ini. Harap segera melapor ke atasan untuk tindak lanjut sesuai SOP K3!";
 
-  let text = `📋 *LAPORAN TES ALKOHOL (BAC TEST)*\n`;
+  let text = `\uD83D\uDCCB *LAPORAN TES ALKOHOL (BAC TEST)*\n`;
   text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-  text += `👤 *Nama:* ${p.name}\n`;
-  text += `🆔 *NIK:* ${p.nik || '-'}\n`;
-  text += `📅 *Tes Terakhir:* ${fmt(latest.examDate)}\n`;
-  text += `🔍 *Status:* ${latest.status}\n`;
-  text += `📊 *Kadar BAC:* ${latest.alcoholLevel}\n`;
+  text += `\uD83D\uDC64 *Nama:* ${p.name}\n`;
+  text += `\uD83C\uDD94 *NIK:* ${p.nik || '-'}\n`;
+  text += `\uD83D\uDCC5 *Tes Terakhir:* ${fmt(latest.examDate)}\n`;
+  text += `\uD83D\uDD0D *Status:* ${latest.status}\n`;
+  text += `\uD83D\uDCCA *Kadar BAC:* ${latest.alcoholLevel}\n`;
   text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-  // --- TAMBAHAN 5 RIWAYAT TERAKHIR MULAI DI SINI ---
-  text += `⏳ *Riwayat 5 Tes Terakhir:*\n`;
+  text += `\u23F3 *Riwayat 5 Tes Terakhir:*\n`;
   const riwayat = list.slice(-5).reverse();
   riwayat.forEach((item, index) => {
       text += `  ${index + 1}. ${fmt(item.examDate)} | ${item.status} | BAC: ${item.alcoholLevel}\n`;
   });
   text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-  // --- SELESAI TAMBAHAN ---
-  text += `*💡 Rekomendasi Klinis:*\n${rekomendasi}\n\n`;
-  text += `_Sistem Pemantauan Keselamatan Kerja_\n`;
+  text += `\uD83D\uDCA1 *Rekomendasi Klinis:*\n${rekomendasi}\n\n`;
+  text += `_Sistem Pemantauan Fit To Work_\n`;
   text += `_Pausbiru Health_`;
 
   const waUrl = p.phone ? `https://wa.me/${p.phone}?text=${encodeURIComponent(text)}` : `https://wa.me/?text=${encodeURIComponent(text)}`;
