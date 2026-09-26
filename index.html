@@ -247,16 +247,18 @@ table th, table td {white-space: nowrap !important;}
 <div class="sidebar">
   <div class="sidebar-logo"><h2>🩺 BP Monitor</h2><span>KEPMENKES 4634/2021</span></div>
   <div class="sidebar-nav">
-    <div class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">📊</span> Dashboard</div>
-    <div class="nav-item" onclick="showPage('records')"><span class="nav-icon">📋</span> Input Pemeriksaan</div>
-    <div class="nav-item" onclick="showPage('patients')"><span class="nav-icon">👤</span> Data Pekerja</div>
-    <div class="nav-item" onclick="showPage('progress')"><span class="nav-icon">📈</span> Progress Pekerja</div>
-    <div class="nav-item" onclick="showPage('monthly')"><span class="nav-icon">🗓️</span> Laporan Bulanan</div>
-    <div class="nav-item" onclick="showPage('followup')"><span class="nav-icon">🔔</span> Follow-Up</div>
-    <div class="nav-item" onclick="showPage('alcohol')"><span class="nav-icon">🍷</span> Tes Alkohol</div>
-    <div class="nav-item" onclick="document.getElementById('changePinModal').style.display='flex'"><span class="nav-icon">🔐</span> Ganti PIN</div>
-    <div class="nav-item" onclick="doLogout()"><span class="nav-icon">🚪</span> Keluar</div>
-  </div>
+  <div class="sidebar-nav">
+  <div class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">📊</span> Dashboard</div>
+  <div class="nav-item " onclick="showPage('records')"><span class="nav-icon">📋</span> Tes Tekanan Darah</div>
+  <div class="nav-item " onclick="showPage('alcohol')"><span class="nav-icon">🍷</span> Tes Alkohol</div>
+  <div class="nav-item " onclick="showPage('mcu')"><span class="nav-icon">🩸</span> MCU & Metabolik</div>
+  <div class="nav-item " onclick="showPage('patients')"><span class="nav-icon">👤</span> Data Pekerja</div>
+  <div class="nav-item " onclick="showPage('progress')"><span class="nav-icon">📈</span> Progress Pekerja</div>
+  <div class="nav-item " onclick="showPage('monthly')"><span class="nav-icon">🗓️</span> Laporan Bulanan</div>
+  <div class="nav-item " onclick="showPage('followup')"><span class="nav-icon">🔔</span> Follow-Up</div>
+  <div class="nav-item " onclick="document.getElementById('changePinModal').style.display='flex'"><span class="nav-icon">🔐</span> Ganti PIN</div>
+  <div class="nav-item " onclick="doLogout()"><span class="nav-icon">🚪</span> Keluar</div>
+</div>
   <div class="sidebar-foot">BP Monitor v1.0 · pausbiru7</div>
 </div>
 <div class="main">
@@ -280,6 +282,7 @@ table th, table td {white-space: nowrap !important;}
     <div id="page-monthly" style="display:none"></div>
     <div id="page-followup" style="display:none"></div>
     <div id="page-alcohol" style="display:none"></div>
+    <div id="page-mcu" style="display:none"></div>
   </div>
 </div>
 <script>
@@ -404,7 +407,13 @@ let nextEid = exams.length ? Math.max(...exams.map(e => +e.id)) + 1 : 1;
 let nextFid = followups.length ? Math.max(...followups.map(f => +f.id)) + 1 : 1;
 let nextPid = patients.length ? Math.max(...patients.map(p => +p.id)) + 1 : 1;
 let nextAid = alcoholExams.length ? Math.max(...alcoholExams.map(a => +a.id)) + 1 : 1;
-
+let mcuExams = JSON.parse(localStorage.getItem('bpm_mcu') || '[]').map(m => ({
+  ...m, 
+  id: Number(m.id), 
+  patientId: Number(m.patientId),
+  examDate: fixDate(m.examDate)
+}));
+let nextMcuId = mcuExams.length ? Math.max(...mcuExams.map(m => +m.id)) + 1 : 1;
 // ══ KEPMENKES 4634/2021 CLASSIFICATION ════
 function getStatus(s, d){
   s = +s; d = +d;
@@ -510,10 +519,11 @@ function filterExams(query, kategori){
 
 document.getElementById('currentDate').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-const pages = ['dashboard', 'records', 'patients', 'progress', 'monthly', 'followup', 'alcohol'];
-const titles = { dashboard: 'Dashboard', records: 'Input Pemeriksaan', patients: 'Master Data Pekerja', progress: 'Progress Pekerja', monthly: 'Laporan Bulanan', followup: 'Manajemen Follow-Up', alcohol: 'Tes Alkohol (BAC)' };
+const pages = ['dashboard', 'records', 'patients', 'progress', 'monthly', 'followup', 'alcohol', 'mcu'];
+// Tambahkan , mcu: 'Pemeriksaan MCU & Metabolik' di akhirnya
+const titles = { dashboard: 'Dashboard', records: 'Tes Tekanan Darah', patients: 'Master Data Pekerja', progress: 'Progress Pekerja', monthly: 'Laporan Bulanan', followup: 'Manajemen Follow-Up', alcohol: 'Tes Alkohol (BAC)', mcu: 'Pemeriksaan MCU & Metabolik' };
 
-function showPage(p){
+  function showPage(p){
   pages.forEach(k => {
     const pageEl = document.getElementById('page-' + k);
     if(pageEl) pageEl.style.display = k === p ? 'block' : 'none';
@@ -534,6 +544,7 @@ function showPage(p){
   if(p === 'monthly') renderMonthly();
   if(p === 'followup') renderFollowups();
   if(p === 'alcohol') renderAlcoholPage();
+  if (p === 'mcu') renderMcuPage();  
   if(typeof loadAndShowReminders === 'function') loadAndShowReminders();
 }
 
@@ -2191,6 +2202,163 @@ function shareAlcoholToWhatsApp(workerName, workerNik) {
   window.open(waUrl, '_blank');
 }
 
+// ============================================================
+// 🩸 MODUL MCU & METABOLIK (BMI, Gula, Kolesterol, Asam Urat)
+// ============================================================
+
+function renderMcuPage() {
+  const pageMcu = document.getElementById('page-mcu');
+  if(!pageMcu) return;
+  
+  const opts = patients.map(p => `<option value="${p.id}">[${p.nik || p.id}] ${p.name}</option>`).join('');
+  
+  pageMcu.innerHTML = `
+    <div class="panel">
+      <div class="panel-head"><h2>➕ Input Pemeriksaan MCU</h2></div>
+      <div class="panel-body">
+        <div class="form-grid">
+          <div class="fg">
+            <label>Pekerja</label>
+            <select id="mcuPatientId"><option value="">-- Pilih Pekerja --</option>${opts}</select>
+          </div>
+          <div class="fg">
+            <label>Tanggal Pemeriksaan</label>
+            <input id="mcuDate" type="date" value="${getToday()}">
+          </div>
+        </div>
+        
+        <h4 style="margin:16px 0 8px; color:#1e3a5f; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">⚖️ Body Measurement</h4>
+        <div class="form-grid">
+          <div class="fg"><label>Berat Badan (kg)</label><input id="mcuWeight" type="number" oninput="calcBMI()" placeholder="Contoh: 70"></div>
+          <div class="fg"><label>Tinggi Badan (cm)</label><input id="mcuHeight" type="number" oninput="calcBMI()" placeholder="Contoh: 170"></div>
+          <div class="fg"><label>BMI / IMT (Otomatis)</label><input id="mcuBmi" readonly style="font-weight:bold; background:#f8fafc;"></div>
+          <div class="fg"><label>Status BMI</label><input id="mcuBmiStatus" readonly style="font-weight:bold; background:#f8fafc;"></div>
+        </div>
+
+        <h4 style="margin:16px 0 8px; color:#1e3a5f; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">🩸 Cek Darah Metabolik</h4>
+        <div class="form-grid">
+          <div class="fg"><label>Gula Darah Sewaktu (mg/dL)</label><input id="mcuGlucose" type="number" placeholder="Normal: < 140"></div>
+          <div class="fg"><label>Kolesterol Total (mg/dL)</label><input id="mcuChol" type="number" placeholder="Normal: < 200"></div>
+          <div class="fg"><label>Asam Urat (mg/dL)</label><input id="mcuUric" type="number" placeholder="L: < 7.0 | P: < 6.0"></div>
+        </div>
+
+        <div style="margin-top:16px;">
+          <button class="btn btn-primary" onclick="saveMcuExam()">💾 Simpan Data MCU</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>📋 Riwayat Pemeriksaan MCU</h2></div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr><th>Tanggal</th><th>Pekerja</th><th>BB/TB</th><th>BMI</th><th>Gula</th><th>Kolesterol</th><th>Asam Urat</th><th>Aksi</th></tr>
+          </thead>
+          <tbody>${renderMcuRows()}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function calcBMI() {
+  const w = parseFloat(document.getElementById('mcuWeight').value);
+  const h = parseFloat(document.getElementById('mcuHeight').value) / 100; 
+  const bmiEl = document.getElementById('mcuBmi');
+  const statusEl = document.getElementById('mcuBmiStatus');
+  
+  if(w > 0 && h > 0) {
+    const bmi = (w / (h * h)).toFixed(1);
+    bmiEl.value = bmi;
+    
+    let status = '';
+    if(bmi < 18.5) status = 'Kekurangan Bobot';
+    else if(bmi >= 18.5 && bmi <= 22.9) status = 'Normal';
+    else if(bmi >= 23 && bmi <= 24.9) status = 'Kelebihan Bobot';
+    else status = 'Obesitas';
+    
+    statusEl.value = status;
+  } else {
+    bmiEl.value = '';
+    statusEl.value = '';
+  }
+}
+
+function saveMcuExam() {
+  const pid = document.getElementById('mcuPatientId').value;
+  const date = document.getElementById('mcuDate').value;
+  const w = document.getElementById('mcuWeight').value;
+  const h = document.getElementById('mcuHeight').value;
+  const bmi = document.getElementById('mcuBmi').value;
+  const glu = document.getElementById('mcuGlucose').value;
+  const chol = document.getElementById('mcuChol').value;
+  const uric = document.getElementById('mcuUric').value;
+
+  if(!pid || !date) return alert('Pilih pekerja dan tanggal!');
+
+  mcuExams.push({
+    id: nextMcuId++,
+    patientId: Number(pid),
+    examDate: date,
+    weight: w || null,
+    height: h || null,
+    bmi: bmi || null,
+    glucose: glu || null,
+    cholesterol: chol || null,
+    uricAcid: uric || null
+  });
+
+  // Pastikan Anda juga sudah menambahkan mcuExams ke dalam fungsi save() atau saveLocal() 
+  save(); 
+  renderMcuPage();
+  alert('✅ Data MCU berhasil disimpan!');
+}
+
+function renderMcuRows() {
+  if (mcuExams.length === 0) return '<tr><td colspan="8" class="empty">Belum ada riwayat MCU</td></tr>';
+  
+  const sorted = [...mcuExams].sort((a, b) => String(b.examDate).localeCompare(String(a.examDate)));
+  
+  return sorted.map(e => {
+    const p = patients.find(x => Number(x.id) === Number(e.patientId)) || {};
+    
+    const gluBadge = !e.glucose ? '-' : (e.glucose < 140 ? `<span class="badge b-nor">${e.glucose}</span>` : `<span class="badge b-ht2">${e.glucose}</span>`);
+    const cholBadge = !e.cholesterol ? '-' : (e.cholesterol < 200 ? `<span class="badge b-nor">${e.cholesterol}</span>` : `<span class="badge b-ht2">${e.cholesterol}</span>`);
+    
+    let uricLimit = p.gender === 'P' ? 6.0 : 7.0;
+    const uricBadge = !e.uricAcid ? '-' : (e.uricAcid <= uricLimit ? `<span class="badge b-nor">${e.uricAcid}</span>` : `<span class="badge b-ht2">${e.uricAcid}</span>`);
+    
+    let bmiBadge = '-';
+    if(e.bmi) {
+      const bVal = parseFloat(e.bmi);
+      if(bVal >= 18.5 && bVal <= 22.9) bmiBadge = `<span class="badge b-nor">${e.bmi}</span>`;
+      else if(bVal >= 25) bmiBadge = `<span class="badge b-ht2">${e.bmi}</span>`;
+      else bmiBadge = `<span class="badge b-pre">${e.bmi}</span>`;
+    }
+
+    return `
+      <tr>
+        <td>${fmt(e.examDate)}</td>
+        <td><strong>${escapeHtml(p.name || '-')}</strong></td>
+        <td>${e.weight || '-'} kg / ${e.height || '-'} cm</td>
+        <td>${bmiBadge}</td>
+        <td>${gluBadge}</td>
+        <td>${cholBadge}</td>
+        <td>${uricBadge}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="delMcu(${e.id})">🗑️</button></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function delMcu(id) {
+  if(!confirm('Hapus data MCU ini?')) return;
+  mcuExams = mcuExams.filter(e => Number(e.id) !== Number(id));
+  save();
+  renderMcuPage();
+}
+  
 // INISIALISASI AWAL
 renderDashboard();
 
