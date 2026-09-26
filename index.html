@@ -659,6 +659,25 @@ function renderDashboard(){
   const passPct = totalAlc > 0 ? Math.round((alcPass / totalAlc) * 100) : 0;
   const failPct = totalAlc > 0 ? Math.round((alcFail / totalAlc) * 100) : 0;
 
+  // Hitungan Pie Chart BMI (Distribusi)
+  const bmiCounts = { under: 0, norm: 0, over: 0, obese: 0 };
+  const latestMcus = patients.map(p => {
+    const pMcus = mcuExams.filter(m => Number(m.patientId) === Number(p.id));
+    return pMcus.length ? pMcus[pMcus.length - 1] : null;
+  }).filter(Boolean);
+
+  let totalBmi = 0;
+  latestMcus.forEach(m => {
+    if(m.bmi) {
+      totalBmi++;
+      const b = parseFloat(String(m.bmi).replace(',', '.'));
+      if(b < 18.5) bmiCounts.under++;
+      else if(b <= 22.9) bmiCounts.norm++;
+      else if(b <= 24.9) bmiCounts.over++;
+      else bmiCounts.obese++;
+    }
+  });
+
   const pend = followups.filter(f => f.status === 'pending');
   const fuHtml = pend.slice(0, 3).map(f => {
     return `<div class="fu-card pending"><div><div class="fu-name">${f.patientName}</div><div class="fu-reason">${f.reason}</div><div class="fu-date">📅 ${fmt(f.dueDate)}</div></div><span class="badge b-pending">Menunggu</span></div>`;
@@ -684,24 +703,29 @@ function renderDashboard(){
       </div>
     </div>
     
-    <div class="grid-2" style="margin-bottom:18px">
+    <!-- TIGA GRAFIK PIE DISTRIBUSI (GRID-3) -->
+    <div class="grid-3" style="margin-bottom:18px">
       <div class="panel">
-        <div class="panel-head"><h2>🥧 Distribusi Kategori BP (Terakhir)</h2></div>
-        <div class="panel-body"><div class="chart-box"><canvas id="dashPieChart"></canvas></div></div>
+        <div class="panel-head"><h2>🥧 Kategori Tensi (BP)</h2></div>
+        <div class="panel-body"><div class="chart-box" style="height:220px"><canvas id="dashPieChart"></canvas></div></div>
       </div>
       <div class="panel">
-        <div class="panel-head"><h2>🥧 Distribusi Tes Alkohol (Pass vs Fail)</h2></div>
+        <div class="panel-head"><h2>🥧 Tes Alkohol (BAC)</h2></div>
         <div class="panel-body">
           <div style="display:flex; justify-content:center; gap:10px; margin-bottom:10px;">
             <span class="badge b-nor" style="font-size:.85rem">Pass: ${passPct}%</span> 
             <span class="badge b-ht2" style="font-size:.85rem">Fail: ${failPct}%</span>
           </div>
-          <div class="chart-box" style="height:220px"><canvas id="dashAlcPieChart"></canvas></div>
+          <div class="chart-box" style="height:185px"><canvas id="dashAlcPieChart"></canvas></div>
         </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>🥧 Status BMI (IMT)</h2></div>
+        <div class="panel-body"><div class="chart-box" style="height:220px"><canvas id="dashBmiPieChart"></canvas></div></div>
       </div>
     </div>
 
-    <!-- GRAFIK TREN -->
+    <!-- GRAFIK TREN (GRID-2) -->
     <div class="grid-2" style="margin-bottom:18px">
       <div class="panel">
         <div class="panel-head"><h2>📊 Tren Rata-rata Sistolik (6 Bulan)</h2></div>
@@ -719,7 +743,7 @@ function renderDashboard(){
         <div class="panel-body"><div class="chart-box"><canvas id="dashMcuBmiUricChart"></canvas></div></div>
       </div>
       <div class="panel">
-        <div class="panel-head"><h2>📖 Klasifikasi BMI / IMT</h2></div>
+        <div class="panel-head"><h2>📖 Klasifikasi BMI (WHO Asia Pasifik)</h2></div>
         <div style="overflow-x:auto"><table><thead><tr><th>Kategori</th><th>Nilai BMI</th><th>Risiko</th></tr></thead><tbody>
           <tr><td><span class="badge b-pre">Kekurangan Bobot</span></td><td>&lt; 18.5</td><td>Rendah (Butuh Nutrisi)</td></tr>
           <tr><td><span class="badge b-nor">Normal</span></td><td>18.5 – 22.9</td><td>Aman</td></tr>
@@ -729,10 +753,10 @@ function renderDashboard(){
       </div>
     </div>
 
-    <!-- TABEL KLASIFIKASI -->
+    <!-- TABEL KLASIFIKASI (GRID-2) -->
     <div class="grid-2" style="margin-bottom:18px">
       <div class="panel">
-        <div class="panel-head"><h2>📖 Klasifikasi MCU & Metabolik</h2></div>
+        <div class="panel-head"><h2>📖 Nilai Rujukan Metabolik (Klinik)</h2></div>
         <div style="overflow-x:auto"><table><thead><tr><th>Parameter</th><th>Normal</th><th>Tinggi (Waspada)</th></tr></thead><tbody>
           <tr><td><strong>Gula Darah Sewaktu</strong></td><td>&lt; 140 mg/dL</td><td><span class="badge b-ht2">≥ 140 mg/dL</span></td></tr>
           <tr><td><strong>Kolesterol Total</strong></td><td>&lt; 200 mg/dL</td><td><span class="badge b-ht2">≥ 200 mg/dL</span></td></tr>
@@ -768,7 +792,7 @@ function renderDashboard(){
     </div>`;
 
   requestAnimationFrame(() => {
-    // 1. Grafik BP
+    // 1. Grafik BP Trend
     const trendCanvas = document.getElementById('dashTrendChart');
     if(trendCanvas){
       destroyChart('dashTrendChart');
@@ -801,7 +825,7 @@ function renderDashboard(){
       destroyChart('dashPieChart');
       const catDefs = [{key:'opt', label:'Optimal', color:'#0891b2'}, {key:'nor', label:'Normal', color:'#16a34a'}, {key:'pre', label:'Normal-Tinggi', color:'#ca8a04'}, {key:'ht1', label:'HT Derajat 1', color:'#ea580c'}, {key:'ht2', label:'HT Derajat 2', color:'#dc2626'}, {key:'ht3', label:'HT Derajat 3', color:'#7c3aed'}, {key:'iso', label:'HT Sistolik Terisolasi', color:'#2563eb'}, {key:'low', label:'Hipotensi', color:'#0369a1'}];
       const active = catDefs.filter(c => catCount[c.key] > 0);
-      new Chart(pieCanvas, { type: 'doughnut', data: { labels: active.map(c => c.label), datasets: [{ data: active.map(c => catCount[c.key]), backgroundColor: active.map(c => c.color), borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } } } });
+      new Chart(pieCanvas, { type: 'doughnut', data: { labels: active.map(c => c.label), datasets: [{ data: active.map(c => catCount[c.key]), backgroundColor: active.map(c => c.color), borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 10 } } } } } });
     }
 
     // 5. Pie Alkohol
@@ -809,7 +833,30 @@ function renderDashboard(){
     if (alcPieCanvas) {
       destroyChart('dashAlcPieChart');
       if (totalAlc > 0) {
-        new Chart(alcPieCanvas, { type: 'doughnut', data: { labels: ['Pass (Aman)', 'Fail (Tidak Layak)'], datasets: [{ data: [alcPass, alcFail], backgroundColor: ['#16a34a', '#dc2626'], borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } } });
+        new Chart(alcPieCanvas, { type: 'doughnut', data: { labels: ['Pass (Aman)', 'Fail (Tidak Layak)'], datasets: [{ data: [alcPass, alcFail], backgroundColor: ['#16a34a', '#dc2626'], borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } } } });
+      }
+    }
+
+    // 6. Pie BMI
+    const bmiPieCanvas = document.getElementById('dashBmiPieChart');
+    if (bmiPieCanvas) {
+      destroyChart('dashBmiPieChart');
+      if (totalBmi > 0) {
+        new Chart(bmiPieCanvas, {
+          type: 'doughnut',
+          data: {
+            labels: ['Kurang Bobot', 'Normal', 'Lebih Bobot', 'Obesitas'],
+            datasets: [{
+              data: [bmiCounts.under, bmiCounts.norm, bmiCounts.over, bmiCounts.obese],
+              backgroundColor: ['#ca8a04', '#16a34a', '#ea580c', '#dc2626'],
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } }
+          }
+        });
       }
     }
   });
