@@ -582,14 +582,40 @@ function renderDashboard(){
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
   }
+  
+  // Rata-rata Tensi (Sistolik) per bulan
   const avgByMonth = months.map(mk => {
     const me = exams.filter(e => monthKey(e.examDate) === mk);
     return me.length ? Math.round(me.reduce((a, e) => a + e.systolic, 0) / me.length) : null;
   });
 
+  // Rata-rata MCU per bulan (Otomatis deteksi format koma/titik)
+  const avgMcuByMonth = months.map(mk => {
+    const mInMonth = mcuExams.filter(m => monthKey(m.examDate) === mk);
+    if(!mInMonth.length) return { bmi: null, glu: null, chol: null, uric: null };
+    
+    const validBmi = mInMonth.filter(m => m.bmi);
+    const validGlu = mInMonth.filter(m => m.glucose);
+    const validChol = mInMonth.filter(m => m.cholesterol);
+    const validUric = mInMonth.filter(m => m.uricAcid);
+
+    const sumBmi = validBmi.reduce((a, m) => a + parseFloat(String(m.bmi).replace(',','.')), 0);
+    const sumGlu = validGlu.reduce((a, m) => a + parseFloat(String(m.glucose).replace(',','.')), 0);
+    const sumChol = validChol.reduce((a, m) => a + parseFloat(String(m.cholesterol).replace(',','.')), 0);
+    const sumUric = validUric.reduce((a, m) => a + parseFloat(String(m.uricAcid).replace(',','.')), 0);
+
+    return {
+      bmi: validBmi.length ? (sumBmi / validBmi.length).toFixed(1) : null,
+      glu: validGlu.length ? Math.round(sumGlu / validGlu.length) : null,
+      chol: validChol.length ? Math.round(sumChol / validChol.length) : null,
+      uric: validUric.length ? (sumUric / validUric.length).toFixed(1) : null
+    };
+  });
+
   const catCount = {opt:0, nor:0, pre:0, ht1:0, ht2:0, ht3:0, iso:0, low:0};
   patients.map(p => lastExam(p.id)).filter(Boolean).forEach(e => { catCount[getStatus(e.systolic, e.diastolic).key]++; });
 
+  // 1. TABEL TENSI TERBARU
   const recent = [...exams].sort((a, b) => String(b.examDate).localeCompare(String(a.examDate))).slice(0, 5);
   const rows = recent.map(e => {
     const st = getStatus(e.systolic, e.diastolic);
@@ -599,6 +625,7 @@ function renderDashboard(){
     return `<tr><td><strong>${pName(e.patientId)}</strong></td><td>${fmt(e.examDate)}</td><td class="${vCls(e.systolic,140,120)}">${e.systolic}</td><td class="${vCls(e.diastolic,90,80)}">${e.diastolic}</td><td>${trendArrow(e.systolic,prev?.systolic)}</td><td><span class="badge ${st.cls}">${st.label}</span></td></tr>`;
   }).join('');
 
+  // 2. TABEL ALKOHOL TERBARU
   const recentAlcohol = [...alcoholExams].sort((a, b) => String(b.examDate).localeCompare(String(a.examDate))).slice(0, 5);
   const alcRows = recentAlcohol.map(a => {
     const isPass = a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman');
@@ -607,9 +634,11 @@ function renderDashboard(){
     return `<tr><td><strong>${escapeHtml(pat.name || '-')}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
   }).join('');
 
+  // 3. TABEL MCU TERBARU
   const recentMcu = [...mcuExams].sort((a, b) => String(b.examDate).localeCompare(String(a.examDate))).slice(0, 5);
   const mcuRows = recentMcu.map(m => {
     const pat = patients.find(p => Number(p.id) === Number(m.patientId)) || {};
+    
     let bmiBadge = '-';
     if(m.bmi) {
       const bVal = parseFloat(String(m.bmi).replace(',','.'));
@@ -617,9 +646,13 @@ function renderDashboard(){
       else if(bVal >= 25) bmiBadge = `<span class="badge b-ht2">${m.bmi}</span>`;
       else bmiBadge = `<span class="badge b-pre">${m.bmi}</span>`;
     }
-    return `<tr><td><strong>${escapeHtml(pat.name || '-')}</strong></td><td>${fmt(m.examDate)}</td><td>${m.weight||'-'}kg / ${m.height||'-'}cm</td><td>${bmiBadge}</td></tr>`;
+    
+    let gluBadge = m.glucose ? (parseFloat(String(m.glucose).replace(',','.')) < 140 ? `<span class="badge b-nor">${m.glucose}</span>` : `<span class="badge b-ht2">${m.glucose}</span>`) : '-';
+    
+    return `<tr><td><strong>${escapeHtml(pat.name || '-')}</strong></td><td>${fmt(m.examDate)}</td><td>${bmiBadge}</td><td>${gluBadge}</td></tr>`;
   }).join('');
 
+  // Hitungan Pie Chart Alkohol
   const alcPass = alcoholExams.filter(a => a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman')).length;
   const alcFail = alcoholExams.length - alcPass;
   const totalAlc = alcoholExams.length;
@@ -635,18 +668,19 @@ function renderDashboard(){
   if(!dashboardEl) return;
 
   dashboardEl.innerHTML = `
+    <!-- TIGA TABEL TERBARU (GRID-3) -->
     <div class="grid-3" style="margin-bottom:18px">
       <div class="panel">
-        <div class="panel-head"><h2>📋 Pemeriksaan BP Terbaru</h2></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Trend</th><th>Kategori</th></tr></thead><tbody>${rows || '<tr><td colspan="6" class="empty">Belum ada data</td></tr>'}</tbody></table></div>
+        <div class="panel-head"><h2>📋 BP Terbaru</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Sys</th><th>Dia</th><th>Trend</th><th>Kategori</th></tr></thead><tbody>${rows || '<tr><td colspan="6" class="empty">Belum ada data</td></tr>'}</tbody></table></div>
       </div>
       <div class="panel">
-        <div class="panel-head"><h2>🍷 Pemeriksaan Alkohol Terbaru</h2></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Nilai BAC</th><th>Distribusi</th></tr></thead><tbody>${alcRows || '<tr><td colspan="4" class="empty">Belum ada data pemeriksaan alkohol</td></tr>'}</tbody></table></div>
+        <div class="panel-head"><h2>🍷 Alkohol Terbaru</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>BAC</th><th>Distribusi</th></tr></thead><tbody>${alcRows || '<tr><td colspan="4" class="empty">Belum ada data</td></tr>'}</tbody></table></div>
       </div>
       <div class="panel">
-        <div class="panel-head"><h2>🩸 Pemeriksaan MCU Terbaru</h2></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>BB / TB</th><th>BMI</th></tr></thead><tbody>${mcuRows || '<tr><td colspan="4" class="empty">Belum ada data MCU</td></tr>'}</tbody></table></div>
+        <div class="panel-head"><h2>🩸 MCU Terbaru</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>BMI</th><th>Gula</th></tr></thead><tbody>${mcuRows || '<tr><td colspan="4" class="empty">Belum ada data</td></tr>'}</tbody></table></div>
       </div>
     </div>
     
@@ -666,10 +700,45 @@ function renderDashboard(){
         </div>
       </div>
     </div>
+
+    <!-- GRAFIK TREN -->
     <div class="grid-2" style="margin-bottom:18px">
       <div class="panel">
         <div class="panel-head"><h2>📊 Tren Rata-rata Sistolik (6 Bulan)</h2></div>
         <div class="panel-body"><div class="chart-box"><canvas id="dashTrendChart"></canvas></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>📊 Tren Gula & Kolesterol (6 Bulan)</h2></div>
+        <div class="panel-body"><div class="chart-box"><canvas id="dashMcuGluCholChart"></canvas></div></div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:18px">
+      <div class="panel">
+        <div class="panel-head"><h2>📉 Tren BMI & Asam Urat (6 Bulan)</h2></div>
+        <div class="panel-body"><div class="chart-box"><canvas id="dashMcuBmiUricChart"></canvas></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>📖 Klasifikasi BMI / IMT</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Kategori</th><th>Nilai BMI</th><th>Risiko</th></tr></thead><tbody>
+          <tr><td><span class="badge b-pre">Kekurangan Bobot</span></td><td>&lt; 18.5</td><td>Rendah (Butuh Nutrisi)</td></tr>
+          <tr><td><span class="badge b-nor">Normal</span></td><td>18.5 – 22.9</td><td>Aman</td></tr>
+          <tr><td><span class="badge b-ht1">Kelebihan Bobot</span></td><td>23.0 – 24.9</td><td>Sedang</td></tr>
+          <tr><td><span class="badge b-ht2">Obesitas</span></td><td>≥ 25.0</td><td>Tinggi</td></tr>
+        </tbody></table></div>
+      </div>
+    </div>
+
+    <!-- TABEL KLASIFIKASI -->
+    <div class="grid-2" style="margin-bottom:18px">
+      <div class="panel">
+        <div class="panel-head"><h2>📖 Klasifikasi MCU & Metabolik</h2></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Parameter</th><th>Normal</th><th>Tinggi (Waspada)</th></tr></thead><tbody>
+          <tr><td><strong>Gula Darah Sewaktu</strong></td><td>&lt; 140 mg/dL</td><td><span class="badge b-ht2">≥ 140 mg/dL</span></td></tr>
+          <tr><td><strong>Kolesterol Total</strong></td><td>&lt; 200 mg/dL</td><td><span class="badge b-ht2">≥ 200 mg/dL</span></td></tr>
+          <tr><td><strong>Asam Urat (Pria)</strong></td><td>&lt; 7.0 mg/dL</td><td><span class="badge b-ht2">≥ 7.0 mg/dL</span></td></tr>
+          <tr><td><strong>Asam Urat (Wanita)</strong></td><td>&lt; 6.0 mg/dL</td><td><span class="badge b-ht2">≥ 6.0 mg/dL</span></td></tr>
+        </tbody></table></div>
       </div>
       <div class="panel">
         <div class="panel-head"><h2>📖 Klasifikasi Distribusi Alkohol (BAC)</h2></div>
@@ -679,6 +748,7 @@ function renderDashboard(){
         </tbody></table></div>
       </div>
     </div>
+
     <div class="grid-2">
       <div class="panel">
         <div class="panel-head"><h2>🔔 Follow-Up Pending</h2><span style="font-size:.75rem;color:#f59e0b">${pend.length} menunggu</span></div>
@@ -698,12 +768,34 @@ function renderDashboard(){
     </div>`;
 
   requestAnimationFrame(() => {
-    // Canvas Inisialisasi Tensi & Pie Alkohol (Sama persis seperti sebelumnya)
+    // 1. Grafik BP
     const trendCanvas = document.getElementById('dashTrendChart');
     if(trendCanvas){
       destroyChart('dashTrendChart');
       new Chart(trendCanvas, { type: 'line', data: { labels: months.map(m => monthLabel(m)), datasets: [{ label: 'Rata-rata Sistolik', data: avgByMonth, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.1)', fill: true, tension: .4, pointRadius: 5, pointBackgroundColor: '#2563eb', spanGaps: true }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 80, max: 200, ticks: { callback: v => v + ' mmHg' } }, x: { grid: { display: false } } } } });
     }
+    
+    // 2. Grafik MCU Gula & Kolesterol
+    const mcuGluCholCanvas = document.getElementById('dashMcuGluCholChart');
+    if(mcuGluCholCanvas){
+      destroyChart('dashMcuGluCholChart');
+      new Chart(mcuGluCholCanvas, { type: 'line', data: { labels: months.map(m => monthLabel(m)), datasets: [
+        { label: 'Gula Darah (Avg)', data: avgMcuByMonth.map(d=>d.glu), borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: .4, pointRadius: 4, spanGaps: true },
+        { label: 'Kolesterol (Avg)', data: avgMcuByMonth.map(d=>d.chol), borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', tension: .4, pointRadius: 4, spanGaps: true }
+      ] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: {size: 11} } } }, scales: { y: { beginAtZero: false }, x: { grid: { display: false } } } } });
+    }
+
+    // 3. Grafik MCU BMI & Asam Urat
+    const mcuBmiUricCanvas = document.getElementById('dashMcuBmiUricChart');
+    if(mcuBmiUricCanvas){
+      destroyChart('dashMcuBmiUricChart');
+      new Chart(mcuBmiUricCanvas, { type: 'line', data: { labels: months.map(m => monthLabel(m)), datasets: [
+        { label: 'BMI (Avg)', data: avgMcuByMonth.map(d=>d.bmi), borderColor: '#06b6d4', backgroundColor: '#06b6d4', tension: .4, pointRadius: 4, spanGaps: true },
+        { label: 'Asam Urat (Avg)', data: avgMcuByMonth.map(d=>d.uric), borderColor: '#ec4899', backgroundColor: '#ec4899', tension: .4, pointRadius: 4, spanGaps: true }
+      ] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: {size: 11} } } }, scales: { y: { beginAtZero: false }, x: { grid: { display: false } } } } });
+    }
+
+    // 4. Pie Tensi
     const pieCanvas = document.getElementById('dashPieChart');
     if(pieCanvas){
       destroyChart('dashPieChart');
@@ -711,159 +803,13 @@ function renderDashboard(){
       const active = catDefs.filter(c => catCount[c.key] > 0);
       new Chart(pieCanvas, { type: 'doughnut', data: { labels: active.map(c => c.label), datasets: [{ data: active.map(c => catCount[c.key]), backgroundColor: active.map(c => c.color), borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } } } });
     }
+
+    // 5. Pie Alkohol
     const alcPieCanvas = document.getElementById('dashAlcPieChart');
     if (alcPieCanvas) {
       destroyChart('dashAlcPieChart');
       if (totalAlc > 0) {
         new Chart(alcPieCanvas, { type: 'doughnut', data: { labels: ['Pass (Aman)', 'Fail (Tidak Layak)'], datasets: [{ data: [alcPass, alcFail], backgroundColor: ['#16a34a', '#dc2626'], borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } } });
-      }
-    }
-  });
-}
-
-function renderDashboard(){
-  renderStats();
-  const now = new Date();
-  const months = [];
-  for(let i = 5; i >= 0; i--){
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
-  }
-  const avgByMonth = months.map(mk => {
-    const me = exams.filter(e => monthKey(e.examDate) === mk);
-    return me.length ? Math.round(me.reduce((a, e) => a + e.systolic, 0) / me.length) : null;
-  });
-
-  const catCount = {opt:0, nor:0, pre:0, ht1:0, ht2:0, ht3:0, iso:0, low:0};
-  patients.map(p => lastExam(p.id)).filter(Boolean).forEach(e => {
-    catCount[getStatus(e.systolic, e.diastolic).key]++;
-  });
-
-  const recent = [...exams].sort((a, b) => String(b.examDate).localeCompare(String(a.examDate))).slice(0, 5);
-  const rows = recent.map(e => {
-    const st = getStatus(e.systolic, e.diastolic);
-    const pex = pExams(e.patientId);
-    const idx = pex.findIndex(x => x.id === e.id);
-    const prev = idx > 0 ? pex[idx - 1] : null;
-    return `<tr><td><strong>${pName(e.patientId)}</strong></td><td>${fmt(e.examDate)}</td><td class="${vCls(e.systolic,140,120)}">${e.systolic}</td><td class="${vCls(e.diastolic,90,80)}">${e.diastolic}</td><td>${trendArrow(e.systolic,prev?.systolic)}</td><td><span class="badge ${st.cls}">${st.label}</span></td></tr>`;
-  }).join('');
-
-  const recentAlcohol = [...alcoholExams].sort((a, b) => String(b.examDate).localeCompare(String(a.examDate))).slice(0, 5);
-  const alcRows = recentAlcohol.map(a => {
-    const isPass = a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman');
-    const badgeCls = isPass ? 'b-nor' : 'b-ht2';
-    const pat = patients.find(p => Number(p.id) === Number(a.patientId)) || {};
-    return `<tr><td><strong>${escapeHtml(pat.name || '-')}</strong></td><td>${fmt(a.examDate)}</td><td>${a.alcoholLevel || '-'}</td><td><span class="badge ${badgeCls}">${escapeHtml(a.status)}</span></td></tr>`;
-  }).join('');
-
-  const alcPass = alcoholExams.filter(a => a.status.toLowerCase().includes('pass') || a.status.toLowerCase().includes('aman')).length;
-  const alcFail = alcoholExams.length - alcPass;
-  const totalAlc = alcoholExams.length;
-  const passPct = totalAlc > 0 ? Math.round((alcPass / totalAlc) * 100) : 0;
-  const failPct = totalAlc > 0 ? Math.round((alcFail / totalAlc) * 100) : 0;
-
-  const pend = followups.filter(f => f.status === 'pending');
-  const fuHtml = pend.slice(0, 3).map(f => {
-    return `<div class="fu-card pending"><div><div class="fu-name">${f.patientName}</div><div class="fu-reason">${f.reason}</div><div class="fu-date">📅 ${fmt(f.dueDate)}</div></div><span class="badge b-pending">Menunggu</span></div>`;
-  }).join('') || '<div class="empty">✅ Tidak ada follow-up pending</div>';
-
-  const dashboardEl = document.getElementById('page-dashboard');
-  if(!dashboardEl) return;
-
-  dashboardEl.innerHTML = `
-    <div class="grid-2" style="margin-bottom:18px">
-      <div class="panel">
-        <div class="panel-head"><h2>📋 Pemeriksaan BP Terbaru</h2></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Sistolik</th><th>Diastolik</th><th>Trend</th><th>Kategori</th></tr></thead><tbody>${rows || '<tr><td colspan="6" class="empty">Belum ada data</td></tr>'}</tbody></table></div>
-      </div>
-      <div class="panel">
-        <div class="panel-head"><h2>🍷 Pemeriksaan Alkohol Terbaru</h2></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Pekerja</th><th>Tanggal</th><th>Nilai BAC</th><th>Distribusi</th></tr></thead><tbody>${alcRows || '<tr><td colspan="4" class="empty">Belum ada data pemeriksaan alkohol</td></tr>'}</tbody></table></div>
-      </div>
-    </div>
-    <div class="grid-2" style="margin-bottom:18px">
-      <div class="panel">
-        <div class="panel-head"><h2>🥧 Distribusi Kategori BP (Terakhir)</h2></div>
-        <div class="panel-body"><div class="chart-box"><canvas id="dashPieChart"></canvas></div></div>
-      </div>
-      <div class="panel">
-        <div class="panel-head"><h2>🥧 Distribusi Tes Alkohol (Pass vs Fail)</h2></div>
-        <div class="panel-body">
-          <div style="display:flex; justify-content:center; gap:10px; margin-bottom:10px;">
-            <span class="badge b-nor" style="font-size:.85rem">Pass: ${passPct}%</span> 
-            <span class="badge b-ht2" style="font-size:.85rem">Fail: ${failPct}%</span>
-          </div>
-          <div class="chart-box" style="height:220px"><canvas id="dashAlcPieChart"></canvas></div>
-        </div>
-      </div>
-    </div>
-    <div class="grid-2" style="margin-bottom:18px">
-      <div class="panel">
-        <div class="panel-head"><h2>📊 Tren Rata-rata Sistolik (6 Bulan)</h2></div>
-        <div class="panel-body"><div class="chart-box"><canvas id="dashTrendChart"></canvas></div></div>
-      </div>
-      <div class="panel">
-        <div class="panel-head"><h2>📖 Klasifikasi Distribusi Alkohol (BAC)</h2></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Distribusi</th><th>Nilai BAC</th><th>Keterangan</th></tr></thead><tbody>
-          <tr><td><span class="badge b-nor">Pass</span></td><td>0.00</td><td>Aman / Layak Kerja</td></tr>
-          <tr><td><span class="badge b-ht2">Fail</span></td><td>&gt; 0.00</td><td>Tidak Layak Kerja (Tindakan Diperlukan)</td></tr>
-        </tbody></table></div>
-      </div>
-    </div>
-    <div class="grid-2">
-      <div class="panel">
-        <div class="panel-head"><h2>🔔 Follow-Up Pending</h2><span style="font-size:.75rem;color:#f59e0b">${pend.length} menunggu</span></div>
-        <div class="panel-body">${fuHtml}</div>
-      </div>
-      <div class="panel">
-        <div class="panel-head"><h2>📖 Klasifikasi Tekanan Darah (KEPMENKES)</h2></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Kategori</th><th>Sistolik</th><th>Diastolik</th><th>Risiko</th></tr></thead><tbody>
-          <tr><td><span class="badge b-opt">Optimal</span></td><td>&lt;120</td><td>&lt;80</td><td>Minimal</td></tr>
-          <tr><td><span class="badge b-nor">Normal</span></td><td>120–129</td><td>80–84</td><td>Rendah</td></tr>
-          <tr><td><span class="badge b-pre">Normal-Tinggi</span></td><td>130–139</td><td>85–89</td><td>Sedang</td></tr>
-          <tr><td><span class="badge b-ht1">HT Derajat 1</span></td><td>140–159</td><td>90–99</td><td>Sedang</td></tr>
-          <tr><td><span class="badge b-ht2">HT Derajat 2</span></td><td>160–179</td><td>100–109</td><td>Tinggi</td></tr>
-          <tr><td><span class="badge b-ht3">HT Derajat 3</span></td><td>≥180</td><td>≥110</td><td>Sangat Tinggi</td></tr>
-        </tbody></table></div>
-      </div>
-    </div>`;
-
-  requestAnimationFrame(() => {
-    const trendCanvas = document.getElementById('dashTrendChart');
-    if(trendCanvas){
-      destroyChart('dashTrendChart');
-      new Chart(trendCanvas, {
-        type: 'line',
-        data: { labels: months.map(m => monthLabel(m)), datasets: [{ label: 'Rata-rata Sistolik', data: avgByMonth, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.1)', fill: true, tension: .4, pointRadius: 5, pointBackgroundColor: '#2563eb', spanGaps: true }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 80, max: 200, ticks: { callback: v => v + ' mmHg' } }, x: { grid: { display: false } } } }
-      });
-    }
-
-    const pieCanvas = document.getElementById('dashPieChart');
-    if(pieCanvas){
-      destroyChart('dashPieChart');
-      const catDefs = [
-        {key:'opt', label:'Optimal', color:'#0891b2'}, {key:'nor', label:'Normal', color:'#16a34a'}, {key:'pre', label:'Normal-Tinggi', color:'#ca8a04'},
-        {key:'ht1', label:'HT Derajat 1', color:'#ea580c'}, {key:'ht2', label:'HT Derajat 2', color:'#dc2626'}, {key:'ht3', label:'HT Derajat 3', color:'#7c3aed'},
-        {key:'iso', label:'HT Sistolik Terisolasi', color:'#2563eb'}, {key:'low', label:'Hipotensi', color:'#0369a1'}
-      ];
-      const active = catDefs.filter(c => catCount[c.key] > 0);
-      new Chart(pieCanvas, {
-        type: 'doughnut',
-        data: { labels: active.map(c => c.label), datasets: [{ data: active.map(c => catCount[c.key]), backgroundColor: active.map(c => c.color), borderWidth: 2 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } } }
-      });
-    }
-
-    const alcPieCanvas = document.getElementById('dashAlcPieChart');
-    if (alcPieCanvas) {
-      destroyChart('dashAlcPieChart');
-      if (totalAlc > 0) {
-        new Chart(alcPieCanvas, {
-          type: 'doughnut',
-          data: { labels: ['Pass (Aman)', 'Fail (Tidak Layak)'], datasets: [{ data: [alcPass, alcFail], backgroundColor: ['#16a34a', '#dc2626'], borderWidth: 2 }] },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } }
-        });
       }
     }
   });
