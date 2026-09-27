@@ -1414,23 +1414,21 @@ function renderProgressDetail(pid){
   if(!p) return;
   const sel = document.getElementById('progressPid');
   if(sel) sel.value = pid;
-
   const pex = pExams(pid);
   const container = document.getElementById('progressDetail');
   const badge = document.getElementById('progSummaryBadge');
   if(!container) return;
-
+  
   const pAlcoholList = alcoholExams
     .filter(a => Number(a.patientId) === Number(pid))
     .sort((a, b) => String(a.examDate || '').localeCompare(String(b.examDate || '')));
-
   const pMcuList = mcuExams
     .filter(m => Number(m.patientId) === Number(pid))
     .sort((a, b) => String(a.examDate || '').localeCompare(String(b.examDate || '')));
-
+    
   const lastAlc = pAlcoholList.length ? pAlcoholList[pAlcoholList.length - 1] : null;
   const lastMcu = pMcuList.length ? pMcuList[pMcuList.length - 1] : null;
-
+  
   if(badge && pex.length){
     const last = pex[pex.length - 1];
     const st = getStatus(last.systolic, last.diastolic);
@@ -1443,16 +1441,56 @@ function renderProgressDetail(pid){
   } else if(badge){
     badge.innerHTML = '';
   }
-
+  
   if(!pex.length && !pAlcoholList.length && !pMcuList.length){
     container.innerHTML = `<div class="panel"><div class="panel-body"><div class="empty">📋 ${p.name} belum memiliki data pemeriksaan medis apapun.</div></div></div>`;
     return;
   }
-
+  
   const last = pex.length ? pex[pex.length - 1] : null;
   const stLast = last ? getStatus(last.systolic, last.diastolic) : null;
   const prevS = pex.length > 1 ? pex[pex.length - 2].systolic : null;
+  
+  // ════════ LOGIKA REKOMENDASI KLINIS TERPADU ════════
+  let allRekom = '';
 
+  // 1. Rekomendasi Tensi
+  if (last) {
+    allRekom += getRekomendasi(last.systolic, last.diastolic, prevS, pex);
+  }
+
+  // 2. Rekomendasi MCU & Metabolik
+  if (lastMcu) {
+    if (lastMcu.bmi) {
+      const bVal = parseFloat(String(lastMcu.bmi).replace(',','.'));
+      if (bVal < 18.5) allRekom += `<div class="rekom-box pre"><div class="rekom-title">⚠️ Kekurangan Bobot (BMI: ${lastMcu.bmi})</div><div>Tingkatkan asupan nutrisi bergizi seimbang. Terdapat risiko defisiensi gizi.</div></div>`;
+      else if (bVal >= 25) allRekom += `<div class="rekom-box ht2"><div class="rekom-title">🔴 Obesitas (BMI: ${lastMcu.bmi})</div><div>Risiko penyakit kardiovaskular tinggi. Segera atur pola makan sehat & rutin olahraga.</div></div>`;
+      else if (bVal >= 23) allRekom += `<div class="rekom-box ht1"><div class="rekom-title">🔶 Kelebihan Bobot (BMI: ${lastMcu.bmi})</div><div>Jaga pola makan agar tidak berlanjut masuk ke kategori obesitas.</div></div>`;
+    }
+    if (lastMcu.glucose) {
+      const glu = parseFloat(String(lastMcu.glucose).replace(',','.'));
+      if (glu >= 140) allRekom += `<div class="rekom-box ht2"><div class="rekom-title">🔴 Gula Darah Tinggi (${lastMcu.glucose} mg/dL)</div><div>Batasi konsumsi karbohidrat sederhana dan minuman manis. Evaluasi risiko Diabetes Mellitus.</div></div>`;
+    }
+    if (lastMcu.cholesterol) {
+      const chol = parseFloat(String(lastMcu.cholesterol).replace(',','.'));
+      if (chol >= 200) allRekom += `<div class="rekom-box ht2"><div class="rekom-title">🔴 Kolesterol Tinggi (${lastMcu.cholesterol} mg/dL)</div><div>Kurangi konsumsi makanan tinggi lemak jenuh, gorengan, dan makanan cepat saji.</div></div>`;
+    }
+    if (lastMcu.uricAcid) {
+      const uric = parseFloat(String(lastMcu.uricAcid).replace(',','.'));
+      const uricLimit = p.gender === 'P' ? 6.0 : 7.0;
+      if (uric > uricLimit) allRekom += `<div class="rekom-box ht2"><div class="rekom-title">🔴 Asam Urat Tinggi (${lastMcu.uricAcid} mg/dL)</div><div>Hindari makanan tinggi purin (jeroan, kaldu daging pekat, seafood, emping) dan perbanyak minum air putih.</div></div>`;
+    }
+  }
+
+  // 3. Rekomendasi Tes Alkohol
+  if (lastAlc) {
+    const isPass = lastAlc.status.toLowerCase().includes('pass') || lastAlc.status.toLowerCase().includes('aman');
+    if (!isPass) {
+      allRekom += `<div class="rekom-box ht3"><div class="rekom-title">🚨 Peringatan Tes Alkohol: FAIL (BAC: ${lastAlc.alcoholLevel})</div><div>Pekerja terindikasi di bawah pengaruh alkohol. <strong>TIDAK LAYAK KERJA (Unfit to Work).</strong> Segera lakukan tindakan disiplin sesuai regulasi K3 perusahaan.</div></div>`;
+    }
+  }
+  // ══════════════════════════════════════════════════
+  
   const rows = pex.slice().reverse().map((e, i, arr) => {
     const prev2 = arr[i + 1] || null;
     const st = getStatus(e.systolic, e.diastolic);
@@ -1484,8 +1522,6 @@ function renderProgressDetail(pid){
   // Tabel MCU (Dengan Tren dan Tombol Hapus)
   const mcuRowsHtml = pMcuList.length ? pMcuList.slice().reverse().map((mcu, i, arr) => {
     const prev = arr[i + 1] || null;
-
-    // Fungsi kecil pembuat panah tren untuk angka desimal
     const tArrow = (curr, prv) => {
       if (curr == null || prv == null || isNaN(curr) || isNaN(prv)) return '<span class="trend-eq">—</span>';
       const d = curr - prv;
@@ -1493,30 +1529,27 @@ function renderProgressDetail(pid){
       if (d < 0) return `<span class="trend-dn">▼${(Math.abs(d) % 1 === 0 ? Math.abs(d) : Math.abs(d).toFixed(1))}</span>`;
       return '<span class="trend-eq">=</span>';
     };
-
+    
     let bVal = null, pBmi = null;
     if(mcu.bmi) bVal = parseFloat(String(mcu.bmi).replace(',','.'));
     if(prev && prev.bmi) pBmi = parseFloat(String(prev.bmi).replace(',','.'));
-
+    
     let bmiBadge = '-';
     if(bVal) {
       if(bVal >= 18.5 && bVal <= 22.9) bmiBadge = `<span class="badge b-nor">${mcu.bmi}</span>`;
       else if(bVal >= 25) bmiBadge = `<span class="badge b-ht2">${mcu.bmi}</span>`;
       else bmiBadge = `<span class="badge b-pre">${mcu.bmi}</span>`;
     }
-
+    
     const gluVal = mcu.glucose ? parseFloat(String(mcu.glucose).replace(',','.')) : null;
     const pGlu = (prev && prev.glucose) ? parseFloat(String(prev.glucose).replace(',','.')) : null;
-
     const cholVal = mcu.cholesterol ? parseFloat(String(mcu.cholesterol).replace(',','.')) : null;
     const pChol = (prev && prev.cholesterol) ? parseFloat(String(prev.cholesterol).replace(',','.')) : null;
-
     const uricVal = mcu.uricAcid ? parseFloat(String(mcu.uricAcid).replace(',','.')) : null;
     const pUric = (prev && prev.uricAcid) ? parseFloat(String(prev.uricAcid).replace(',','.')) : null;
-
+    
     const gluBadge = !mcu.glucose ? '-' : (gluVal < 140 ? `<span class="badge b-nor">${mcu.glucose}</span>` : `<span class="badge b-ht2">${mcu.glucose}</span>`);
     const cholBadge = !mcu.cholesterol ? '-' : (cholVal < 200 ? `<span class="badge b-nor">${mcu.cholesterol}</span>` : `<span class="badge b-ht2">${mcu.cholesterol}</span>`);
-
     let uricLimit = p.gender === 'P' ? 6.0 : 7.0;
     const uricBadge = !mcu.uricAcid ? '-' : (uricVal <= uricLimit ? `<span class="badge b-nor">${mcu.uricAcid}</span>` : `<span class="badge b-ht2">${mcu.uricAcid}</span>`);
 
@@ -1540,7 +1573,7 @@ function renderProgressDetail(pid){
     bacSubText = fmt(lastAlc.examDate);
     bacColor = isPass ? '#059669' : '#dc2626';
   }
-
+  
   let mcuValText = '-';
   let mcuSubText = 'Belum MCU';
   let mcuColor = '#64748b';
@@ -1552,11 +1585,11 @@ function renderProgressDetail(pid){
 
   container.innerHTML = `
     <div style="display:flex; justify-content:flex-end; margin-bottom:15px;">
-        <button class="btn btn-pdf" style="padding: 10px 18px; font-size: 0.9rem;" onclick="printProgressPDF(${pid})">
-            🖨️ Cetak Rekam Medis (PDF)
-        </button>
+      <button class="btn btn-pdf" style="padding: 10px 18px; font-size: 0.9rem;" onclick="printProgressPDF(${pid})">
+        🖨️ Cetak Rekam Medis (PDF)
+      </button>
     </div>
-
+    
     <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;margin-bottom:18px">
       <div class="stat-card"><div class="stat-icon" style="background:#eff6ff">👤</div><div class="stat-info"><h3>Nama</h3><div class="val" style="font-size:1rem">${p.name}</div><div class="sub">NIK: ${p.nik || '-'} · ${calcAge(p.dob)} thn</div></div></div>
       <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🩺</div><div class="stat-info"><h3>Tensi (S/D)</h3><div class="val ${last ? vCls(last.systolic,140,120) : ''}" style="font-size:1.2rem">${last ? `${last.systolic}/${last.diastolic}` : '-'}</div><div class="sub">${last ? fmt(last.examDate) : '-'}</div></div></div>
@@ -1578,7 +1611,6 @@ function renderProgressDetail(pid){
         <div class="panel-head"><h2>📉 Tren Nilai BAC (Alkohol)</h2></div>
         <div class="panel-body"><div class="chart-box" style="height:220px"><canvas id="progAlcChart"></canvas></div></div>
       </div>` : ''}
-      
       ${pMcuList.length ? `
       <div class="panel">
         <div class="panel-head"><h2>📊 Tren Gula & Kolesterol (MCU)</h2></div>
@@ -1642,10 +1674,10 @@ function renderProgressDetail(pid){
     </div>
     ` : ''}
 
-    ${last ? `
+    ${allRekom ? `
     <div class="panel">
-      <div class="panel-head"><h2>💡 Rekomendasi Klinis (Pemeriksaan Terakhir)</h2></div>
-      <div class="panel-body">${getRekomendasi(last.systolic,last.diastolic,prevS,pex)}</div>
+      <div class="panel-head"><h2>💡 Rekomendasi Klinis Terpadu</h2></div>
+      <div class="panel-body">${allRekom}</div>
     </div>
     ` : ''}`;
 
@@ -1658,20 +1690,21 @@ function renderProgressDetail(pid){
           type: 'line',
           data: {
             labels: pex.map(e => fmt(e.examDate)),
-            datasets: [
-              { label: 'Sistolik', data: pex.map(e => e.systolic), borderColor: '#dc2626', backgroundColor: 'rgba(220,38,38,.08)', tension: .4, fill: true, pointRadius: 5, pointBackgroundColor: '#dc2626' },
-              { label: 'Diastolik', data: pex.map(e => e.diastolic), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', tension: .4, fill: true, pointRadius: 5, pointBackgroundColor: '#2563eb' }
-            ]
+            datasets: [{
+              label: 'Sistolik',
+              data: pex.map(e => e.systolic),
+              borderColor: '#dc2626', backgroundColor: 'rgba(220,38,38,.08)', tension: .4, fill: true, pointRadius: 5, pointBackgroundColor: '#dc2626'
+            }, {
+              label: 'Diastolik',
+              data: pex.map(e => e.diastolic),
+              borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', tension: .4, fill: true, pointRadius: 5, pointBackgroundColor: '#2563eb'
+            }]
           },
-          options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { position: 'top' } },
-            scales: { y: { min: 50, max: 220, ticks: { callback: v => v + ' mmHg' } }, x: { grid: { display: false } } }
-          }
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { min: 50, max: 220, ticks: { callback: v => v + ' mmHg' } }, x: { grid: { display: false } } } }
         });
       }
     }
-
+    
     if (pAlcoholList.length) {
       const alcChartEl = document.getElementById('progAlcChart');
       if(alcChartEl) {
@@ -1687,15 +1720,11 @@ function renderProgressDetail(pid){
               borderRadius: 4
             }]
           },
-          options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true }, x: { grid: { display: false } } }
-          }
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } }
         });
       }
     }
-
+    
     if (pMcuList.length) {
       const mcuChartEl = document.getElementById('progMcuChart');
       if(mcuChartEl) {
@@ -1709,11 +1738,7 @@ function renderProgressDetail(pid){
               { label: 'Kolesterol', data: pMcuList.map(m => parseFloat(String(m.cholesterol).replace(',','.')) || null), borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', tension: 0.4, spanGaps: true, pointRadius: 4 }
             ]
           },
-          options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: {size: 11} } } },
-            scales: { y: { beginAtZero: false }, x: { grid: { display: false } } }
-          }
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: {size: 11} } } }, scales: { y: { beginAtZero: false }, x: { grid: { display: false } } } }
         });
       }
 
@@ -1724,17 +1749,9 @@ function renderProgressDetail(pid){
           type: 'line',
           data: {
             labels: pMcuList.map(m => fmt(m.examDate)),
-            datasets: [{
-              label: 'BMI / IMT',
-              data: pMcuList.map(m => parseFloat(String(m.bmi).replace(',','.')) || null),
-              borderColor: '#06b6d4', backgroundColor: 'rgba(6, 182, 212, 0.1)', fill: true, tension: 0.4, spanGaps: true, pointRadius: 4
-            }]
+            datasets: [{ label: 'BMI / IMT', data: pMcuList.map(m => parseFloat(String(m.bmi).replace(',','.')) || null), borderColor: '#06b6d4', backgroundColor: 'rgba(6, 182, 212, 0.1)', fill: true, tension: 0.4, spanGaps: true, pointRadius: 4 }]
           },
-          options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: false }, x: { grid: { display: false } } }
-          }
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: false }, x: { grid: { display: false } } } }
         });
       }
 
@@ -1745,17 +1762,9 @@ function renderProgressDetail(pid){
           type: 'line',
           data: {
             labels: pMcuList.map(m => fmt(m.examDate)),
-            datasets: [{
-              label: 'Asam Urat',
-              data: pMcuList.map(m => parseFloat(String(m.uricAcid).replace(',','.')) || null),
-              borderColor: '#ec4899', backgroundColor: 'rgba(236, 72, 153, 0.1)', fill: true, tension: 0.4, spanGaps: true, pointRadius: 4
-            }]
+            datasets: [{ label: 'Asam Urat', data: pMcuList.map(m => parseFloat(String(m.uricAcid).replace(',','.')) || null), borderColor: '#ec4899', backgroundColor: 'rgba(236, 72, 153, 0.1)', fill: true, tension: 0.4, spanGaps: true, pointRadius: 4 }]
           },
-          options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: false }, x: { grid: { display: false } } }
-          }
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: false }, x: { grid: { display: false } } } }
         });
       }
     }
