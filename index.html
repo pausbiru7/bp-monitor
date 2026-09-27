@@ -4,8 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BP Monitor — KEPMENKES 4634/2021</title>
-  <link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1e3a5f">
+<!-- Hubungkan ke CSS Terpisah -->
+<link rel="stylesheet" href="style.css">
 <!-- Pustaka untuk Grafik -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- Pustaka untuk Scanner Barcode/QR -->
@@ -72,17 +74,17 @@
 <div class="sidebar">
   <div class="sidebar-logo"><h2>🩺 BP Monitor</h2><span>KEPMENKES 4634/2021</span></div>
   <div class="sidebar-nav">
-  <div class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">📊</span> Dashboard</div>
-  <div class="nav-item " onclick="showPage('records')"><span class="nav-icon">📋</span> Tes Tekanan Darah</div>
-  <div class="nav-item " onclick="showPage('alcohol')"><span class="nav-icon">🍷</span> Tes Alkohol</div>
-  <div class="nav-item " onclick="showPage('mcu')"><span class="nav-icon">🩸</span> MCU & Metabolik</div>
-  <div class="nav-item " onclick="showPage('patients')"><span class="nav-icon">👤</span> Data Pekerja</div>
-  <div class="nav-item " onclick="showPage('progress')"><span class="nav-icon">📈</span> Progress Pekerja</div>
-  <div class="nav-item " onclick="showPage('monthly')"><span class="nav-icon">🗓️</span> Laporan Bulanan</div>
-  <div class="nav-item " onclick="showPage('followup')"><span class="nav-icon">🔔</span> Follow-Up</div>
-  <div class="nav-item " onclick="document.getElementById('changePinModal').style.display='flex'"><span class="nav-icon">🔐</span> Ganti PIN</div>
-  <div class="nav-item " onclick="doLogout()"><span class="nav-icon">🚪</span> Keluar</div>
-</div>
+    <div class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">📊</span> Dashboard</div>
+    <div class="nav-item" onclick="showPage('records')"><span class="nav-icon">📋</span> Tes Tekanan Darah</div>
+    <div class="nav-item" onclick="showPage('alcohol')"><span class="nav-icon">🍷</span> Tes Alkohol</div>
+    <div class="nav-item" onclick="showPage('mcu')"><span class="nav-icon">🩸</span> MCU & Metabolik</div>
+    <div class="nav-item" onclick="showPage('patients')"><span class="nav-icon">👤</span> Data Pekerja</div>
+    <div class="nav-item" onclick="showPage('progress')"><span class="nav-icon">📈</span> Progress Pekerja</div>
+    <div class="nav-item" onclick="showPage('monthly')"><span class="nav-icon">🗓️</span> Laporan Bulanan</div>
+    <div class="nav-item" onclick="showPage('followup')"><span class="nav-icon">🔔</span> Follow-Up</div>
+    <div class="nav-item" onclick="document.getElementById('changePinModal').style.display='flex'"><span class="nav-icon">🔐</span> Ganti PIN</div>
+    <div class="nav-item" onclick="doLogout()"><span class="nav-icon">🚪</span> Keluar</div>
+  </div>
   <div class="sidebar-foot">BP Monitor v1.0 · pausbiru7</div>
 </div>
 <div class="main">
@@ -110,5 +112,7 @@
   </div>
 </div>
 
+<!-- Hubungkan ke JS Terpisah -->
+<script src="app.js"></script>
 </body>
 </html>
