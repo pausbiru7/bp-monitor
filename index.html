@@ -1835,16 +1835,11 @@ function renderMonthlyData(mk, allMonths){
 
   const opts = allMonths.map(m => `<option value="${m}" ${m === mk ? 'selected' : ''}>${monthLabel(m)}</option>`).join('');
   
-  // Data Tensi
   const me = exams.filter(e => monthKey(e.examDate) === mk).sort((a,b)=>String(b.examDate).localeCompare(String(a.examDate)));
-  const avgS = me.length ? Math.round(me.reduce((a, e) => a + e.systolic, 0) / me.length) : 0;
-  
-  // Data Alkohol
   const meAlc = alcoholExams.filter(a => monthKey(a.examDate) === mk).sort((a,b)=>String(b.examDate).localeCompare(String(a.examDate)));
-  const alcFail = meAlc.filter(a => a.status.toLowerCase() !== 'pass' && a.status.toLowerCase() !== 'aman').length;
-
-  // Data MCU
   const meMcu = mcuExams.filter(m => monthKey(m.examDate) === mk).sort((a,b)=>String(b.examDate).localeCompare(String(a.examDate)));
+
+  const alcFail = meAlc.filter(a => a.status.toLowerCase() !== 'pass' && a.status.toLowerCase() !== 'aman').length;
 
   const last6 = allMonths.slice(-6);
   const l6Avgs = last6.map(m => {
@@ -1882,12 +1877,15 @@ function renderMonthlyData(mk, allMonths){
   }).join('');
 
   pageMonthly.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:16px; gap: 10px;">
       <div class="month-select" style="margin:0;">
         <label style="font-size:.83rem;font-weight:600;color:#475569">Pilih Bulan:</label>
         <select onchange="renderMonthlyData(this.value)">${opts}</select>
       </div>
-      <button class="btn btn-pdf" style="padding: 10px 18px; font-size: 0.9rem;" onclick="printMonthlyPDF('${mk}')">🖨️ Cetak Laporan Bulanan (PDF)</button>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-pdf" style="padding: 10px 18px; font-size: 0.9rem;" onclick="printMonthlyPDF('${mk}')">🖨️ Cetak PDF</button>
+        <button class="btn" style="padding: 10px 18px; font-size: 0.9rem; background-color: #10b981; color: white;" onclick="exportMonthlyExcel('${mk}')">📊 Download Excel</button>
+      </div>
     </div>
 
     <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;margin-bottom:18px">
@@ -2022,7 +2020,56 @@ function printMonthlyPDF(mk) {
   win.document.write(html);
   win.document.close();
 }
+// 📊 FUNGSI EXPORT LAPORAN KE EXCEL (.xls)
+function exportMonthlyExcel(mk) {
+  const me = exams.filter(e => monthKey(e.examDate) === mk).sort((a,b)=>String(a.examDate).localeCompare(String(b.examDate)));
+  const meAlc = alcoholExams.filter(a => monthKey(a.examDate) === mk).sort((a,b)=>String(a.examDate).localeCompare(String(b.examDate)));
+  const meMcu = mcuExams.filter(m => monthKey(m.examDate) === mk).sort((a,b)=>String(a.examDate).localeCompare(String(b.examDate)));
 
+  let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+  <head><meta charset="utf-8"></head><body>`;
+  
+  html += `<h2 style="text-align:center;">Laporan Kesehatan & Keselamatan Kerja (K3)</h2>`;
+  html += `<h3 style="text-align:center;">Periode: ${monthLabel(mk)}</h3><br/>`;
+  
+  // A. Tabel Tensi
+  html += `<h4>A. Data Tekanan Darah (Tensi)</h4><table border="1">
+  <tr style="background-color:#1e3a5f; color:white;">
+  <th>No</th><th>Tanggal</th><th>Nama Pekerja</th><th>Sistolik</th><th>Diastolik</th><th>Nadi</th><th>Kategori Kemenkes</th></tr>`;
+  me.forEach((e, i) => {
+    html += `<tr><td>${i+1}</td><td>${fmt(e.examDate)}</td><td>${pName(e.patientId)}</td><td>${e.systolic}</td><td>${e.diastolic}</td><td>${e.pulse||'-'}</td><td>${getStatus(e.systolic, e.diastolic).label}</td></tr>`;
+  });
+  html += `</table><br/>`;
+
+  // B. Tabel Alkohol
+  html += `<h4>B. Data Tes Alkohol (BAC)</h4><table border="1">
+  <tr style="background-color:#1e3a5f; color:white;">
+  <th>No</th><th>Tanggal</th><th>Nama Pekerja</th><th>Nilai BAC</th><th>Status</th></tr>`;
+  meAlc.forEach((a, i) => {
+    html += `<tr><td>${i+1}</td><td>${fmt(a.examDate)}</td><td>${pName(a.patientId)}</td><td>${a.alcoholLevel}</td><td>${a.status}</td></tr>`;
+  });
+  html += `</table><br/>`;
+
+  // C. Tabel MCU
+  html += `<h4>C. Data MCU & Metabolik</h4><table border="1">
+  <tr style="background-color:#1e3a5f; color:white;">
+  <th>No</th><th>Tanggal</th><th>Nama Pekerja</th><th>BB (kg)</th><th>TB (cm)</th><th>BMI</th><th>Gula</th><th>Kolesterol</th><th>Asam Urat</th></tr>`;
+  meMcu.forEach((m, i) => {
+    html += `<tr><td>${i+1}</td><td>${fmt(m.examDate)}</td><td>${pName(m.patientId)}</td><td>${m.weight||'-'}</td><td>${m.height||'-'}</td><td>${String(m.bmi||'-').replace('.',',')}</td><td>${m.glucose||'-'}</td><td>${m.cholesterol||'-'}</td><td>${String(m.uricAcid||'-').replace('.',',')}</td></tr>`;
+  });
+  html += `</table></body></html>`;
+
+  // Proses Blob Download HTML ke bentuk file MS Excel
+  const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.setAttribute("href", url);
+  link.setAttribute("download", `Laporan_K3_Pausbiru_${mk}.xls`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
 function renderFollowups(){
   const opts = patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
   const list = followups.map(f => {
