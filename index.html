@@ -290,63 +290,131 @@ table th, table td {white-space: nowrap !important;}
 "use strict";
 
 // ══════════════════════════════════════════
-// 🔐 LOGIN PIN
+// 🔐 LOGIN PIN (DENGAN ENKRIPSI SHA-256)
 // ══════════════════════════════════════════
 const DEFAULT_PIN = '123456';
 let pinInput = '';
 
-function getPin(){ return localStorage.getItem('bpm_pin') || DEFAULT_PIN; }
-function pinPress(digit){
+// Fungsi Enkripsi (Hashing SHA-256 + Salt)
+async function hashPin(pin) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(pin + "-PausbiruK3"); // Salt: Membuat PIN tidak bisa ditebak hacker
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function getSavedPinHash() {
+  let saved = localStorage.getItem('bpm_pin');
+  if(!saved) return await hashPin(DEFAULT_PIN);
+  
+  // Jika masih plaintext (versi lama), otomatis migrasi ke Hash agar tidak perlu ganti PIN
+  if(saved.length === 6 && /^\d+$/.test(saved)) {
+    const newHash = await hashPin(saved);
+    localStorage.setItem('bpm_pin', newHash);
+    return newHash;
+  }
+  return saved;
+}
+
+function pinPress(digit) {
   if(!/^\d$/.test(String(digit))) return;
   if(pinInput.length >= 6) return;
   pinInput += String(digit);
   updatePinDots();
-  if(pinInput.length === 6){ setTimeout(checkPin, 150); }
+  if(pinInput.length === 6){
+    setTimeout(checkPin, 150);
+  }
 }
-function pinDelete(){ pinInput = pinInput.slice(0, -1); updatePinDots(); }
-function pinClear(){ pinInput = ''; updatePinDots(); }
-function updatePinDots(err = false){
+
+function pinDelete() {
+  pinInput = pinInput.slice(0, -1);
+  updatePinDots();
+}
+
+function pinClear() {
+  pinInput = '';
+  updatePinDots();
+}
+
+function updatePinDots(err = false) {
   for(let i = 0; i < 6; i++){
     const dot = document.getElementById('dot' + i);
     if(!dot) continue;
     dot.className = 'pin-dot' + (i < pinInput.length ? ' filled' : '') + (err ? ' error' : '');
   }
 }
-function checkPin(){
+
+async function checkPin() {
   const loginOverlay = document.getElementById('loginOverlay');
   const loginErr = document.getElementById('loginErr');
-  if(pinInput === getPin()){
+  
+  const currentHash = await getSavedPinHash();
+  const inputHash = await hashPin(pinInput);
+
+  if(inputHash === currentHash) {
     if(loginOverlay) loginOverlay.style.display = 'none';
     if(loginErr) loginErr.textContent = '';
   } else {
     updatePinDots(true);
     if(loginErr) loginErr.textContent = 'PIN salah! Coba lagi.';
-    setTimeout(() => { pinInput = ''; updatePinDots(); if(loginErr) loginErr.textContent = ''; }, 800);
+    setTimeout(() => {
+      pinInput = '';
+      updatePinDots();
+      if(loginErr) loginErr.textContent = '';
+    }, 800);
   }
 }
-function doLogout(){
+
+function doLogout() {
   if(!confirm('Keluar dari BP Monitor?')) return;
-  pinInput = ''; updatePinDots();
+  pinInput = '';
+  updatePinDots();
   const loginOverlay = document.getElementById('loginOverlay');
   if(loginOverlay) loginOverlay.style.display = 'flex';
 }
-function doChangePin(){
+
+async function doChangePin() {
   const oldPin = document.getElementById('oldPin');
   const newPin = document.getElementById('newPin');
   const confirmPin = document.getElementById('confirmPin');
   const err = document.getElementById('changePinErr');
   const modal = document.getElementById('changePinModal');
+  
   if(!oldPin || !newPin || !confirmPin || !err || !modal) return;
+  
   const old = oldPin.value, nw = newPin.value, cf = confirmPin.value;
-  if(old !== getPin()){ err.textContent = 'PIN lama salah!'; return; }
-  if(nw.length !== 6){ err.textContent = 'PIN baru harus 6 digit!'; return; }
-  if(!/^\d+$/.test(nw)){ err.textContent = 'PIN hanya boleh angka!'; return; }
-  if(nw !== cf){ err.textContent = 'Konfirmasi PIN tidak cocok!'; return; }
-  localStorage.setItem('bpm_pin', nw);
+  
+  const currentHash = await getSavedPinHash();
+  const oldHash = await hashPin(old);
+
+  if(oldHash !== currentHash){
+    err.textContent = 'PIN lama salah!';
+    return;
+  }
+  if(nw.length !== 6){
+    err.textContent = 'PIN baru harus 6 digit!';
+    return;
+  }
+  if(!/^\d+$/.test(nw)){
+    err.textContent = 'PIN hanya boleh angka!';
+    return;
+  }
+  if(nw !== cf){
+    err.textContent = 'Konfirmasi PIN tidak cocok!';
+    return;
+  }
+  
+  // Simpan PIN baru dalam bentuk Hash Kriptografi
+  const newHashToSave = await hashPin(nw);
+  localStorage.setItem('bpm_pin', newHashToSave);
+  
   err.textContent = '';
-  oldPin.value = ''; newPin.value = ''; confirmPin.value = '';
+  oldPin.value = '';
+  newPin.value = '';
+  confirmPin.value = '';
   modal.style.display = 'none';
-  alert('✅ PIN berhasil diubah!');
+  alert('✅ PIN berhasil diubah dan diamankan dengan Enkripsi SHA-256!');
 }
 
 // ══════════════════════════════════════════
