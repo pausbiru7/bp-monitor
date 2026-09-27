@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BP Monitor — KEPMENKES 4634/2021</title>
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1e3a5f">
 <!-- Pustaka untuk Grafik -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- Pustaka untuk Scanner Barcode/QR -->
@@ -2834,7 +2836,15 @@ function delMcu(id) {
   
 // INISIALISASI AWAL
 renderDashboard();
-
+  
+// INISIALISASI SERVICE WORKER (PWA OFFLINE)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('PWA Offline Aktif!'))
+      .catch(err => console.error('PWA Error:', err));
+  });
+}
 </script>
 </body>
 </html>
