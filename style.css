@@ -1,4 +1,3 @@
-<style>
 *{margin:0;padding:0;box-sizing:border-box;}
   html { font-size: clamp(12px, 1vw + 10px, 16px); }
 body{font-family:'Segoe UI',sans-serif;background:#f1f5f9;color:#1e293b;display:flex;min-height:100vh;font-size:14px;}
@@ -175,4 +174,3 @@ tr:hover td{background:#fafbff;}
 .panel {max-width: 100%;}
 .panel > div[style*="overflow-x"] {width: 100% !important;max-width: 100vw !important;overflow-x: auto !important;display: block !important;box-shadow: inset -10px 0 8px -10px rgba(0,0,0,0.1); }
 table th, table td {white-space: nowrap !important;}
-</style>
